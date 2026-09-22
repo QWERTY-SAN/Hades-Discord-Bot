@@ -9,7 +9,7 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 
 BOT_PREFIX = os.getenv("BOT_PREFIX", "h!")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 MAX_HISTORY = max(2, int(os.getenv("MAX_HISTORY", "24")))
 MAX_OUTPUT_TOKENS = max(128, int(os.getenv("MAX_OUTPUT_TOKENS", "1024")))
