@@ -1,20 +1,19 @@
 # Hades Discord AI Bot
 
-A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using the **Groq API**.
+A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using the Gemini API.
 
 ## Features
 
 - Python + `discord.py`
-- Groq API via the official `groq` Python SDK
-- Fast chat completions
-- Default model: `openai/gpt-oss-20b`
+- Gemini API via `google-genai`
+- Gemini 3.5 Flash-Lite
 - `h!` command prefix
 - Mention, DM, and reply-to-Hades chat support
 - Per-user, per-channel conversation memory
 - Automatic memory expiration and bounded memory usage
 - Per-user cooldown
-- Global Groq concurrency limit and queue timeout
-- Groq request timeout and retry handling
+- Global Gemini concurrency limit and queue timeout
+- Gemini request timeout and retry handling
 - Discord-safe message splitting
 - Discord mention suppression for bot replies
 - `/health` endpoint for Render
@@ -36,13 +35,13 @@ h!hadeshelp
 h!help
 ```
 
-You can also mention Hades directly:
+You can also:
 
 ```text
 @Hades hello
 ```
 
-Or reply directly to one of Hades' messages.
+or reply directly to one of Hades' messages.
 
 ## Project Structure
 
@@ -60,7 +59,7 @@ Hades-Discord-Bot/
     ├── bot.py
     ├── chat.py
     ├── config.py
-    ├── groq_client.py
+    ├── gemini_client.py
     ├── memory.py
     ├── persona.py
     ├── utils.py
@@ -72,9 +71,9 @@ Hades-Discord-Bot/
 Create `.env` locally and keep it out of GitHub:
 
 ```env
-DISCORD_TOKEN=your_discord_bot_token
-GROQ_API_KEY=your_groq_api_key
-GROQ_MODEL=openai/gpt-oss-20b
+DISCORD_TOKEN=your_new_discord_bot_token
+GEMINI_API_KEY=your_new_gemini_api_key
+GEMINI_MODEL=gemini-3.5-flash-lite
 BOT_PREFIX=h!
 MAX_HISTORY=16
 MAX_OUTPUT_TOKENS=768
@@ -89,7 +88,7 @@ MEMORY_PRUNE_INTERVAL=900
 COOLDOWN_PRUNE_INTERVAL=3600
 ```
 
-For Render, add the same variables under **Environment Variables**.
+For Render, use the same values as Environment Variables. Never put real credentials in the repository.
 
 ## Local Setup
 
@@ -97,23 +96,8 @@ For Render, add the same variables under **Environment Variables**.
 git clone https://github.com/QWERTY-SAN/Hades-Discord-Bot.git
 cd Hades-Discord-Bot
 python -m venv .venv
-```
-
-Windows:
-
-```powershell
 .venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
 pip install -r requirements.txt
-```
-
-Run:
-
-```bash
 python main.py
 ```
 
@@ -128,20 +112,6 @@ Required permissions:
 - Read Message History
 
 Administrator permission is not required.
-
-## Groq Setup
-
-Create a Groq API key in the Groq Console and store it as `GROQ_API_KEY`.
-
-The official Groq Python SDK supports both synchronous and asynchronous clients; this bot uses `AsyncGroq` for non-blocking Discord operation.
-
-Default model:
-
-```text
-openai/gpt-oss-20b
-```
-
-Groq's current production model list includes `openai/gpt-oss-20b`. Check the current model list in Groq Console before changing models.
 
 ## Render
 
@@ -158,14 +128,14 @@ The Blueprint configures:
 - Auto deploy: every commit
 - Health check: `/health`
 
-Add these secrets in Render:
+Real secrets belong in Render Environment Variables:
 
 ```text
 DISCORD_TOKEN
-GROQ_API_KEY
+GEMINI_API_KEY
 ```
 
-Never put real credentials in the repository.
+Other configuration variables can also be set there.
 
 ### Health endpoints
 
@@ -173,7 +143,7 @@ Never put real credentials in the repository.
 /health
 ```
 
-Returns HTTP 200 while the web server is alive.
+Returns HTTP 200 while the HTTP server is alive.
 
 ```text
 /ready
@@ -181,9 +151,11 @@ Returns HTTP 200 while the web server is alive.
 
 Returns HTTP 200 when the Discord bot is connected and ready, otherwise HTTP 503.
 
+Use `/health` for simple uptime monitoring. Use `/ready` when you specifically want Discord readiness.
+
 ## Automatic Deployment
 
-With the Render service connected directly to GitHub and Auto-Deploy set to **On Commit**:
+With the Render service connected directly to GitHub and Auto-Deploy set to **On Commit**, normal updates are:
 
 ```bash
 git add .
@@ -203,7 +175,7 @@ Never commit:
 
 Keep only `.env.example` in GitHub.
 
-If a Discord token or Groq API key is exposed, rotate it immediately and replace it in Render.
+If a Discord token or Gemini API key is exposed, rotate it immediately and replace the secret in Render.
 
 ## Memory
 
@@ -219,4 +191,4 @@ A Render restart or redeploy clears in-memory conversations.
 
 ## License
 
-Fan-made project. Not affiliated with or endorsed by **Aether Gazer**, Yongshi, Groq, or the relevant rights holders.
+Fan-made project. Not affiliated with or endorsed by **Aether Gazer**, Yongshi, or the relevant rights holders.
