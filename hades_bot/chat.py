@@ -2,17 +2,17 @@ import asyncio
 import weakref
 
 from .config import MAX_CONCURRENT_REQUESTS, MAX_QUEUE_WAIT
-from .groq_client import GroqService
+from .gemini_client import GeminiService
 from .memory import ConversationMemory
 
 
 class HadesChat:
     def __init__(
         self,
-        groq: GroqService,
+        gemini: GeminiService,
         memory: ConversationMemory,
     ) -> None:
-        self.groq = groq
+        self.gemini = gemini
         self.memory = memory
         self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
         self._semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
@@ -41,7 +41,7 @@ class HadesChat:
                 self._total_requests += 1
                 try:
                     history = self.memory.get(key)
-                    reply = await self.groq.generate_with_retry(
+                    reply = await self.gemini.generate_with_retry(
                         history=history,
                         user_message=message,
                     )
