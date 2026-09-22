@@ -4,7 +4,11 @@ services:
     runtime: python
     branch: main
     autoDeployTrigger: commit
+<<<<<<< HEAD
     healthCheckPath: /health
+=======
+
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
 
@@ -26,9 +30,12 @@ services:
 
       - key: MAX_OUTPUT_TOKENS
         value: "768"
+<<<<<<< HEAD
 
       - key: MAX_INPUT_CHARS
         value: "6000"
+=======
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
 
       - key: USER_COOLDOWN
         value: "2.0"
@@ -36,9 +43,12 @@ services:
       - key: MAX_CONCURRENT_REQUESTS
         value: "3"
 
+<<<<<<< HEAD
       - key: MAX_QUEUE_WAIT
         value: "20"
 
+=======
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
       - key: REQUEST_TIMEOUT
         value: "45"
 
@@ -46,6 +56,7 @@ services:
         value: "21600"
 
       - key: MAX_CONVERSATIONS
+<<<<<<< HEAD
         value: "500"
 
       - key: MEMORY_PRUNE_INTERVAL
@@ -53,3 +64,6 @@ services:
 
       - key: COOLDOWN_PRUNE_INTERVAL
         value: "3600"
+=======
+        value: "500"
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
