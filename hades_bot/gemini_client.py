@@ -4,11 +4,7 @@ import logging
 from google import genai
 from google.genai import types
 
-<<<<<<< HEAD
 from .config import MAX_INPUT_CHARS, REQUEST_TIMEOUT
-=======
-from .config import REQUEST_TIMEOUT
->>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
 from .persona import HADES_SYSTEM_PROMPT
 
 
@@ -27,7 +23,6 @@ class GeminiService:
         self.max_output_tokens = max_output_tokens
 
     @staticmethod
-<<<<<<< HEAD
     def _normalize_user_message(text: str) -> str:
         text = text.strip()
         if len(text) <= MAX_INPUT_CHARS:
@@ -41,9 +36,6 @@ class GeminiService:
 
     @classmethod
     def build_contents(cls, history, user_message: str) -> list[types.Content]:
-=======
-    def build_contents(history, user_message: str) -> list[types.Content]:
->>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
         contents: list[types.Content] = []
 
         for turn in history:
@@ -101,7 +93,6 @@ class GeminiService:
             "timeout",
             "timed out",
             "503",
-<<<<<<< HEAD
             "502",
             "500",
             "connection reset",
@@ -109,12 +100,6 @@ class GeminiService:
             "server disconnected",
         )
         return isinstance(exc, (TimeoutError, asyncio.TimeoutError)) or any(
-=======
-            "500",
-            "connection reset",
-        )
-        return isinstance(exc, TimeoutError) or any(
->>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
             term in message for term in transient_terms
         )
 

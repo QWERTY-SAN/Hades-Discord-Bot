@@ -26,7 +26,6 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 MAX_HISTORY = _int_env("MAX_HISTORY", 16, 2)
 MAX_OUTPUT_TOKENS = _int_env("MAX_OUTPUT_TOKENS", 768, 128)
-<<<<<<< HEAD
 MAX_INPUT_CHARS = _int_env("MAX_INPUT_CHARS", 6000, 500)
 USER_COOLDOWN = _float_env("USER_COOLDOWN", 2.0, 0.0)
 MAX_CONCURRENT_REQUESTS = _int_env("MAX_CONCURRENT_REQUESTS", 3, 1)
@@ -36,13 +35,6 @@ MEMORY_TTL_SECONDS = _int_env("MEMORY_TTL_SECONDS", 21600, 300)
 MAX_CONVERSATIONS = _int_env("MAX_CONVERSATIONS", 500, 10)
 MEMORY_PRUNE_INTERVAL = _int_env("MEMORY_PRUNE_INTERVAL", 900, 60)
 COOLDOWN_PRUNE_INTERVAL = _int_env("COOLDOWN_PRUNE_INTERVAL", 3600, 300)
-=======
-USER_COOLDOWN = _float_env("USER_COOLDOWN", 2.0, 0.0)
-MAX_CONCURRENT_REQUESTS = _int_env("MAX_CONCURRENT_REQUESTS", 3, 1)
-REQUEST_TIMEOUT = _float_env("REQUEST_TIMEOUT", 45.0, 5.0)
-MEMORY_TTL_SECONDS = _int_env("MEMORY_TTL_SECONDS", 21600, 300)
-MAX_CONVERSATIONS = _int_env("MAX_CONVERSATIONS", 500, 10)
->>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
 
 DISCORD_MESSAGE_LIMIT = 2000
 
@@ -58,10 +50,5 @@ def validate() -> None:
 
     if missing:
         raise RuntimeError(
-<<<<<<< HEAD
             "Missing required environment variable(s): " + ", ".join(missing)
-=======
-            "Missing required environment variable(s): "
-            + ", ".join(missing)
->>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
         )
