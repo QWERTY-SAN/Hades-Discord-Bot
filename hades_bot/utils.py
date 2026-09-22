@@ -1,3 +1,4 @@
+import re
 import time
 
 from .config import DISCORD_MESSAGE_LIMIT
@@ -8,24 +9,34 @@ class CooldownManager:
         self.cooldown_seconds = cooldown_seconds
         self._last_request: dict[int, float] = {}
 
-    def remaining(self, user_id: int) -> float:
+    def consume(self, user_id: int) -> float:
         now = time.monotonic()
         previous = self._last_request.get(user_id, 0.0)
-        return max(0.0, self.cooldown_seconds - (now - previous))
+        remaining = self.cooldown_seconds - (now - previous)
 
-    def touch(self, user_id: int) -> None:
-        self._last_request[user_id] = time.monotonic()
+        if remaining > 0:
+            return remaining
 
-    def consume(self, user_id: int) -> float:
-        remaining = self.remaining(user_id)
+        self._last_request[user_id] = now
+        return 0.0
 
-        if remaining <= 0:
-            self.touch(user_id)
-
-        return remaining
+    def cleanup(self, older_than_seconds: float = 3600.0) -> None:
+        cutoff = time.monotonic() - older_than_seconds
+        stale = [
+            user_id
+            for user_id, timestamp in self._last_request.items()
+            if timestamp < cutoff
+        ]
+        for user_id in stale:
+            self._last_request.pop(user_id, None)
 
 
 def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
+    text = text.strip()
+
+    if not text:
+        return ["..."]
+
     if len(text) <= limit:
         return [text]
 
@@ -34,16 +45,13 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
     while len(text) > limit:
         split_at = text.rfind("\n", 0, limit)
 
-        if split_at == -1:
+        if split_at < 1:
             split_at = text.rfind(" ", 0, limit)
 
-        if split_at <= 0:
+        if split_at < 1:
             split_at = limit
 
-        chunk = text[:split_at].strip()
-        if chunk:
-            chunks.append(chunk)
-
+        chunks.append(text[:split_at].rstrip())
         text = text[split_at:].lstrip()
 
     if text:
@@ -53,6 +61,9 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
 
 
 def strip_bot_mentions(content: str, bot_id: int) -> str:
-    content = content.replace(f"<@{bot_id}>", "")
-    content = content.replace(f"<@!{bot_id}>", "")
+    content = re.sub(
+        rf"<@!?{re.escape(str(bot_id))}>",
+        "",
+        content,
+    )
     return content.strip()
