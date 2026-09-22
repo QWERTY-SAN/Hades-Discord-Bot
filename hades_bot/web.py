@@ -25,6 +25,7 @@ def update_discord_state(
         _state["discord_user"] = user
         _state["guild_count"] = guild_count
 
+<<<<<<< HEAD
 
 def _snapshot() -> dict:
     with _state_lock:
@@ -34,6 +35,14 @@ def _snapshot() -> dict:
 @app.get("/")
 def index():
     state = _snapshot()
+=======
+
+@app.get("/")
+def index():
+    with _state_lock:
+        state = dict(_state)
+
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
     return jsonify(
         {
             "service": "Hades Discord AI Bot",
@@ -45,7 +54,13 @@ def index():
 
 @app.get("/health")
 def health():
+<<<<<<< HEAD
     state = _snapshot()
+=======
+    with _state_lock:
+        state = dict(_state)
+
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
     return jsonify(
         {
             "service": "hades-discord-bot",
@@ -53,6 +68,7 @@ def health():
             **state,
         }
     ), 200
+<<<<<<< HEAD
 
 
 @app.get("/ready")
@@ -66,6 +82,8 @@ def ready():
             **state,
         }
     ), status_code
+=======
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
 
 
 def run_web_server() -> None:

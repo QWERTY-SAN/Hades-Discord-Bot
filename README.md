@@ -1,6 +1,11 @@
 # Hades Discord AI Bot
 
 A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using the Gemini API.
+<<<<<<< HEAD
+=======
+
+The bot is designed to run on **Render Web Service** and supports Discord mentions, DMs, prefix commands, conversation memory, automatic retries, and basic request protection.
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
 
 ## Features
 
@@ -8,6 +13,7 @@ A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using
 - Gemini API via `google-genai`
 - Gemini 3.5 Flash-Lite
 - `h!` command prefix
+<<<<<<< HEAD
 - Mention, DM, and reply-to-Hades chat support
 - Per-user, per-channel conversation memory
 - Automatic memory expiration and bounded memory usage
@@ -19,10 +25,34 @@ A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using
 - `/health` endpoint for Render
 - `/ready` endpoint for readiness checks
 - Automatic deployment on commits to `main` when the GitHub-connected Render service uses the Blueprint
+=======
+- Hades roleplay personality based on *Aether Gazer*
+- Automatic replies when Hades is mentioned
+- Direct-message support
+- Reply-to-Hades support
+- Per-user, per-channel conversation memory
+- Automatic cleanup of inactive conversations
+- Bounded memory usage
+- Per-user cooldown
+- Global Gemini request limit
+- Gemini request timeout and retry handling
+- Discord 2,000-character response splitting
+- Protection against accidental Discord mentions such as `@everyone` and `@here`
+- `/health` HTTP endpoint for Render
+- `h!reset`
+- `h!forget`
+- `h!memory`
+- `h!status`
+- `h!ping`
+- `h!hadeshelp`
+- Environment-variable based secret management
+- Automatic Render deployment from GitHub
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
 
 ## Commands
 
 ```text
+<<<<<<< HEAD
 h!hades <message>
 h!ask <message>
 h!reset
@@ -192,3 +222,6 @@ A Render restart or redeploy clears in-memory conversations.
 ## License
 
 Fan-made project. Not affiliated with or endorsed by **Aether Gazer**, Yongshi, or the relevant rights holders.
+=======
+h!hades <message>
+>>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
