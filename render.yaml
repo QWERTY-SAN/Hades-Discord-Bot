@@ -1,0 +1,21 @@
+services:
+  - type: worker
+    name: hades-discord-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: BOT_PREFIX
+        value: "h!"
+      - key: MAX_HISTORY
+        value: "24"
+      - key: MAX_OUTPUT_TOKENS
+        value: "1024"
+      - key: USER_COOLDOWN
+        value: "2.0"
