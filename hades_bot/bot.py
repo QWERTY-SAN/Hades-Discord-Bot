@@ -7,8 +7,8 @@ from .chat import HadesChat
 from .config import (
     BOT_PREFIX,
     DISCORD_TOKEN,
-    GEMINI_API_KEY,
-    GEMINI_MODEL,
+    GROQ_API_KEY,
+    GROQ_MODEL,
     MAX_CONCURRENT_REQUESTS,
     MAX_HISTORY,
     MAX_INPUT_CHARS,
@@ -23,7 +23,7 @@ from .config import (
     COOLDOWN_PRUNE_INTERVAL,
     validate,
 )
-from .gemini_client import GeminiService
+from .groq_client import GroqService
 from .memory import ConversationMemory
 from .utils import CooldownManager, split_message, strip_bot_mentions
 from .web import update_discord_state
@@ -47,9 +47,9 @@ class HadesBot(commands.Bot):
         )
 
         self.hades_chat = HadesChat(
-            gemini=GeminiService(
-                api_key=GEMINI_API_KEY,
-                model=GEMINI_MODEL,
+            groq=GroqService(
+                api_key=GROQ_API_KEY,
+                model=GROQ_MODEL,
                 max_output_tokens=MAX_OUTPUT_TOKENS,
             ),
             memory=ConversationMemory(
@@ -245,10 +245,14 @@ class HadesBot(commands.Bot):
             self.user.id if self.user else "unknown",
         )
         logger.info("Connected to %d guild(s)", len(self.guilds))
-        logger.info("Gemini model: %s", GEMINI_MODEL)
+        logger.info("Groq model: %s", GROQ_MODEL)
         logger.info("Command prefix: %s", BOT_PREFIX)
+<<<<<<< HEAD
         logger.info("Max concurrent Gemini requests: %d", MAX_CONCURRENT_REQUESTS)
 <<<<<<< HEAD
+=======
+        logger.info("Max concurrent Groq requests: %d", MAX_CONCURRENT_REQUESTS)
+>>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)
         logger.info("Max input characters: %d", MAX_INPUT_CHARS)
 =======
 >>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
@@ -464,7 +468,7 @@ async def status_command(ctx: commands.Context) -> None:
     await ctx.reply(
         (
             "**Hades Status**\n"
-            f"Model: `{GEMINI_MODEL}`\n"
+            f"Model: `{GROQ_MODEL}`\n"
             f"Guilds: `{len(bot.guilds)}`\n"
             f"Memory: `{bot.hades_chat.memory.conversation_count()}` active conversations\n"
 <<<<<<< HEAD
