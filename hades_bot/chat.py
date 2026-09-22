@@ -4,10 +4,14 @@ import weakref
 <<<<<<< HEAD
 from .config import MAX_CONCURRENT_REQUESTS, MAX_QUEUE_WAIT
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 from .config import MAX_CONCURRENT_REQUESTS
 >>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
 from .gemini_client import GeminiService
+=======
+from .groq_client import GroqService
+>>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)
 =======
 from .groq_client import GroqService
 >>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)

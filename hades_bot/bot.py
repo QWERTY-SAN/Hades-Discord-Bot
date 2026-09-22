@@ -248,8 +248,12 @@ class HadesBot(commands.Bot):
         logger.info("Groq model: %s", GROQ_MODEL)
         logger.info("Command prefix: %s", BOT_PREFIX)
 <<<<<<< HEAD
+<<<<<<< HEAD
         logger.info("Max concurrent Gemini requests: %d", MAX_CONCURRENT_REQUESTS)
 <<<<<<< HEAD
+=======
+        logger.info("Max concurrent Groq requests: %d", MAX_CONCURRENT_REQUESTS)
+>>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)
 =======
         logger.info("Max concurrent Groq requests: %d", MAX_CONCURRENT_REQUESTS)
 >>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)

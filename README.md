@@ -1,12 +1,16 @@
 # Hades Discord AI Bot
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using the Gemini API.
 <<<<<<< HEAD
 =======
 
 The bot is designed to run on **Render Web Service** and supports Discord mentions, DMs, prefix commands, conversation memory, automatic retries, and basic request protection.
 >>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
+=======
+A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using the **Groq API**.
+>>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)
 =======
 A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using the **Groq API**.
 >>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)
@@ -254,10 +258,14 @@ A Render restart or redeploy clears in-memory conversations.
 ## License
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Fan-made project. Not affiliated with or endorsed by **Aether Gazer**, Yongshi, or the relevant rights holders.
 =======
 h!hades <message>
 >>>>>>> dddf6d19d3182cd9bdad89b51d129fc0e7f37505
+=======
+Fan-made project. Not affiliated with or endorsed by **Aether Gazer**, Yongshi, Groq, or the relevant rights holders.
+>>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)
 =======
 Fan-made project. Not affiliated with or endorsed by **Aether Gazer**, Yongshi, Groq, or the relevant rights holders.
 >>>>>>> parent of 39d2903 (revert back to gemini 3.5-lite)
