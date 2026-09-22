@@ -2,9 +2,11 @@ services:
   - type: web
     name: hades-discord-bot
     runtime: python
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: /health
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
-    healthCheckPath: /health
 
     envVars:
       - key: DISCORD_TOKEN
@@ -20,10 +22,34 @@ services:
         value: "h!"
 
       - key: MAX_HISTORY
-        value: "24"
+        value: "16"
 
       - key: MAX_OUTPUT_TOKENS
-        value: "1024"
+        value: "768"
+
+      - key: MAX_INPUT_CHARS
+        value: "6000"
 
       - key: USER_COOLDOWN
         value: "2.0"
+
+      - key: MAX_CONCURRENT_REQUESTS
+        value: "3"
+
+      - key: MAX_QUEUE_WAIT
+        value: "20"
+
+      - key: REQUEST_TIMEOUT
+        value: "45"
+
+      - key: MEMORY_TTL_SECONDS
+        value: "21600"
+
+      - key: MAX_CONVERSATIONS
+        value: "500"
+
+      - key: MEMORY_PRUNE_INTERVAL
+        value: "900"
+
+      - key: COOLDOWN_PRUNE_INTERVAL
+        value: "3600"
