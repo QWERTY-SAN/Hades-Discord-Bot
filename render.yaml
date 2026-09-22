@@ -2,6 +2,9 @@ services:
   - type: web
     name: hades-discord-bot
     runtime: python
+    branch: main
+    autoDeployTrigger: commit
+
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
 
