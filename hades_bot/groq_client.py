@@ -1,24 +1,23 @@
 import asyncio
 import logging
 
-from google import genai
-from google.genai import types
+from groq import AsyncGroq
 
 from .config import MAX_INPUT_CHARS, REQUEST_TIMEOUT
 from .persona import HADES_SYSTEM_PROMPT
 
 
-logger = logging.getLogger("hades-bot.gemini")
+logger = logging.getLogger("hades-bot.groq")
 
 
-class GeminiService:
+class GroqService:
     def __init__(
         self,
         api_key: str,
         model: str,
         max_output_tokens: int,
     ) -> None:
-        self.client = genai.Client(api_key=api_key)
+        self.client = AsyncGroq(api_key=api_key)
         self.model = model
         self.max_output_tokens = max_output_tokens
 
@@ -35,50 +34,51 @@ class GeminiService:
         )
 
     @classmethod
-    def build_contents(cls, history, user_message: str) -> list[types.Content]:
-        contents: list[types.Content] = []
+    def build_messages(cls, history, user_message: str) -> list[dict[str, str]]:
+        messages: list[dict[str, str]] = [
+            {
+                "role": "system",
+                "content": HADES_SYSTEM_PROMPT,
+            }
+        ]
 
         for turn in history:
-            contents.append(
-                types.Content(
-                    role=turn.role,
-                    parts=[types.Part.from_text(text=turn.text)],
-                )
+            role = "assistant" if turn.role == "model" else turn.role
+            messages.append(
+                {
+                    "role": role,
+                    "content": turn.text,
+                }
             )
 
-        contents.append(
-            types.Content(
-                role="user",
-                parts=[
-                    types.Part.from_text(
-                        text=cls._normalize_user_message(user_message)
-                    )
-                ],
-            )
+        messages.append(
+            {
+                "role": "user",
+                "content": cls._normalize_user_message(user_message),
+            }
         )
 
-        return contents
+        return messages
 
     async def generate(self, history, user_message: str) -> str:
         response = await asyncio.wait_for(
-            self.client.aio.models.generate_content(
+            self.client.chat.completions.create(
                 model=self.model,
-                contents=self.build_contents(history, user_message),
-                config=types.GenerateContentConfig(
-                    system_instruction=HADES_SYSTEM_PROMPT,
-                    max_output_tokens=self.max_output_tokens,
-                    thinking_config=types.ThinkingConfig(
-                        thinking_level="minimal"
-                    ),
-                ),
+                messages=self.build_messages(history, user_message),
+                temperature=0.8,
+                max_completion_tokens=self.max_output_tokens,
+                stream=False,
             ),
             timeout=REQUEST_TIMEOUT,
         )
 
-        text = (response.text or "").strip()
+        if not response.choices:
+            raise RuntimeError("Groq returned no choices.")
+
+        text = (response.choices[0].message.content or "").strip()
 
         if not text:
-            raise RuntimeError("Gemini returned an empty response.")
+            raise RuntimeError("Groq returned an empty response.")
 
         return text
 
@@ -88,13 +88,14 @@ class GeminiService:
         transient_terms = (
             "429",
             "rate limit",
-            "resource exhausted",
-            "temporarily unavailable",
-            "timeout",
-            "timed out",
+            "too many requests",
             "503",
             "502",
             "500",
+            "service unavailable",
+            "temporarily unavailable",
+            "timeout",
+            "timed out",
             "connection reset",
             "connection aborted",
             "server disconnected",
@@ -118,7 +119,7 @@ class GeminiService:
                 last_error = exc
 
                 logger.warning(
-                    "Gemini request failed (%d/%d): %s",
+                    "Groq request failed (%d/%d): %s",
                     attempt,
                     attempts,
                     exc,
@@ -129,4 +130,4 @@ class GeminiService:
 
                 await asyncio.sleep(1.5 * (2 ** (attempt - 1)))
 
-        raise RuntimeError("Gemini request failed.") from last_error
+        raise RuntimeError("Groq request failed.") from last_error

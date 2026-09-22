@@ -12,11 +12,11 @@ services:
       - key: DISCORD_TOKEN
         sync: false
 
-      - key: GEMINI_API_KEY
+      - key: GROQ_API_KEY
         sync: false
 
-      - key: GEMINI_MODEL
-        value: gemini-3.5-flash-lite
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
 
       - key: BOT_PREFIX
         value: "h!"
