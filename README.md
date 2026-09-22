@@ -1,97 +1,38 @@
 # Hades Discord AI Bot
 
-A modular Discord AI chatbot that roleplays as Hades from Aether Gazer and uses the Gemini API.
+A modular Discord AI chatbot that roleplays as **Hades from Aether Gazer** using the Gemini API.
+
+The bot is designed to run on **Render Web Service** and supports Discord mentions, DMs, prefix commands, conversation memory, automatic retries, and basic request protection.
 
 ## Features
 
-- Python + discord.py
+- Python + `discord.py`
 - Gemini API via `google-genai`
+- Gemini 3.5 Flash-Lite
 - `h!` command prefix
+- Hades roleplay personality based on *Aether Gazer*
 - Automatic replies when Hades is mentioned
-- DM support
+- Direct-message support
+- Reply-to-Hades support
 - Per-user, per-channel conversation memory
+- Automatic cleanup of inactive conversations
+- Bounded memory usage
+- Per-user cooldown
+- Global Gemini request limit
+- Gemini request timeout and retry handling
+- Discord 2,000-character response splitting
+- Protection against accidental Discord mentions such as `@everyone` and `@here`
+- `/health` HTTP endpoint for Render
 - `h!reset`
+- `h!forget`
+- `h!memory`
+- `h!status`
 - `h!ping`
 - `h!hadeshelp`
-- Discord 2000-character response splitting
-- Basic per-user cooldown
-- Retry handling for Gemini failures
-- Render Background Worker configuration
-- Secrets kept in environment variables
+- Environment-variable based secret management
+- Automatic Render deployment from GitHub
 
 ## Commands
 
 ```text
-h!hades hello
-h!reset
-h!ping
-h!hadeshelp
-```
-
-You can also mention the bot:
-
-```text
-@Hades hello
-```
-
-## Local setup
-
-Create a local `.env` file. Do not commit it.
-
-```env
-DISCORD_TOKEN=your_discord_bot_token
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-3.8-flash
-BOT_PREFIX=h!
-MAX_HISTORY=24
-MAX_OUTPUT_TOKENS=1024
-USER_COOLDOWN=2.0
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run:
-
-```bash
-python main.py
-```
-
-## Discord setup
-
-Enable the **Message Content Intent** for the bot in the Discord Developer Portal.
-
-The bot needs permission to:
-
-- View Channels
-- Send Messages
-- Read Message History
-
-## Render
-
-Use a **Background Worker**.
-
-Build command:
-
-```text
-pip install -r requirements.txt
-```
-
-Start command:
-
-```text
-python main.py
-```
-
-Add `DISCORD_TOKEN` and `GEMINI_API_KEY` as Render environment variables.
-
-## Security
-
-Never put real Discord or Gemini credentials in this repository.
-
-The real values belong in Render's environment variables or in a local `.env` file that is ignored by Git.
-
-If a credential has already been exposed publicly, rotate it before deploying.
+h!hades <message>
