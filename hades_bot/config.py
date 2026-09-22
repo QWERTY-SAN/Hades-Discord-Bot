@@ -19,10 +19,10 @@ def _float_env(name: str, default: float, minimum: float = 0.0) -> float:
 
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
 BOT_PREFIX = os.getenv("BOT_PREFIX", "h!")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b").strip()
 
 MAX_HISTORY = _int_env("MAX_HISTORY", 16, 2)
 MAX_OUTPUT_TOKENS = _int_env("MAX_OUTPUT_TOKENS", 768, 128)
@@ -45,8 +45,8 @@ def validate() -> None:
     if not DISCORD_TOKEN:
         missing.append("DISCORD_TOKEN")
 
-    if not GEMINI_API_KEY:
-        missing.append("GEMINI_API_KEY")
+    if not GROQ_API_KEY:
+        missing.append("GROQ_API_KEY")
 
     if missing:
         raise RuntimeError(
