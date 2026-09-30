@@ -33,29 +33,23 @@ class ConversationMemory:
     def prune(self, now: float | None = None) -> int:
         now = time.monotonic() if now is None else now
         removed = 0
-
         expired = [
             key
             for key, conversation in self._conversations.items()
             if self._expired(conversation, now)
         ]
-
         for key in expired:
             if self._conversations.pop(key, None) is not None:
                 removed += 1
-
         while len(self._conversations) > self.max_conversations:
             self._conversations.popitem(last=False)
             removed += 1
-
         return removed
 
     def get(self, key: str) -> deque[MessageTurn]:
         now = time.monotonic()
         self.prune(now)
-
         conversation = self._conversations.get(key)
-
         if conversation is None or self._expired(conversation, now):
             conversation = Conversation(
                 turns=deque(maxlen=self.max_messages),
@@ -65,7 +59,6 @@ class ConversationMemory:
         else:
             conversation.touched_at = now
             self._conversations.move_to_end(key)
-
         return conversation.turns
 
     def add(self, key: str, role: str, text: str) -> None:

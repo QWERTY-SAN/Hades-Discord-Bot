@@ -13,10 +13,8 @@ class CooldownManager:
         now = time.monotonic()
         previous = self._last_request.get(user_id, 0.0)
         remaining = self.cooldown_seconds - (now - previous)
-
         if remaining > 0:
             return remaining
-
         self._last_request[user_id] = now
         return 0.0
 
@@ -37,15 +35,11 @@ class CooldownManager:
 
 def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
     text = text.strip()
-
     if not text:
         return ["..."]
-
     if len(text) <= limit:
         return [text]
-
     chunks: list[str] = []
-
     while len(text) > limit:
         split_at = text.rfind("\n\n", 0, limit)
         if split_at < 1:
@@ -54,22 +48,15 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
             split_at = text.rfind(" ", 0, limit)
         if split_at < 1:
             split_at = limit
-
         chunk = text[:split_at].rstrip()
         if chunk:
             chunks.append(chunk)
         text = text[split_at:].lstrip()
-
     if text:
         chunks.append(text)
-
     return chunks
 
 
 def strip_bot_mentions(content: str, bot_id: int) -> str:
-    content = re.sub(
-        rf"<@!?{re.escape(str(bot_id))}>",
-        "",
-        content,
-    )
+    content = re.sub(rf"<@!?{re.escape(str(bot_id))}>", "", content)
     return content.strip()

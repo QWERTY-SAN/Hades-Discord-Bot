@@ -7,11 +7,7 @@ from .memory import ConversationMemory
 
 
 class HadesChat:
-    def __init__(
-        self,
-        gemini: GeminiService,
-        memory: ConversationMemory,
-    ) -> None:
+    def __init__(self, gemini: GeminiService, memory: ConversationMemory) -> None:
         self.gemini = gemini
         self.memory = memory
         self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
@@ -28,13 +24,9 @@ class HadesChat:
 
     async def ask(self, key: str, message: str) -> str:
         try:
-            await asyncio.wait_for(
-                self._semaphore.acquire(),
-                timeout=MAX_QUEUE_WAIT,
-            )
+            await asyncio.wait_for(self._semaphore.acquire(), timeout=MAX_QUEUE_WAIT)
         except asyncio.TimeoutError as exc:
             raise RuntimeError("The response queue is currently full.") from exc
-
         try:
             async with self._get_lock(key):
                 self._active_requests += 1
@@ -45,7 +37,6 @@ class HadesChat:
                         history=history,
                         user_message=message,
                     )
-
                     self.memory.add(key, "user", message)
                     self.memory.add(key, "model", reply)
                     return reply

@@ -3,7 +3,6 @@ import threading
 
 from flask import Flask, jsonify
 
-
 app = Flask(__name__)
 
 _state = {
@@ -14,12 +13,7 @@ _state = {
 _state_lock = threading.Lock()
 
 
-def update_discord_state(
-    *,
-    ready: bool,
-    user: str | None = None,
-    guild_count: int = 0,
-) -> None:
+def update_discord_state(*, ready: bool, user: str | None = None, guild_count: int = 0) -> None:
     with _state_lock:
         _state["discord_ready"] = ready
         _state["discord_user"] = user
