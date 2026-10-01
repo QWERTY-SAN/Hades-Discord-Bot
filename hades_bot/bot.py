@@ -109,7 +109,6 @@ class HadesBot(commands.Bot):
         content = content.strip()
         if not content:
             return
-
         if len(content) > MAX_INPUT_CHARS:
             await message.reply(
                 "That's quite a manuscript, little lamb. Keep the message "
@@ -118,8 +117,6 @@ class HadesBot(commands.Bot):
                 allowed_mentions=ALLOWED_MENTIONS,
             )
             return
-
-        # Hard application-level scope gate. Unrelated requests never reach Gemini.
         if not is_hades_scope_allowed(content):
             await message.reply(
                 off_topic_response(),
@@ -137,7 +134,6 @@ class HadesBot(commands.Bot):
                 allowed_mentions=ALLOWED_MENTIONS,
             )
             return
-
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
@@ -193,10 +189,7 @@ class HadesBot(commands.Bot):
             user=username,
             guild_count=len(self.guilds),
         )
-        await self.change_presence(
-            status=discord.Status.online,
-            activity=None,
-        )
+        await self.change_presence(status=discord.Status.online, activity=None)
 
     @tasks.loop(seconds=MEMORY_PRUNE_INTERVAL)
     async def maintenance_loop(self) -> None:
@@ -220,7 +213,6 @@ class HadesBot(commands.Bot):
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
-
         await self.process_commands(message)
         if message.content.startswith(BOT_PREFIX):
             return
@@ -269,7 +261,6 @@ async def hades_command(
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
-
     prompt = prompt.strip()
     if len(prompt) > MAX_INPUT_CHARS:
         await ctx.reply(
@@ -278,7 +269,6 @@ async def hades_command(
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
-
     if not is_hades_scope_allowed(prompt):
         await ctx.reply(
             off_topic_response(),
@@ -286,7 +276,6 @@ async def hades_command(
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
-
     key = bot.conversation_key(ctx.message)
     remaining = bot._consume_cooldown(key)
     if remaining > 0:
@@ -296,7 +285,6 @@ async def hades_command(
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
-
     try:
         async with ctx.typing():
             reply = await bot.hades_chat.ask(key, prompt)
@@ -358,7 +346,6 @@ async def status_command(ctx: commands.Context) -> None:
     bot = ctx.bot
     if not isinstance(bot, HadesBot):
         return
-
     if ctx.guild is None or not getattr(ctx.author.guild_permissions, "administrator", False):
         await ctx.reply(
             "That little display is reserved for those holding the keys to the stage.",
@@ -366,7 +353,6 @@ async def status_command(ctx: commands.Context) -> None:
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
-
     await ctx.reply(
         (
             "**Hades Status**\n"

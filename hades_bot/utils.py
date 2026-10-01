@@ -41,7 +41,6 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
         return ["..."]
     if len(text) <= limit:
         return [text]
-
     chunks: list[str] = []
     while len(text) > limit:
         split_at = text.rfind("\n\n", 0, limit)
@@ -55,7 +54,6 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
         if chunk:
             chunks.append(chunk)
         text = text[split_at:].lstrip()
-
     if text:
         chunks.append(text)
     return chunks

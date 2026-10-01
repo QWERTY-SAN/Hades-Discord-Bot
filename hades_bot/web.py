@@ -3,7 +3,6 @@ import threading
 
 from flask import Flask, jsonify
 
-
 app = Flask(__name__)
 
 _state = {
@@ -11,16 +10,10 @@ _state = {
     "discord_user": None,
     "guild_count": 0,
 }
-
 _state_lock = threading.Lock()
 
 
-def update_discord_state(
-    *,
-    ready: bool,
-    user: str | None = None,
-    guild_count: int = 0,
-) -> None:
+def update_discord_state(*, ready: bool, user: str | None = None, guild_count: int = 0) -> None:
     with _state_lock:
         _state["discord_ready"] = ready
         _state["discord_user"] = user
@@ -35,7 +28,6 @@ def _snapshot() -> dict:
 @app.get("/")
 def index():
     state = _snapshot()
-
     return jsonify(
         {
             "service": "Hades Discord AI Bot",
@@ -48,7 +40,6 @@ def index():
 @app.get("/health")
 def health():
     state = _snapshot()
-
     return jsonify(
         {
             "service": "hades-discord-bot",
@@ -62,7 +53,6 @@ def health():
 def ready():
     state = _snapshot()
     status_code = 200 if state["discord_ready"] else 503
-
     return jsonify(
         {
             "service": "hades-discord-bot",
@@ -74,7 +64,6 @@ def ready():
 
 def run_web_server() -> None:
     port = int(os.getenv("PORT", "10000"))
-
     app.run(
         host="0.0.0.0",
         port=port,

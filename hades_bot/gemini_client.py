@@ -5,7 +5,14 @@ import random
 from google import genai
 from google.genai import types
 
-from .config import MAX_INPUT_CHARS, REQUEST_TIMEOUT
+from .config import (
+    GEMINI_TEMPERATURE,
+    GEMINI_THINKING_LEVEL,
+    GEMINI_TOP_P,
+    MAX_INPUT_CHARS,
+    REQUEST_TIMEOUT,
+)
+from .game_knowledge import relevant_game_context
 from .persona import HADES_SYSTEM_PROMPT
 
 logger = logging.getLogger("hades-bot.gemini")
@@ -24,6 +31,13 @@ class GeminiService:
             return text
         cutoff = max(0, MAX_INPUT_CHARS - 80)
         return text[:cutoff].rstrip() + "\n\n[Message truncated to keep the conversation manageable.]"
+
+    @staticmethod
+    def _build_system_instruction(user_message: str) -> str:
+        context = relevant_game_context(user_message)
+        if not context:
+            return HADES_SYSTEM_PROMPT
+        return f"{HADES_SYSTEM_PROMPT}\n\n{context}"
 
     @classmethod
     def build_contents(cls, history, user_message: str) -> list[types.Content]:
@@ -49,9 +63,11 @@ class GeminiService:
                 model=self.model,
                 contents=self.build_contents(history, user_message),
                 config=types.GenerateContentConfig(
-                    system_instruction=HADES_SYSTEM_PROMPT,
+                    system_instruction=self._build_system_instruction(user_message),
                     max_output_tokens=self.max_output_tokens,
-                    thinking_config=types.ThinkingConfig(thinking_level="minimal"),
+                    temperature=GEMINI_TEMPERATURE,
+                    top_p=GEMINI_TOP_P,
+                    thinking_config=types.ThinkingConfig(thinking_level=GEMINI_THINKING_LEVEL),
                 ),
             ),
             timeout=REQUEST_TIMEOUT,
