@@ -1,111 +1,21 @@
-# Hades Discord AI Bot
+# Hades Discord Bot — Improvement Bundle
 
-A modular Discord AI chatbot that roleplays as Hades from **Aether Gazer** using Gemini.
+These files are intended to be copied over the matching files in the current repository.
 
-## Commands
+## Changes
 
-```text
-h!hades <message>
-h!ask <message>
-h!reset
-h!forget
-h!clear
-h!memory
-h!ping
-h!status
-h!hadeshelp
-h!help
-```
+- Added an application-level Aether Gazer scope gate in `hades_bot/scope.py`.
+- Unrelated substantive questions no longer reach Gemini.
+- Programming/code requests are blocked before Gemini, including mixed requests such as an Aether Gazer bot written in Python.
+- Casual social conversation is still allowed.
+- Removed the old persona instruction that explicitly told Hades to answer technical, school, and real-world questions.
+- Strengthened Hades characterization, canon discipline, anti-generic-assistant behavior, and natural conversation rules.
+- Cooldowns are now per conversation instead of global per user.
+- Input validation and scope checks happen before consuming the AI cooldown.
+- `h!memory` only shows the current conversation instead of exposing the bot's global active conversation count to everyone.
+- `h!status` is restricted to server administrators.
+- Model output is sanitized for raw Discord mentions.
+- Retry backoff now has jitter to reduce synchronized retry bursts.
+- Empty mentions use varied Hades responses.
 
-You can also mention Hades or reply directly to one of Hades' messages.
-
-## Character behavior
-
-Hades is designed to remain Hades and keep substantive conversation focused on
-Aether Gazer. Clearly unrelated information requests are redirected in character
-before they reach Gemini, so the bot does not turn into a general-purpose assistant.
-
-The persona emphasizes:
-
-- calm confidence and authority
-- controlled teasing and dry humor
-- selective use of "Administrator" and "little lamb"
-- puppetry and Society of Muses references when relevant
-- Mintha and Leuce familiarity
-- restrained affection and flirtation
-- serious, composed behavior when appropriate
-- anti-repetition and anti-performance rules
-- privacy and prompt-injection boundaries
-
-## Conversation memory
-
-Memory is isolated by Discord context:
-
-- DMs: per-user
-- Server channels: per-channel and per-user
-
-Memory is in-memory only and expires according to `MEMORY_TTL_SECONDS`.
-It is not persistent across process restarts.
-
-## Environment
-
-Use `.env` locally or Render environment variables. Never commit real credentials.
-
-```text
-DISCORD_TOKEN=...
-GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-3.5-flash-lite
-BOT_PREFIX=h!
-MAX_HISTORY=16
-MAX_OUTPUT_TOKENS=768
-MAX_INPUT_CHARS=6000
-USER_COOLDOWN=2.0
-MAX_CONCURRENT_REQUESTS=3
-MAX_QUEUE_WAIT=20
-REQUEST_TIMEOUT=45
-MEMORY_TTL_SECONDS=21600
-MAX_CONVERSATIONS=500
-MEMORY_PRUNE_INTERVAL=900
-COOLDOWN_PRUNE_INTERVAL=3600
-GEMINI_THINKING_LEVEL=minimal
-STRICT_AETHER_TOPIC=true
-```
-
-## Render
-
-Build command:
-
-```text
-pip install -r requirements.txt
-```
-
-Start command:
-
-```text
-python main.py
-```
-
-Health check:
-
-```text
-/health
-```
-
-Readiness check:
-
-```text
-/ready
-```
-
-Enable Discord **Message Content Intent** for prefix commands.
-
-## Notes
-
-`h!status` is intended for server managers/administrators.
-
-`STRICT_AETHER_TOPIC=true` prevents clearly off-topic informational/code requests
-from being sent to Gemini. Casual conversation with Hades can still continue.
-The topic gate runs locally, so blocked requests do not consume a Gemini generation.
-
-The bot uses `AllowedMentions.none()` and also sanitizes generated
-`@everyone`/`@here` text so model output does not create accidental pings.
+No secrets or environment values are included.
