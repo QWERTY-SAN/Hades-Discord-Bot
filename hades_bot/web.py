@@ -1,18 +1,12 @@
-import os
-import threading
+from aiohttp import web
 
-from flask import Flask, jsonify
-
-
-app = Flask(__name__)
+from .config import SETTINGS
 
 _state = {
     "discord_ready": False,
     "discord_user": None,
     "guild_count": 0,
 }
-
-_state_lock = threading.Lock()
 
 
 def update_discord_state(
@@ -21,22 +15,18 @@ def update_discord_state(
     user: str | None = None,
     guild_count: int = 0,
 ) -> None:
-    with _state_lock:
-        _state["discord_ready"] = ready
-        _state["discord_user"] = user
-        _state["guild_count"] = guild_count
+    _state["discord_ready"] = ready
+    _state["discord_user"] = user
+    _state["guild_count"] = guild_count
 
 
 def _snapshot() -> dict:
-    with _state_lock:
-        return dict(_state)
+    return dict(_state)
 
 
-@app.get("/")
-def index():
+async def index(request: web.Request) -> web.Response:
     state = _snapshot()
-
-    return jsonify(
+    return web.json_response(
         {
             "service": "Hades Discord AI Bot",
             "status": "online" if state["discord_ready"] else "starting",
@@ -45,50 +35,39 @@ def index():
     )
 
 
-@app.get("/health")
-def health():
+async def health(request: web.Request) -> web.Response:
     state = _snapshot()
-
-    return jsonify(
+    return web.json_response(
         {
             "service": "hades-discord-bot",
             "status": "ok",
             **state,
-        }
-    ), 200
+        },
+        status=200,
+    )
 
 
-@app.get("/ready")
-def ready():
+async def ready(request: web.Request) -> web.Response:
     state = _snapshot()
-    status_code = 200 if state["discord_ready"] else 503
-
-    return jsonify(
+    code = 200 if state["discord_ready"] else 503
+    return web.json_response(
         {
             "service": "hades-discord-bot",
             "status": "ready" if state["discord_ready"] else "not-ready",
             **state,
-        }
-    ), status_code
-
-
-def run_web_server() -> None:
-    port = int(os.getenv("PORT", "10000"))
-
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=False,
-        use_reloader=False,
-        threaded=True,
+        },
+        status=code,
     )
 
 
-def start_web_server() -> threading.Thread:
-    thread = threading.Thread(
-        target=run_web_server,
-        name="render-health-server",
-        daemon=True,
-    )
-    thread.start()
-    return thread
+async def start_health_server() -> web.AppRunner:
+    app = web.Application()
+    app.router.add_get("/", index)
+    app.router.add_get("/health", health)
+    app.router.add_get("/ready", ready)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", SETTINGS.port)
+    await site.start()
+    return runner

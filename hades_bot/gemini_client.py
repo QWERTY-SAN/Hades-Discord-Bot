@@ -1,151 +1,115 @@
 import asyncio
 import logging
-import random
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
-from .config import MAX_INPUT_CHARS, REQUEST_TIMEOUT
+from .config import SETTINGS
 from .persona import HADES_SYSTEM_PROMPT
 from .utils import clean_model_output
-
 
 logger = logging.getLogger("hades-bot.gemini")
 
 
+class AIServiceError(RuntimeError):
+    def __init__(self, user_message: str, status_code: int | None = None):
+        super().__init__(user_message)
+        self.user_message = user_message
+        self.status_code = status_code
+
+
+def _status_code(exc: Exception) -> int | None:
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        return status
+
+    status = getattr(exc, "code", None)
+    return status if isinstance(status, int) else None
+
+
 class GeminiService:
-    def __init__(
-        self,
-        api_key: str,
-        model: str,
-        max_output_tokens: int,
-    ) -> None:
-        self.client = genai.Client(api_key=api_key)
-        self.model = model
-        self.max_output_tokens = max_output_tokens
-
-    @staticmethod
-    def _normalize_user_message(text: str) -> str:
-        text = text.strip()
-
-        if len(text) <= MAX_INPUT_CHARS:
-            return text
-
-        cutoff = max(0, MAX_INPUT_CHARS - 80)
-
-        return (
-            text[:cutoff].rstrip()
-            + "\n\n[Message truncated to keep the conversation manageable.]"
+    def __init__(self) -> None:
+        retry_options = types.HttpRetryOptions(
+            attempts=SETTINGS.max_retries + 1,
+            initial_delay=1.0,
+            max_delay=8.0,
+            exp_base=2.0,
+            jitter=1.0,
+            http_status_codes=[408, 429, 500, 502, 503, 504],
+        )
+        http_options = types.HttpOptions(
+            timeout=int(SETTINGS.request_timeout * 1000),
+            retry_options=retry_options,
+        )
+        self.client = genai.Client(
+            api_key=SETTINGS.gemini_api_key,
+            http_options=http_options,
         )
 
-    @classmethod
-    def build_contents(
-        cls,
-        history,
-        user_message: str,
-    ) -> list[types.Content]:
+    @staticmethod
+    def build_contents(history: list[dict[str, str]]) -> list[types.Content]:
         contents: list[types.Content] = []
-
-        for turn in history:
+        for message in history:
+            role = "model" if message["role"] in {"assistant", "model"} else "user"
             contents.append(
                 types.Content(
-                    role=turn.role,
-                    parts=[types.Part.from_text(text=turn.text)],
+                    role=role,
+                    parts=[types.Part.from_text(text=message["content"])],
                 )
             )
-
-        contents.append(
-            types.Content(
-                role="user",
-                parts=[
-                    types.Part.from_text(
-                        text=cls._normalize_user_message(user_message)
-                    )
-                ],
-            )
-        )
-
         return contents
 
-    async def generate(self, history, user_message: str) -> str:
-        response = await asyncio.wait_for(
-            self.client.aio.models.generate_content(
-                model=self.model,
-                contents=self.build_contents(history, user_message),
-                config=types.GenerateContentConfig(
-                    system_instruction=HADES_SYSTEM_PROMPT,
-                    max_output_tokens=self.max_output_tokens,
-                    thinking_config=types.ThinkingConfig(
-                        thinking_level="minimal"
-                    ),
-                ),
+    async def generate(self, history: list[dict[str, str]]) -> str:
+        config = types.GenerateContentConfig(
+            system_instruction=HADES_SYSTEM_PROMPT,
+            max_output_tokens=SETTINGS.max_output_tokens,
+            thinking_config=types.ThinkingConfig(
+                thinking_level=SETTINGS.gemini_thinking_level,
             ),
-            timeout=REQUEST_TIMEOUT,
         )
+
+        try:
+            response = await self.client.aio.models.generate_content(
+                model=SETTINGS.gemini_model,
+                contents=self.build_contents(history),
+                config=config,
+            )
+        except errors.ClientError as exc:
+            status = _status_code(exc)
+            logger.error("Gemini client error %s: %s", status, exc)
+            if status == 400:
+                message = "Gemini rejected the request. Check the bot configuration."
+            elif status in (401, 403):
+                message = "The Gemini API key is not working right now."
+            elif status == 404:
+                message = "That Gemini model is not available right now."
+            elif status == 429:
+                message = "Gemini is rate-limiting the bot. Try again shortly."
+            else:
+                message = "Gemini rejected the request. Try again shortly."
+            raise AIServiceError(message, status) from exc
+        except errors.ServerError as exc:
+            status = _status_code(exc)
+            logger.warning("Gemini server error %s: %s", status, exc)
+            raise AIServiceError(
+                "Gemini is having trouble right now. Try again shortly.",
+                status,
+            ) from exc
+        except (TimeoutError, asyncio.TimeoutError) as exc:
+            logger.warning("Gemini request timed out: %s", exc)
+            raise AIServiceError(
+                "That response took too long. Try again in a moment."
+            ) from exc
+        except Exception as exc:
+            logger.exception("Unexpected Gemini error: %s", exc)
+            raise AIServiceError(
+                "Something went wrong with the AI service."
+            ) from exc
 
         text = clean_model_output(response.text or "")
-
         if not text:
-            raise RuntimeError("Gemini returned an empty response.")
-
+            raise AIServiceError("Gemini returned an empty response. Try again.")
         return text
 
-    @staticmethod
-    def _looks_transient(exc: Exception) -> bool:
-        message = str(exc).lower()
-
-        transient_terms = (
-            "429",
-            "rate limit",
-            "resource exhausted",
-            "temporarily unavailable",
-            "timeout",
-            "timed out",
-            "503",
-            "502",
-            "500",
-            "connection reset",
-            "connection aborted",
-            "server disconnected",
-        )
-
-        return isinstance(
-            exc,
-            (TimeoutError, asyncio.TimeoutError),
-        ) or any(term in message for term in transient_terms)
-
-    async def generate_with_retry(
-        self,
-        history,
-        user_message: str,
-        attempts: int = 3,
-    ) -> str:
-        last_error: Exception | None = None
-
-        for attempt in range(1, attempts + 1):
-            try:
-                return await self.generate(
-                    history=history,
-                    user_message=user_message,
-                )
-            except Exception as exc:
-                last_error = exc
-
-                logger.warning(
-                    "Gemini request failed (%d/%d): %s",
-                    attempt,
-                    attempts,
-                    exc,
-                )
-
-                if attempt >= attempts or not self._looks_transient(exc):
-                    break
-
-                delay = (
-                    1.5 * (2 ** (attempt - 1))
-                    + random.uniform(0.0, 0.5)
-                )
-
-                await asyncio.sleep(delay)
-
-        raise RuntimeError("Gemini request failed.") from last_error
+    async def close(self) -> None:
+        await self.client.aio.aclose()

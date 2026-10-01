@@ -1,57 +1,111 @@
 import os
+from dataclasses import dataclass
 
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
 
-def _int_env(name: str, default: int, minimum: int = 0) -> int:
+def _int(name: str, default: int, minimum: int = 0) -> int:
+    value = os.getenv(name, str(default)).strip()
     try:
-        return max(minimum, int(os.getenv(name, str(default))))
-    except (TypeError, ValueError):
-        return default
+        parsed = int(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be an integer.") from exc
+    if parsed < minimum:
+        raise RuntimeError(f"{name} must be >= {minimum}.")
+    return parsed
 
 
-def _float_env(name: str, default: float, minimum: float = 0.0) -> float:
+def _float(name: str, default: float, minimum: float = 0.0) -> float:
+    value = os.getenv(name, str(default)).strip()
     try:
-        return max(minimum, float(os.getenv(name, str(default))))
-    except (TypeError, ValueError):
-        return default
+        parsed = float(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be a number.") from exc
+    if parsed < minimum:
+        raise RuntimeError(f"{name} must be >= {minimum}.")
+    return parsed
 
 
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-BOT_PREFIX = os.getenv("BOT_PREFIX", "h!")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
-
-MAX_HISTORY = _int_env("MAX_HISTORY", 16, 2)
-MAX_OUTPUT_TOKENS = _int_env("MAX_OUTPUT_TOKENS", 768, 128)
-MAX_INPUT_CHARS = _int_env("MAX_INPUT_CHARS", 6000, 500)
-
-USER_COOLDOWN = _float_env("USER_COOLDOWN", 2.0, 0.0)
-MAX_CONCURRENT_REQUESTS = _int_env("MAX_CONCURRENT_REQUESTS", 3, 1)
-MAX_QUEUE_WAIT = _float_env("MAX_QUEUE_WAIT", 20.0, 1.0)
-REQUEST_TIMEOUT = _float_env("REQUEST_TIMEOUT", 45.0, 5.0)
-
-MEMORY_TTL_SECONDS = _int_env("MEMORY_TTL_SECONDS", 21600, 300)
-MAX_CONVERSATIONS = _int_env("MAX_CONVERSATIONS", 500, 10)
-MEMORY_PRUNE_INTERVAL = _int_env("MEMORY_PRUNE_INTERVAL", 900, 60)
-COOLDOWN_PRUNE_INTERVAL = _int_env("COOLDOWN_PRUNE_INTERVAL", 3600, 300)
-
-DISCORD_MESSAGE_LIMIT = 2000
+def _bool(name: str, default: bool) -> bool:
+    value = os.getenv(name, str(default)).strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"0", "false", "no", "off"}:
+        return False
+    raise RuntimeError(f"{name} must be true or false.")
 
 
-def validate() -> None:
-    missing = []
+@dataclass(frozen=True, slots=True)
+class Settings:
+    discord_token: str
+    gemini_api_key: str
+    bot_prefix: str
+    gemini_model: str
+    gemini_thinking_level: str
+    strict_aether_topic: bool
+    max_history: int
+    max_output_tokens: int
+    max_input_chars: int
+    user_cooldown: float
+    max_concurrent_requests: int
+    max_queue_wait: float
+    request_timeout: float
+    max_retries: int
+    memory_ttl_seconds: int
+    max_conversations: int
+    memory_prune_interval: int
+    cooldown_prune_interval: int
+    port: int
 
-    if not DISCORD_TOKEN:
-        missing.append("DISCORD_TOKEN")
+    @classmethod
+    def load(cls) -> "Settings":
+        discord_token = os.getenv("DISCORD_TOKEN", "").strip()
+        gemini_api_key = os.getenv("GEMINI_API_KEY", "").strip()
 
-    if not GEMINI_API_KEY:
-        missing.append("GEMINI_API_KEY")
+        if not discord_token:
+            raise RuntimeError("DISCORD_TOKEN is not configured.")
+        if not gemini_api_key:
+            raise RuntimeError("GEMINI_API_KEY is not configured.")
 
-    if missing:
-        raise RuntimeError(
-            "Missing required environment variable(s): " + ", ".join(missing)
+        bot_prefix = os.getenv("BOT_PREFIX", "h!").strip() or "h!"
+        gemini_model = os.getenv(
+            "GEMINI_MODEL", "gemini-3.5-flash-lite"
+        ).strip()
+        thinking_level = os.getenv(
+            "GEMINI_THINKING_LEVEL", "minimal"
+        ).strip().lower()
+
+        if thinking_level not in {"minimal", "low", "medium", "high"}:
+            raise RuntimeError(
+                "GEMINI_THINKING_LEVEL must be minimal, low, medium, or high."
+            )
+
+        return cls(
+            discord_token=discord_token,
+            gemini_api_key=gemini_api_key,
+            bot_prefix=bot_prefix,
+            gemini_model=gemini_model,
+            gemini_thinking_level=thinking_level,
+            strict_aether_topic=_bool("STRICT_AETHER_TOPIC", True),
+            max_history=_int("MAX_HISTORY", 16, 2),
+            max_output_tokens=_int("MAX_OUTPUT_TOKENS", 768, 128),
+            max_input_chars=_int("MAX_INPUT_CHARS", 6000, 100),
+            user_cooldown=_float("USER_COOLDOWN", 2.0, 0.0),
+            max_concurrent_requests=_int("MAX_CONCURRENT_REQUESTS", 3, 1),
+            max_queue_wait=_float("MAX_QUEUE_WAIT", 20.0, 0.0),
+            request_timeout=_float("REQUEST_TIMEOUT", 45.0, 5.0),
+            max_retries=_int("MAX_RETRIES", 3, 0),
+            memory_ttl_seconds=_int("MEMORY_TTL_SECONDS", 21600, 60),
+            max_conversations=_int("MAX_CONVERSATIONS", 500, 1),
+            memory_prune_interval=_int("MEMORY_PRUNE_INTERVAL", 900, 60),
+            cooldown_prune_interval=_int(
+                "COOLDOWN_PRUNE_INTERVAL", 3600, 60
+            ),
+            port=_int("PORT", 10000, 1),
         )
+
+
+SETTINGS = Settings.load()
+DISCORD_MESSAGE_LIMIT = 2000

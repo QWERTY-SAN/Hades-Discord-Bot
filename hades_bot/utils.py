@@ -1,113 +1,101 @@
+import asyncio
 import re
 import time
-from typing import Hashable
 
 from .config import DISCORD_MESSAGE_LIMIT
 
 
 class CooldownManager:
+    """Concurrency-safe cooldowns keyed by conversation."""
+
     def __init__(self, cooldown_seconds: float) -> None:
         self.cooldown_seconds = cooldown_seconds
-        self._last_request: dict[Hashable, float] = {}
+        self._last_request: dict[str, float] = {}
+        self._lock = asyncio.Lock()
 
-    def remaining(self, key: Hashable) -> float:
+    async def try_acquire(self, key: str) -> float:
         if self.cooldown_seconds <= 0:
             return 0.0
 
         now = time.monotonic()
-        previous = self._last_request.get(key)
+        async with self._lock:
+            previous = self._last_request.get(key, 0.0)
+            remaining = self.cooldown_seconds - (now - previous)
+            if remaining > 0:
+                return remaining
 
-        if previous is None:
+            self._last_request[key] = now
             return 0.0
 
-        return max(0.0, self.cooldown_seconds - (now - previous))
-
-    def try_acquire(self, key: Hashable) -> float:
-        remaining = self.remaining(key)
-        if remaining > 0:
-            return remaining
-
-        if self.cooldown_seconds > 0:
-            self._last_request[key] = time.monotonic()
-
-        return 0.0
-
-    def release(self, key: Hashable) -> None:
-        self._last_request.pop(key, None)
-
-    def prune(self, older_than_seconds: float = 3600.0) -> int:
-        cutoff = time.monotonic() - older_than_seconds
-        stale = [
-            key
-            for key, timestamp in self._last_request.items()
-            if timestamp < cutoff
-        ]
-
-        for key in stale:
+    async def release(self, key: str) -> None:
+        async with self._lock:
             self._last_request.pop(key, None)
 
-        return len(stale)
+    async def prune(self, older_than_seconds: float = 3600.0) -> int:
+        cutoff = time.monotonic() - older_than_seconds
+        async with self._lock:
+            stale = [
+                key
+                for key, timestamp in self._last_request.items()
+                if timestamp < cutoff
+            ]
+            for key in stale:
+                self._last_request.pop(key, None)
+            return len(stale)
 
-    def size(self) -> int:
-        return len(self._last_request)
+    async def size(self) -> int:
+        async with self._lock:
+            return len(self._last_request)
 
 
 def split_message(
     text: str,
     limit: int = DISCORD_MESSAGE_LIMIT,
 ) -> list[str]:
+    """Split text without exceeding Discord's message limit."""
     text = text.strip()
-
     if not text:
-        return ["..."]
-
+        return ["…"]
     if len(text) <= limit:
         return [text]
 
     chunks: list[str] = []
+    remaining = text
 
-    while len(text) > limit:
-        split_at = text.rfind("\n\n", 0, limit)
-
+    while len(remaining) > limit:
+        split_at = remaining.rfind("\n\n", 0, limit + 1)
         if split_at < 1:
-            split_at = text.rfind("\n", 0, limit)
-
+            split_at = remaining.rfind("\n", 0, limit + 1)
         if split_at < 1:
-            split_at = text.rfind(" ", 0, limit)
-
+            split_at = remaining.rfind(" ", 0, limit + 1)
         if split_at < 1:
             split_at = limit
 
-        chunk = text[:split_at].rstrip()
-
+        chunk = remaining[:split_at].rstrip()
         if chunk:
             chunks.append(chunk)
+        remaining = remaining[split_at:].lstrip()
 
-        text = text[split_at:].lstrip()
-
-    if text:
-        chunks.append(text)
+    if remaining:
+        chunks.append(remaining)
 
     return chunks
 
 
 def strip_bot_mentions(content: str, bot_id: int) -> str:
-    content = re.sub(
-        rf"<@!?{re.escape(str(bot_id))}>",
-        "",
-        content,
-    )
-    return content.strip()
+    if not bot_id:
+        return content.strip()
+    return re.sub(rf"<@!?{re.escape(str(bot_id))}>", "", content).strip()
 
 
-def clean_model_output(text: str) -> str:
-    text = text.strip()
+def sanitize_model_output(text: str) -> str:
+    """Prevent the model from producing broadcastable Discord mentions."""
+    text = text.replace("@everyone", "everyone")
+    text = text.replace("@here", "here")
+    text = re.sub(r"<@&\d+>", "role", text)
+    text = re.sub(r"<@!?\d+>", "user", text)
+    return text.strip()
 
-    if not text:
-        return ""
 
-    # Do not allow generated text to accidentally turn into Discord-wide pings.
-    text = text.replace("@everyone", "@\u200beveryone")
-    text = text.replace("@here", "@\u200bhere")
-
-    return text
+# Compatibility alias used by the Gemini layer.
+clean_model_output = sanitize_model_output

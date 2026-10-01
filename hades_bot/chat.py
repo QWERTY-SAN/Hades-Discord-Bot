@@ -1,5 +1,4 @@
 import asyncio
-import weakref
 
 from .config import MAX_CONCURRENT_REQUESTS, MAX_QUEUE_WAIT
 from .gemini_client import GeminiService
@@ -14,21 +13,9 @@ class HadesChat:
     ) -> None:
         self.gemini = gemini
         self.memory = memory
-        self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = (
-            weakref.WeakValueDictionary()
-        )
         self._semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
         self._active_requests = 0
         self._total_requests = 0
-
-    def _get_lock(self, key: str) -> asyncio.Lock:
-        lock = self._locks.get(key)
-
-        if lock is None:
-            lock = asyncio.Lock()
-            self._locks[key] = lock
-
-        return lock
 
     async def ask(self, key: str, message: str) -> str:
         try:
@@ -42,35 +29,34 @@ class HadesChat:
             ) from exc
 
         try:
-            async with self._get_lock(key):
+            async with self.memory.session(key) as session:
+                trial_history = [
+                    *session.history,
+                    {"role": "user", "content": message},
+                ]
                 self._active_requests += 1
                 self._total_requests += 1
-
                 try:
-                    history = self.memory.get(key)
-
-                    reply = await self.gemini.generate_with_retry(
-                        history=history,
-                        user_message=message,
-                    )
-
-                    self.memory.add(key, "user", message)
-                    self.memory.add(key, "model", reply)
-
-                    return reply
+                    reply = await self.gemini.generate(trial_history)
                 finally:
                     self._active_requests -= 1
+
+                session.commit(message, reply)
+                return reply
         finally:
             self._semaphore.release()
 
-    def reset(self, key: str) -> None:
-        self.memory.reset(key)
+    async def reset(self, key: str) -> None:
+        await self.memory.reset(key)
 
-    def reset_all(self) -> None:
-        self.memory.clear_all()
+    async def reset_all(self) -> None:
+        await self.memory.clear_all()
 
-    def prune_memory(self) -> int:
-        return self.memory.prune()
+    async def prune_memory(self) -> int:
+        return await self.memory.prune()
+
+    async def close(self) -> None:
+        await self.gemini.close()
 
     @property
     def active_requests(self) -> int:
