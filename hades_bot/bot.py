@@ -17,22 +17,22 @@ logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
 
 EMPTY_CALL_RESPONSES = (
-    "You summoned me, little lamb. Speak.",
-    "Yes, Administrator?",
-    "You have my attention.",
-    "Go on.",
-    "What is it?",
-    "I'm listening.",
+    "You summoned me, little lamb. Speak. 🌙",
+    "Yes, Administrator? 😏",
+    "You have my attention. ✨",
+    "Go on. 🎭",
+    "What is it? 🕯️",
+    "I'm listening. 🌙",
 )
 
-COOLDOWN_RESPONSE = "Patience, Administrator. Wait {remaining:.1f}s."
-QUEUE_FAILURE_RESPONSE = "The response queue is full. Try again in a moment."
+COOLDOWN_RESPONSE = "Patience, Administrator. ⏳ Wait {remaining:.1f}s."
+QUEUE_FAILURE_RESPONSE = "The response queue is full. ⚠️ Try again in a moment."
 AI_FAILURE_RESPONSES = (
-    "Tsk. The strings are resisting me. Try again shortly, little lamb.",
-    "The strings are tangled. Give me a moment and try again.",
-    "Something is interfering with the performance. Try again shortly.",
+    "Tsk. The strings are resisting me. 🪢 Try again shortly, little lamb.",
+    "The strings are tangled. 🪢 Give me a moment and try again.",
+    "Something is interfering with the performance. ⚡ Try again shortly.",
 )
-UNEXPECTED_FAILURE_RESPONSE = "Something went wrong behind the curtain. Try again in a moment."
+UNEXPECTED_FAILURE_RESPONSE = "Something went wrong behind the curtain. 🎭 Try again in a moment."
 
 
 class HadesBot(commands.Bot):
@@ -158,7 +158,7 @@ class HadesBot(commands.Bot):
         if len(content) > SETTINGS.max_input_chars:
             await message.reply(
                 (
-                    "That's quite a manuscript, little lamb. Keep the message "
+                    "That's quite a manuscript, little lamb. 📜 Keep the message "
                     f"under `{SETTINGS.max_input_chars:,}` characters."
                 ),
                 mention_author=False,
@@ -375,7 +375,7 @@ async def reset_command(ctx: commands.Context) -> None:
     await bot.hades_chat.reset(key)
     await bot.cooldowns.release(key)
     await ctx.reply(
-        "*Hades calmly gathers the strings.* There. Your conversation is forgotten.",
+        "*Hades calmly gathers the strings.* 🪢 There. Your conversation is forgotten.",
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -399,7 +399,7 @@ async def memory_command(ctx: commands.Context) -> None:
 async def ping_command(ctx: commands.Context) -> None:
     latency = round(bot.latency * 1000)
     await ctx.reply(
-        f"The connection is functioning. `{latency}ms`.",
+        f"The connection is functioning. ⚡ `{latency}ms`.",
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -412,7 +412,7 @@ async def status_command(ctx: commands.Context) -> None:
         or ctx.author.guild_permissions.administrator
     ):
         await ctx.reply(
-            "That information is for those managing the stage.",
+            "That information is for those managing the stage. 🎭",
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )
@@ -421,7 +421,7 @@ async def status_command(ctx: commands.Context) -> None:
     memory_count = await bot.hades_chat.memory.conversation_count()
     await ctx.reply(
         (
-            "**Hades Status**\n"
+            "**🌙 Hades Status**\n"
             f"Model: `{SETTINGS.gemini_model}`\n"
             f"Guilds: `{len(bot.guilds)}`\n"
             f"Memory: `{memory_count}` active conversations\n"
@@ -440,7 +440,7 @@ async def help_command(ctx: commands.Context) -> None:
     prefix = SETTINGS.bot_prefix
     await ctx.reply(
         (
-            "**Hades — Aether Gazer AI**\n\n"
+            "**🌙 Hades — Aether Gazer AI**\n\n"
             f"`{prefix}hades <message>` — Talk to Hades\n"
             f"`{prefix}ask <message>` — Same as `hades`\n"
             f"`{prefix}reset` / `{prefix}forget` / `{prefix}clear` — Clear your conversation\n"
@@ -448,7 +448,7 @@ async def help_command(ctx: commands.Context) -> None:
             f"`{prefix}ping` — Check Discord latency\n"
             f"`{prefix}status` — Show bot status (staff)\n"
             f"`{prefix}hadeshelp` / `{prefix}help` — Show this help\n\n"
-            "Mention Hades, message her directly, or reply to one of her messages."
+            "Mention Hades, message her directly, or reply to one of her messages. ✨"
         ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,

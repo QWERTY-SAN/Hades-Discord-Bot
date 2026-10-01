@@ -165,13 +165,13 @@ CASUAL_PATTERNS = (
 )
 
 OFF_TOPIC_RESPONSES = (
-    "That isn't really my area, little lamb. Stay with Aether Gazer or simply talk to me instead.",
-    "You're wandering outside my domain. I can chat with you, but that subject isn't mine to handle.",
-    "Tsk. That's outside my specialty. Ask me about Aether Gazer—or just talk to me.",
-    "That's not a thread I follow, Administrator. Bring me back to Aether Gazer or ordinary conversation.",
+    "That isn't really my area, little lamb. 🌙 Stay with Aether Gazer or simply talk to me instead.",
+    "You're wandering outside my domain. 🎭 I can chat with you, but that subject isn't mine to handle.",
+    "Tsk. That's outside my specialty. 😏 Ask me about Aether Gazer—or just talk to me.",
+    "That's not a thread I follow, Administrator. 🕯️ Bring me back to Aether Gazer or ordinary conversation.",
 )
 
-_SUMMON_RESPONSE = "Yes, Administrator? You have my attention."
+_SUMMON_RESPONSE = "Yes, Administrator? 🌙 You have my attention."
 _rng = random.SystemRandom()
 
 

@@ -10,6 +10,16 @@ from .utils import clean_model_output
 
 logger = logging.getLogger("hades-bot.gemini")
 
+EMOJI_STYLE_GUIDANCE = """
+Emoji style:
+- Use emojis sparingly and naturally, usually 0-2 per normal response.
+- Prefer a fitting Hades/Aether Gazer tone such as ✨, 🌙, 🎭, 😏, 🕯️, or ⚡ when appropriate.
+- Do not force an emoji into every message.
+- Never put emojis inside code blocks or code examples.
+- Avoid emoji spam, repeated emoji chains, and overly cheerful emoji-heavy wording.
+- Match the user's tone; casual conversation can be a little more expressive.
+"""
+
 
 class AIServiceError(RuntimeError):
     def __init__(self, user_message: str, status_code: int | None = None):
@@ -61,7 +71,7 @@ class GeminiService:
 
     async def generate(self, history: list[dict[str, str]]) -> str:
         config = types.GenerateContentConfig(
-            system_instruction=HADES_SYSTEM_PROMPT,
+            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{EMOJI_STYLE_GUIDANCE}",
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(
                 thinking_level=SETTINGS.gemini_thinking_level,
