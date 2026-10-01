@@ -1,6 +1,6 @@
 import asyncio
 
-from .config import MAX_CONCURRENT_REQUESTS, MAX_QUEUE_WAIT
+from .config import SETTINGS
 from .gemini_client import GeminiService
 from .memory import ConversationMemory
 
@@ -13,7 +13,7 @@ class HadesChat:
     ) -> None:
         self.gemini = gemini
         self.memory = memory
-        self._semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
+        self._semaphore = asyncio.Semaphore(SETTINGS.max_concurrent_requests)
         self._active_requests = 0
         self._total_requests = 0
 
@@ -21,7 +21,7 @@ class HadesChat:
         try:
             await asyncio.wait_for(
                 self._semaphore.acquire(),
-                timeout=MAX_QUEUE_WAIT,
+                timeout=SETTINGS.max_queue_wait,
             )
         except asyncio.TimeoutError as exc:
             raise RuntimeError(
