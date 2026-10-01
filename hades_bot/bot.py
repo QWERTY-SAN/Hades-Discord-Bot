@@ -1,4 +1,5 @@
 import logging
+import random
 
 import discord
 from discord.ext import commands, tasks
@@ -22,28 +23,49 @@ from .config import (
 )
 from .gemini_client import GeminiService
 from .memory import ConversationMemory
-from .scope import is_hades_scope_allowed, off_topic_response, summon_response
-from .utils import (
-    CooldownManager,
-    sanitize_model_output,
-    split_message,
-    strip_bot_mentions,
-)
+from .utils import CooldownManager, split_message, strip_bot_mentions
 from .web import update_discord_state
 
+
 logger = logging.getLogger("hades-bot")
+
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
+
+EMPTY_CALL_RESPONSES = (
+    "You summoned me, little lamb. Speak.",
+    "Yes, Administrator?",
+    "You have my attention.",
+    "Go on.",
+    "What is it?",
+    "I'm listening.",
+)
+
+COOLDOWN_RESPONSE = (
+    "Patience, Administrator. Wait {remaining:.1f}s."
+)
+
+AI_FAILURE_RESPONSES = (
+    "Tsk. The strings are resisting me. Try again shortly, little lamb.",
+    "The strings are tangled. Give me a moment and try again.",
+    "Something is interfering with the performance. Try again shortly.",
+)
+
+UNEXPECTED_FAILURE_RESPONSE = (
+    "Something went wrong behind the curtain. Try again in a moment."
+)
 
 
 class HadesBot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.default()
         intents.message_content = True
+
         super().__init__(
             command_prefix=BOT_PREFIX,
             intents=intents,
             help_command=None,
         )
+
         self.hades_chat = HadesChat(
             gemini=GeminiService(
                 api_key=GEMINI_API_KEY,
@@ -56,9 +78,11 @@ class HadesBot(commands.Bot):
                 max_conversations=MAX_CONVERSATIONS,
             ),
         )
+
         self.cooldowns = CooldownManager(USER_COOLDOWN)
         self._started_at = None
         self._maintenance_started = False
+        self._rng = random.Random()
 
     async def setup_hook(self) -> None:
         if not self._maintenance_started:
@@ -68,8 +92,14 @@ class HadesBot(commands.Bot):
     def conversation_key(self, message: discord.Message) -> str:
         if isinstance(message.channel, discord.DMChannel):
             return f"dm:{message.author.id}"
+
         guild_id = message.guild.id if message.guild else "no-guild"
-        return f"guild:{guild_id}:channel:{message.channel.id}:user:{message.author.id}"
+
+        return (
+            f"guild:{guild_id}:"
+            f"channel:{message.channel.id}:"
+            f"user:{message.author.id}"
+        )
 
     async def send_chunks(
         self,
@@ -77,8 +107,8 @@ class HadesBot(commands.Bot):
         text: str,
         reply_to: discord.Message | None = None,
     ) -> None:
-        clean_text = sanitize_model_output(text)
-        chunks = split_message(clean_text)
+        chunks = split_message(text)
+
         for index, chunk in enumerate(chunks):
             if index == 0 and reply_to is not None:
                 await reply_to.reply(
@@ -87,85 +117,133 @@ class HadesBot(commands.Bot):
                     allowed_mentions=ALLOWED_MENTIONS,
                 )
             else:
-                await destination.send(chunk, allowed_mentions=ALLOWED_MENTIONS)
+                await destination.send(
+                    chunk,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                )
 
     async def is_reply_to_hades(self, message: discord.Message) -> bool:
         reference = message.reference
-        if reference is None or reference.message_id is None or self.user is None:
+
+        if (
+            reference is None
+            or reference.message_id is None
+            or self.user is None
+        ):
             return False
+
         resolved = reference.resolved
+
         if isinstance(resolved, discord.Message):
             return resolved.author.id == self.user.id
+
         try:
-            referenced_message = await message.channel.fetch_message(reference.message_id)
-        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+            referenced_message = await message.channel.fetch_message(
+                reference.message_id
+            )
+        except (
+            discord.NotFound,
+            discord.Forbidden,
+            discord.HTTPException,
+        ):
             return False
+
         return referenced_message.author.id == self.user.id
 
-    def _consume_cooldown(self, conversation_key: str) -> float:
-        return self.cooldowns.consume(conversation_key)
+    def _cooldown_key(self, message: discord.Message) -> str:
+        return self.conversation_key(message)
 
-    async def handle_ai_message(self, message: discord.Message, content: str) -> None:
+    def _try_acquire_cooldown(self, message: discord.Message) -> float:
+        return self.cooldowns.try_acquire(
+            self._cooldown_key(message)
+        )
+
+    def _release_cooldown(self, message: discord.Message) -> None:
+        self.cooldowns.release(
+            self._cooldown_key(message)
+        )
+
+    async def handle_ai_message(
+        self,
+        message: discord.Message,
+        content: str,
+    ) -> None:
         content = content.strip()
-        if not content:
-            return
+
         if len(content) > MAX_INPUT_CHARS:
             await message.reply(
-                "That's quite a manuscript, little lamb. Keep the message "
-                f"under `{MAX_INPUT_CHARS}` characters.",
-                mention_author=False,
-                allowed_mentions=ALLOWED_MENTIONS,
-            )
-            return
-        if not is_hades_scope_allowed(content):
-            await message.reply(
-                off_topic_response(),
+                (
+                    "That's quite a manuscript, little lamb. Keep the message "
+                    f"under `{MAX_INPUT_CHARS}` characters."
+                ),
                 mention_author=False,
                 allowed_mentions=ALLOWED_MENTIONS,
             )
             return
 
-        key = self.conversation_key(message)
-        remaining = self._consume_cooldown(key)
+        remaining = self._try_acquire_cooldown(message)
+
         if remaining > 0:
             await message.reply(
-                f"Patience, Administrator. Wait {remaining:.1f}s.",
+                COOLDOWN_RESPONSE.format(remaining=remaining),
                 mention_author=False,
                 allowed_mentions=ALLOWED_MENTIONS,
             )
             return
+
         try:
             async with message.channel.typing():
-                reply = await self.hades_chat.ask(key, content)
+                reply = await self.hades_chat.ask(
+                    self.conversation_key(message),
+                    content,
+                )
+        except RuntimeError as exc:
+            self._release_cooldown(message)
+
+            logger.warning(
+                "AI request failed for user %s: %s",
+                message.author.id,
+                exc,
+            )
+
+            await message.reply(
+                self._rng.choice(AI_FAILURE_RESPONSES),
+                mention_author=False,
+                allowed_mentions=ALLOWED_MENTIONS,
+            )
+            return
+        except Exception:
+            self._release_cooldown(message)
+
+            logger.exception(
+                "Unexpected AI handling failure"
+            )
+
+            await message.reply(
+                UNEXPECTED_FAILURE_RESPONSE,
+                mention_author=False,
+                allowed_mentions=ALLOWED_MENTIONS,
+            )
+            return
+
+        try:
             await self.send_chunks(
                 destination=message.channel,
                 text=reply,
                 reply_to=message,
             )
-        except RuntimeError as exc:
-            logger.warning("AI request failed for %s: %s", message.author.id, exc)
-            await message.reply(
-                "Tsk. The strings are resisting me. Try again shortly, little lamb.",
-                mention_author=False,
-                allowed_mentions=ALLOWED_MENTIONS,
-            )
         except discord.HTTPException:
             logger.exception("Discord send failed")
-        except Exception:
-            logger.exception("Unexpected AI handling failure")
-            await message.reply(
-                "Something went wrong behind the curtain. Try again in a moment.",
-                mention_author=False,
-                allowed_mentions=ALLOWED_MENTIONS,
-            )
 
     async def on_connect(self) -> None:
         logger.info("Connected to Discord gateway.")
 
     async def on_disconnect(self) -> None:
         update_discord_state(ready=False)
+
         logger.warning(
-            "Disconnected from Discord gateway; discord.py will attempt to reconnect."
+            "Disconnected from Discord gateway; "
+            "discord.py will attempt to reconnect."
         )
 
     async def on_resumed(self) -> None:
@@ -173,31 +251,61 @@ class HadesBot(commands.Bot):
 
     async def on_ready(self) -> None:
         username = str(self.user) if self.user else None
-        self._started_at = self._started_at or discord.utils.utcnow()
+
+        self._started_at = (
+            self._started_at or discord.utils.utcnow()
+        )
+
         logger.info(
             "Logged in as %s (%s)",
             self.user,
             self.user.id if self.user else "unknown",
         )
-        logger.info("Connected to %d guild(s)", len(self.guilds))
-        logger.info("Gemini model: %s", GEMINI_MODEL)
-        logger.info("Command prefix: %s", BOT_PREFIX)
-        logger.info("Max concurrent Gemini requests: %d", MAX_CONCURRENT_REQUESTS)
-        logger.info("Max input characters: %d", MAX_INPUT_CHARS)
+        logger.info(
+            "Connected to %d guild(s)",
+            len(self.guilds),
+        )
+        logger.info(
+            "Gemini model: %s",
+            GEMINI_MODEL,
+        )
+        logger.info(
+            "Command prefix: %s",
+            BOT_PREFIX,
+        )
+        logger.info(
+            "Max concurrent Gemini requests: %d",
+            MAX_CONCURRENT_REQUESTS,
+        )
+        logger.info(
+            "Max input characters: %d",
+            MAX_INPUT_CHARS,
+        )
+
         update_discord_state(
             ready=True,
             user=username,
             guild_count=len(self.guilds),
         )
-        await self.change_presence(status=discord.Status.online, activity=None)
+
+        await self.change_presence(
+            status=discord.Status.online,
+            activity=discord.CustomActivity(
+                name="Pulling the strings",
+            ),
+        )
 
     @tasks.loop(seconds=MEMORY_PRUNE_INTERVAL)
     async def maintenance_loop(self) -> None:
         removed_memory = self.hades_chat.prune_memory()
-        removed_cooldowns = self.cooldowns.prune(COOLDOWN_PRUNE_INTERVAL)
+        removed_cooldowns = self.cooldowns.prune(
+            COOLDOWN_PRUNE_INTERVAL
+        )
+
         if removed_memory or removed_cooldowns:
             logger.info(
-                "Maintenance: removed %d expired conversations and %d stale cooldowns.",
+                "Maintenance: removed %d expired conversations "
+                "and %d stale cooldowns.",
                 removed_memory,
                 removed_cooldowns,
             )
@@ -207,22 +315,43 @@ class HadesBot(commands.Bot):
         await self.wait_until_ready()
 
     @maintenance_loop.error
-    async def maintenance_error(self, error: BaseException) -> None:
-        logger.exception("Maintenance loop failed: %s", error)
+    async def maintenance_error(
+        self,
+        error: BaseException,
+    ) -> None:
+        logger.exception(
+            "Maintenance loop failed: %s",
+            error,
+        )
 
-    async def on_message(self, message: discord.Message) -> None:
+    async def on_message(
+        self,
+        message: discord.Message,
+    ) -> None:
         if message.author.bot:
             return
+
         await self.process_commands(message)
+
         if message.content.startswith(BOT_PREFIX):
             return
 
-        is_dm = isinstance(message.channel, discord.DMChannel)
-        mentioned = self.user is not None and self.user in message.mentions
+        is_dm = isinstance(
+            message.channel,
+            discord.DMChannel,
+        )
+
+        mentioned = (
+            self.user is not None
+            and self.user in message.mentions
+        )
+
         replied_to_hades = False
 
         if not is_dm and not mentioned:
-            replied_to_hades = await self.is_reply_to_hades(message)
+            replied_to_hades = await self.is_reply_to_hades(
+                message
+            )
 
         if not is_dm and not mentioned and not replied_to_hades:
             return
@@ -237,13 +366,16 @@ class HadesBot(commands.Bot):
 
         if not content:
             await message.reply(
-                summon_response(),
+                self._rng.choice(EMPTY_CALL_RESPONSES),
                 mention_author=False,
                 allowed_mentions=ALLOWED_MENTIONS,
             )
             return
 
-        await self.handle_ai_message(message, content)
+        await self.handle_ai_message(
+            message,
+            content,
+        )
 
 
 async def hades_command(
@@ -252,63 +384,86 @@ async def hades_command(
     prompt: str | None = None,
 ) -> None:
     bot = ctx.bot
+
     if not isinstance(bot, HadesBot):
         return
-    if not prompt or not prompt.strip():
+
+    if not prompt:
         await ctx.reply(
             f"Usage: `{BOT_PREFIX}hades <message>`",
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
+
     prompt = prompt.strip()
+
     if len(prompt) > MAX_INPUT_CHARS:
         await ctx.reply(
-            f"Keep your message under `{MAX_INPUT_CHARS}` characters, little lamb.",
+            (
+                f"Keep your message under `{MAX_INPUT_CHARS}` "
+                "characters, little lamb."
+            ),
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
-    if not is_hades_scope_allowed(prompt):
-        await ctx.reply(
-            off_topic_response(),
-            mention_author=False,
-            allowed_mentions=ALLOWED_MENTIONS,
-        )
-        return
-    key = bot.conversation_key(ctx.message)
-    remaining = bot._consume_cooldown(key)
+
+    remaining = bot._try_acquire_cooldown(ctx.message)
+
     if remaining > 0:
         await ctx.reply(
-            f"Patience, Administrator. Wait {remaining:.1f}s.",
+            COOLDOWN_RESPONSE.format(remaining=remaining),
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
+
     try:
         async with ctx.typing():
-            reply = await bot.hades_chat.ask(key, prompt)
-        await bot.send_chunks(
-            destination=ctx.channel,
-            text=reply,
-            reply_to=ctx.message,
-        )
+            reply = await bot.hades_chat.ask(
+                bot.conversation_key(ctx.message),
+                prompt,
+            )
     except Exception:
-        logger.exception("%s%s failed", BOT_PREFIX, ctx.invoked_with or "hades")
+        bot._release_cooldown(ctx.message)
+
+        logger.exception(
+            "%s%s failed",
+            BOT_PREFIX,
+            ctx.invoked_with or "hades",
+        )
+
         await ctx.reply(
             "The strings are tangled. Try again in a moment.",
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )
+        return
+
+    try:
+        await bot.send_chunks(
+            destination=ctx.channel,
+            text=reply,
+            reply_to=ctx.message,
+        )
+    except discord.HTTPException:
+        logger.exception("Discord command response failed")
 
 
 async def reset_command(ctx: commands.Context) -> None:
     bot = ctx.bot
+
     if not isinstance(bot, HadesBot):
         return
-    bot.hades_chat.reset(bot.conversation_key(ctx.message))
+
+    bot.hades_chat.reset(
+        bot.conversation_key(ctx.message)
+    )
+
     await ctx.reply(
-        "*Hades calmly gathers the strings.* There. Your conversation is forgotten.",
+        "*Hades calmly gathers the strings.* "
+        "There. Your conversation is forgotten.",
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -316,14 +471,18 @@ async def reset_command(ctx: commands.Context) -> None:
 
 async def memory_command(ctx: commands.Context) -> None:
     bot = ctx.bot
+
     if not isinstance(bot, HadesBot):
         return
+
     key = bot.conversation_key(ctx.message)
     messages = bot.hades_chat.memory.message_count(key)
+
     await ctx.reply(
         (
-            f"Conversation memory: `{messages}` message(s) in this chat.\n"
-            f"Memory expires after `{MEMORY_TTL_SECONDS // 3600}` hour(s)."
+            f"Your conversation memory: `{messages}` message(s).\n"
+            f"Memory expires after "
+            f"`{MEMORY_TTL_SECONDS // 3600}` hour(s)."
         ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
@@ -332,9 +491,12 @@ async def memory_command(ctx: commands.Context) -> None:
 
 async def ping_command(ctx: commands.Context) -> None:
     bot = ctx.bot
+
     if not isinstance(bot, HadesBot):
         return
+
     latency = round(bot.latency * 1000)
+
     await ctx.reply(
         f"The connection is functioning. `{latency}ms`.",
         mention_author=False,
@@ -344,22 +506,31 @@ async def ping_command(ctx: commands.Context) -> None:
 
 async def status_command(ctx: commands.Context) -> None:
     bot = ctx.bot
+
     if not isinstance(bot, HadesBot):
         return
-    if ctx.guild is None or not getattr(ctx.author.guild_permissions, "administrator", False):
+
+    if ctx.guild is not None and not (
+        ctx.author.guild_permissions.manage_guild
+        or ctx.author.guild_permissions.administrator
+    ):
         await ctx.reply(
-            "That little display is reserved for those holding the keys to the stage.",
+            "That information is for those managing the stage.",
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )
         return
+
     await ctx.reply(
         (
             "**Hades Status**\n"
             f"Model: `{GEMINI_MODEL}`\n"
             f"Guilds: `{len(bot.guilds)}`\n"
-            f"Memory: `{bot.hades_chat.memory.conversation_count()}` active conversations\n"
-            f"Requests active: `{bot.hades_chat.active_requests}/{MAX_CONCURRENT_REQUESTS}`\n"
+            f"Memory: `{bot.hades_chat.memory.conversation_count()}` "
+            "active conversations\n"
+            f"Requests active: "
+            f"`{bot.hades_chat.active_requests}/"
+            f"{MAX_CONCURRENT_REQUESTS}`\n"
             f"Total AI requests: `{bot.hades_chat.total_requests}`\n"
             f"Latency: `{round(bot.latency * 1000)}ms`"
         ),
@@ -374,12 +545,15 @@ async def help_command(ctx: commands.Context) -> None:
             "**Hades — Aether Gazer AI**\n\n"
             f"`{BOT_PREFIX}hades <message>` — Talk to Hades\n"
             f"`{BOT_PREFIX}ask <message>` — Same as `hades`\n"
-            f"`{BOT_PREFIX}reset` / `{BOT_PREFIX}forget` / `{BOT_PREFIX}clear` — Clear your conversation\n"
-            f"`{BOT_PREFIX}memory` — Show current conversation memory\n"
+            f"`{BOT_PREFIX}reset` / `{BOT_PREFIX}forget` / "
+            f"`{BOT_PREFIX}clear` — Clear your conversation\n"
+            f"`{BOT_PREFIX}memory` — Show your conversation-memory stats\n"
             f"`{BOT_PREFIX}ping` — Check Discord latency\n"
-            f"`{BOT_PREFIX}status` — Show bot status (server admins)\n"
-            f"`{BOT_PREFIX}hadeshelp` / `{BOT_PREFIX}help` — Show this help\n\n"
-            "Mention Hades or reply directly to one of her messages to talk to her."
+            f"`{BOT_PREFIX}status` — Show bot status (staff)\n"
+            f"`{BOT_PREFIX}hadeshelp` / `{BOT_PREFIX}help` — "
+            "Show this help\n\n"
+            "Mention Hades or reply directly to one of her messages "
+            "to talk to her."
         ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
@@ -388,14 +562,58 @@ async def help_command(ctx: commands.Context) -> None:
 
 def run() -> None:
     validate()
+
     bot = HadesBot()
-    bot.add_command(commands.Command(hades_command, name="hades", aliases=["ask"]))
-    bot.add_command(commands.Command(reset_command, name="reset", aliases=["forget", "clear"]))
-    bot.add_command(commands.Command(memory_command, name="memory"))
-    bot.add_command(commands.Command(ping_command, name="ping"))
-    bot.add_command(commands.Command(status_command, name="status"))
-    bot.add_command(commands.Command(help_command, name="hadeshelp", aliases=["help"]))
+
+    bot.add_command(
+        commands.Command(
+            hades_command,
+            name="hades",
+            aliases=["ask"],
+        )
+    )
+
+    bot.add_command(
+        commands.Command(
+            reset_command,
+            name="reset",
+            aliases=["forget", "clear"],
+        )
+    )
+
+    bot.add_command(
+        commands.Command(
+            memory_command,
+            name="memory",
+        )
+    )
+
+    bot.add_command(
+        commands.Command(
+            ping_command,
+            name="ping",
+        )
+    )
+
+    bot.add_command(
+        commands.Command(
+            status_command,
+            name="status",
+        )
+    )
+
+    bot.add_command(
+        commands.Command(
+            help_command,
+            name="hadeshelp",
+            aliases=["help"],
+        )
+    )
+
     try:
-        bot.run(DISCORD_TOKEN, log_handler=None)
+        bot.run(
+            DISCORD_TOKEN,
+            log_handler=None,
+        )
     finally:
         update_discord_state(ready=False)

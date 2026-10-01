@@ -14,14 +14,6 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.5-flash-lite
-      - key: GEMINI_THINKING_LEVEL
-        value: minimal
-      - key: GEMINI_TEMPERATURE
-        value: "0.45"
-      - key: GEMINI_TOP_P
-        value: "0.90"
-      - key: STRICT_AETHER_TOPIC
-        value: "true"
       - key: BOT_PREFIX
         value: "h!"
       - key: MAX_HISTORY
