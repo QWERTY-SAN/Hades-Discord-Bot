@@ -16,14 +16,12 @@ class CooldownManager:
     async def try_acquire(self, key: str) -> float:
         if self.cooldown_seconds <= 0:
             return 0.0
-
         now = time.monotonic()
         async with self._lock:
             previous = self._last_request.get(key, 0.0)
             remaining = self.cooldown_seconds - (now - previous)
             if remaining > 0:
                 return remaining
-
             self._last_request[key] = now
             return 0.0
 
@@ -35,8 +33,7 @@ class CooldownManager:
         cutoff = time.monotonic() - older_than_seconds
         async with self._lock:
             stale = [
-                key
-                for key, timestamp in self._last_request.items()
+                key for key, timestamp in self._last_request.items()
                 if timestamp < cutoff
             ]
             for key in stale:
@@ -48,11 +45,7 @@ class CooldownManager:
             return len(self._last_request)
 
 
-def split_message(
-    text: str,
-    limit: int = DISCORD_MESSAGE_LIMIT,
-) -> list[str]:
-    """Split text without exceeding Discord's message limit."""
+def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
     text = text.strip()
     if not text:
         return ["…"]
@@ -61,7 +54,6 @@ def split_message(
 
     chunks: list[str] = []
     remaining = text
-
     while len(remaining) > limit:
         split_at = remaining.rfind("\n\n", 0, limit + 1)
         if split_at < 1:
@@ -78,7 +70,6 @@ def split_message(
 
     if remaining:
         chunks.append(remaining)
-
     return chunks
 
 
@@ -97,5 +88,4 @@ def sanitize_model_output(text: str) -> str:
     return text.strip()
 
 
-# Compatibility alias used by the Gemini layer.
 clean_model_output = sanitize_model_output

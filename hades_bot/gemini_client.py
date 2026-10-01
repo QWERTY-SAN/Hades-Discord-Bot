@@ -5,6 +5,7 @@ from google import genai
 from google.genai import errors, types
 
 from .config import SETTINGS
+from .lore import build_aether_context
 from .persona import HADES_SYSTEM_PROMPT
 from .utils import clean_model_output
 
@@ -32,7 +33,6 @@ def _status_code(exc: Exception) -> int | None:
     status = getattr(exc, "status_code", None)
     if isinstance(status, int):
         return status
-
     status = getattr(exc, "code", None)
     return status if isinstance(status, int) else None
 
@@ -70,8 +70,22 @@ class GeminiService:
         return contents
 
     async def generate(self, history: list[dict[str, str]]) -> str:
+        latest_user_message = next(
+            (
+                message["content"]
+                for message in reversed(history)
+                if message.get("role") == "user"
+            ),
+            "",
+        )
+        aether_context = build_aether_context(latest_user_message)
+
         config = types.GenerateContentConfig(
-            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{EMOJI_STYLE_GUIDANCE}",
+            system_instruction=(
+                f"{HADES_SYSTEM_PROMPT}\n\n"
+                f"{EMOJI_STYLE_GUIDANCE}\n\n"
+                f"{aether_context}"
+            ),
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(
                 thinking_level=SETTINGS.gemini_thinking_level,
@@ -102,8 +116,7 @@ class GeminiService:
             status = _status_code(exc)
             logger.warning("Gemini server error %s: %s", status, exc)
             raise AIServiceError(
-                "Gemini is having trouble right now. Try again shortly.",
-                status,
+                "Gemini is having trouble right now. Try again shortly.", status
             ) from exc
         except (TimeoutError, asyncio.TimeoutError) as exc:
             logger.warning("Gemini request timed out: %s", exc)
@@ -112,9 +125,7 @@ class GeminiService:
             ) from exc
         except Exception as exc:
             logger.exception("Unexpected Gemini error: %s", exc)
-            raise AIServiceError(
-                "Something went wrong with the AI service."
-            ) from exc
+            raise AIServiceError("Something went wrong with the AI service.") from exc
 
         text = clean_model_output(response.text or "")
         if not text:

@@ -22,12 +22,7 @@ class Conversation:
 class ConversationMemory:
     """Per-conversation memory with TTL, LRU-style capping, and async locking."""
 
-    def __init__(
-        self,
-        max_history: int,
-        ttl_seconds: int,
-        max_conversations: int,
-    ) -> None:
+    def __init__(self, max_history: int, ttl_seconds: int, max_conversations: int) -> None:
         self.max_history = max_history
         self.ttl_seconds = ttl_seconds
         self.max_conversations = max_conversations
@@ -61,7 +56,6 @@ class ConversationMemory:
                 break
             self._conversations.pop(removable_key, None)
             removed += 1
-
         return removed
 
     async def _get_or_create(self, key: str) -> Conversation:
@@ -70,9 +64,7 @@ class ConversationMemory:
             self._prune_locked(now)
             conversation = self._conversations.get(key)
             if conversation is None:
-                conversation = Conversation(
-                    turns=deque(maxlen=self.max_history),
-                )
+                conversation = Conversation(turns=deque(maxlen=self.max_history))
                 self._conversations[key] = conversation
             else:
                 conversation.touched_at = now
@@ -90,18 +82,11 @@ class ConversationMemory:
                     self._conversations.move_to_end(key)
             yield ConversationSession(conversation)
 
-    async def get(self, key: str) -> list[MessageTurn]:
-        conversation = await self._get_or_create(key)
-        async with conversation.lock:
-            conversation.touched_at = time.monotonic()
-            return [MessageTurn(turn.role, turn.text) for turn in conversation.turns]
-
     async def reset(self, key: str) -> None:
         async with self._index_lock:
             conversation = self._conversations.get(key)
         if conversation is None:
             return
-
         async with conversation.lock:
             async with self._index_lock:
                 if self._conversations.get(key) is conversation:
@@ -154,10 +139,6 @@ class ConversationSession:
         ]
 
     def commit(self, user_content: str, assistant_content: str) -> None:
-        self.conversation.turns.append(
-            MessageTurn(role="user", text=user_content)
-        )
-        self.conversation.turns.append(
-            MessageTurn(role="model", text=assistant_content)
-        )
+        self.conversation.turns.append(MessageTurn(role="user", text=user_content))
+        self.conversation.turns.append(MessageTurn(role="model", text=assistant_content))
         self.conversation.touched_at = time.monotonic()

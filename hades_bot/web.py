@@ -10,10 +10,7 @@ _state = {
 
 
 def update_discord_state(
-    *,
-    ready: bool,
-    user: str | None = None,
-    guild_count: int = 0,
+    *, ready: bool, user: str | None = None, guild_count: int = 0
 ) -> None:
     _state["discord_ready"] = ready
     _state["discord_user"] = user
@@ -71,3 +68,18 @@ async def start_health_server() -> web.AppRunner:
     site = web.TCPSite(runner, "0.0.0.0", SETTINGS.port)
     await site.start()
     return runner
+
+
+# Backward-compatible alias used by main.py.
+def start_web_server() -> None:
+    import asyncio
+    import threading
+
+    def runner() -> None:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(start_health_server())
+        loop.run_forever()
+
+    thread = threading.Thread(target=runner, daemon=True)
+    thread.start()

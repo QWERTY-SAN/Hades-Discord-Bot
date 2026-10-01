@@ -6,11 +6,7 @@ from .memory import ConversationMemory
 
 
 class HadesChat:
-    def __init__(
-        self,
-        gemini: GeminiService,
-        memory: ConversationMemory,
-    ) -> None:
+    def __init__(self, gemini: GeminiService, memory: ConversationMemory) -> None:
         self.gemini = gemini
         self.memory = memory
         self._semaphore = asyncio.Semaphore(SETTINGS.max_concurrent_requests)
@@ -24,9 +20,7 @@ class HadesChat:
                 timeout=SETTINGS.max_queue_wait,
             )
         except asyncio.TimeoutError as exc:
-            raise RuntimeError(
-                "The response queue is currently full."
-            ) from exc
+            raise RuntimeError("The response queue is currently full.") from exc
 
         try:
             async with self.memory.session(key) as session:
@@ -40,7 +34,6 @@ class HadesChat:
                     reply = await self.gemini.generate(trial_history)
                 finally:
                     self._active_requests -= 1
-
                 session.commit(message, reply)
                 return reply
         finally:

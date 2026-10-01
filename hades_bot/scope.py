@@ -1,13 +1,7 @@
-"""Conversation scope for Hades.
+"""Balanced conversation scope for Hades.
 
-The scope is intentionally conservative:
-- Aether Gazer/Hades-related topics are always allowed.
-- Casual conversation is allowed, even when the subject is unrelated.
-- Unrelated specialist/informational requests are declined.
-
-This is a lightweight heuristic gate. It should never try to be a general
-knowledge classifier; the goal is to keep Hades focused without making her
-feel incapable of normal conversation.
+Aether Gazer/Hades topics are allowed. Ordinary conversation is also allowed.
+Clearly unrelated specialist/informational requests are declined.
 """
 
 from __future__ import annotations
@@ -16,124 +10,31 @@ import random
 import re
 import unicodedata
 
-# Strong Aether Gazer / Hades signals. These are deliberately broad enough to
-# cover common spelling variants and conversations about the game's cast.
+from .lore import SCOPE_TERMS
+
 HADES_TERMS = {
-    "aether gazer",
-    "aethergazer",
-    "moda h",
-    "hades",
-    "administrator",
-    "skuld",
-    "verthandi",
-    "tsukuyomi",
-    "buzenbo",
-    "lingguang",
-    "jinwu",
-    "gesh",
-    "apollo",
-    "poseidon",
-    "osiris",
-    "shera",
-    "thor",
-    "artemis",
-    "leviathan",
-    "selene",
-    "ausar",
-    "tyr",
-    "hel",
-    "anubis",
-    "sobek",
-    "hera",
-    "oceanus",
-    "modaeus",
-    "sigil",
-    "modification factor",
-    "gen-zone",
-    "modifier sync",
+    "aether gazer", "aethergazer", "moda h", "hades", "administrator",
+    "skuld", "verthandi", "tsukuyomi", "buzenbo", "lingguang", "jinwu",
+    "gesh", "apollo", "poseidon", "osiris", "shera", "thor", "artemis",
+    "leviathan", "selene", "ausar", "tyr", "hel", "anubis", "sobek",
+    "hera", "oceanus", "modaeus", "sigil", "modification factor",
+    "gen-zone", "modifier sync",
 }
+HADES_TERMS.update(SCOPE_TERMS)
 
-# Specialized domains that are especially likely to turn Hades into a
-# general-purpose assistant if we let factual/how-to questions through.
 SPECIALIST_TERMS = {
-    # Programming / software engineering
-    "python",
-    "javascript",
-    "typescript",
-    "java",
-    "c++",
-    "c#",
-    "rust",
-    "golang",
-    "ruby",
-    "php",
-    "sql",
-    "html",
-    "css",
-    "programming",
-    "coding",
-    "code",
-    "script",
-    "regex",
-    "api",
-    "github",
-    "git",
-    "docker",
-    "linux",
-    "windows",
-
-    # PC / hardware / electronics
-    "cpu",
-    "gpu",
-    "ram",
-    "ssd",
-    "nvme",
-    "motherboard",
-    "processor",
-    "graphics card",
-    "power supply",
-    "psu",
-    "driver",
-    "bios",
-    "uefi",
-    "router",
-    "ethernet",
-    "wifi",
-    "hardware",
-    "overclock",
-    "fl studio",
-    "vst",
-
-    # Sports / racing / other specialist hobbies
-    "formula 1",
-    "f1",
-    "motogp",
-    "nascar",
-    "indycar",
-    "nba",
-    "nfl",
-    "mlb",
-    "ufc",
-    "premier league",
-    "champions league",
-
-    # Academic / technical subjects
-    "mathematics",
-    "math",
-    "calculus",
-    "algebra",
-    "physics",
-    "chemistry",
-    "biology",
-    "statistics",
-    "programming assignment",
-    "homework",
-    "essay",
-    "thesis",
+    "python", "javascript", "typescript", "java", "c++", "c#", "rust",
+    "golang", "ruby", "php", "sql", "html", "css", "programming", "coding",
+    "code", "script", "regex", "api", "github", "git", "docker", "linux",
+    "windows", "cpu", "gpu", "ram", "ssd", "nvme", "motherboard",
+    "processor", "graphics card", "power supply", "psu", "driver", "bios",
+    "uefi", "router", "ethernet", "wifi", "hardware", "overclock", "fl studio",
+    "vst", "formula 1", "f1", "motogp", "nascar", "indycar", "nba", "nfl",
+    "mlb", "ufc", "premier league", "champions league", "mathematics", "math",
+    "calculus", "algebra", "physics", "chemistry", "biology", "statistics",
+    "programming assignment", "homework", "essay", "thesis",
 }
 
-# Requests that are inherently task-oriented or factual. These are evaluated
-# after casual-conversation patterns so "Do you like F1?" remains allowed.
 INFORMATIONAL_PATTERNS = (
     re.compile(r"\bwhat(?:'s| is| are| was| were)\b"),
     re.compile(r"\bwho(?:'s| is| are| was| were)\b"),
@@ -150,8 +51,6 @@ INFORMATIONAL_PATTERNS = (
     re.compile(r"\b(?:tell me about|teach me about|help me with)\b"),
 )
 
-# Clear signs that someone is simply talking with Hades rather than requesting
-# an external fact. This takes precedence over specialist-domain keywords.
 CASUAL_PATTERNS = (
     re.compile(r"\bdo you (?:like|love|hate|watch|play|enjoy|know)\b"),
     re.compile(r"\bwhat do you (?:think|feel|prefer|like)\b"),
@@ -182,9 +81,11 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
-def _contains_term(text: str, terms: set[str]) -> bool:
+def _contains_term(text: str, terms: set[str] | frozenset[str]) -> bool:
     return any(
-        term in text if " " in term else re.search(rf"(?<!\w){re.escape(term)}(?!\w)", text)
+        term in text
+        if " " in term
+        else re.search(rf"(?<!\w){re.escape(term)}(?!\w)", text)
         for term in terms
     )
 
@@ -194,34 +95,20 @@ def _matches(patterns: tuple[re.Pattern[str], ...], text: str) -> bool:
 
 
 def is_hades_scope_allowed(content: str) -> bool:
-    """Return whether Hades should answer the message normally."""
     text = _normalize(content)
     if not text:
         return True
-
-    # Direct Hades / Aether Gazer discussion is always in scope.
     if _contains_term(text, HADES_TERMS):
         return True
-
-    # Friendly conversation is intentionally broad. Mentioning an unrelated
-    # hobby is fine when the user is talking *to Hades* rather than asking her
-    # to provide specialized information about that hobby.
     if _matches(CASUAL_PATTERNS, text):
         return True
 
     specialist_topic = _contains_term(text, SPECIALIST_TERMS)
     informational_request = _matches(INFORMATIONAL_PATTERNS, text)
-
-    # Specialized informational requests are outside Hades's role.
     if specialist_topic and informational_request:
         return False
-
-    # Also reject obvious generic knowledge / task requests even when no
-    # specialist keyword gives us a domain to latch onto.
     if informational_request:
         return False
-
-    # Statements, banter, reactions, and ordinary conversation remain open.
     return True
 
 

@@ -70,13 +70,8 @@ class Settings:
             raise RuntimeError("GEMINI_API_KEY is not configured.")
 
         bot_prefix = os.getenv("BOT_PREFIX", "h!").strip() or "h!"
-        gemini_model = os.getenv(
-            "GEMINI_MODEL", "gemini-3.5-flash-lite"
-        ).strip()
-        thinking_level = os.getenv(
-            "GEMINI_THINKING_LEVEL", "minimal"
-        ).strip().lower()
-
+        gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
+        thinking_level = os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().lower()
         if thinking_level not in {"minimal", "low", "medium", "high"}:
             raise RuntimeError(
                 "GEMINI_THINKING_LEVEL must be minimal, low, medium, or high."
@@ -100,12 +95,15 @@ class Settings:
             memory_ttl_seconds=_int("MEMORY_TTL_SECONDS", 21600, 60),
             max_conversations=_int("MAX_CONVERSATIONS", 500, 1),
             memory_prune_interval=_int("MEMORY_PRUNE_INTERVAL", 900, 60),
-            cooldown_prune_interval=_int(
-                "COOLDOWN_PRUNE_INTERVAL", 3600, 60
-            ),
+            cooldown_prune_interval=_int("COOLDOWN_PRUNE_INTERVAL", 3600, 60),
             port=_int("PORT", 10000, 1),
         )
 
 
 SETTINGS = Settings.load()
 DISCORD_MESSAGE_LIMIT = 2000
+
+
+def validate() -> None:
+    """Force configuration validation at process startup."""
+    _ = SETTINGS

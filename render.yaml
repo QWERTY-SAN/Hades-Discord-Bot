@@ -14,24 +14,18 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.5-flash-lite
-      - key: GEMINI_THINKING_LEVEL
-        value: minimal
-      - key: STRICT_AETHER_TOPIC
-        value: "true"
       - key: BOT_PREFIX
         value: "h!"
+      - key: STRICT_AETHER_TOPIC
+        value: "true"
       - key: MAX_HISTORY
         value: "16"
-      - key: MEMORY_TTL_SECONDS
-        value: "21600"
-      - key: MAX_CONVERSATIONS
-        value: "500"
       - key: MAX_OUTPUT_TOKENS
         value: "768"
-      - key: USER_COOLDOWN
-        value: "2.0"
       - key: MAX_INPUT_CHARS
         value: "6000"
+      - key: USER_COOLDOWN
+        value: "2.0"
       - key: MAX_CONCURRENT_REQUESTS
         value: "3"
       - key: MAX_QUEUE_WAIT
@@ -40,6 +34,10 @@ services:
         value: "45"
       - key: MAX_RETRIES
         value: "3"
+      - key: MEMORY_TTL_SECONDS
+        value: "21600"
+      - key: MAX_CONVERSATIONS
+        value: "500"
       - key: MEMORY_PRUNE_INTERVAL
         value: "900"
       - key: COOLDOWN_PRUNE_INTERVAL
