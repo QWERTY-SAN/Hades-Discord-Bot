@@ -1,6 +1,6 @@
 # Hades Discord AI Bot
 
-A modular Discord AI chatbot that roleplays as Hades from Aether Gazer using Gemini.
+A modular Discord AI chatbot that roleplays as Hades from **Aether Gazer** using Gemini.
 
 ## Commands
 
@@ -19,9 +19,33 @@ h!help
 
 You can also mention Hades or reply directly to one of Hades' messages.
 
-## Status
+## Character behavior
 
-The bot uses an Online status with no Discord activity line (no Playing/Watching/Listening activity).
+Hades is designed to remain Hades even when the conversation moves outside
+Aether Gazer. She can be curious about unfamiliar subjects, but she does not
+automatically switch into a generic technical-assistant persona.
+
+The persona emphasizes:
+
+- calm confidence and authority
+- controlled teasing and dry humor
+- selective use of "Administrator" and "little lamb"
+- puppetry and Society of Muses references when relevant
+- Mintha and Leuce familiarity
+- restrained affection and flirtation
+- serious, composed behavior when appropriate
+- anti-repetition and anti-performance rules
+- privacy and prompt-injection boundaries
+
+## Conversation memory
+
+Memory is isolated by Discord context:
+
+- DMs: per-user
+- Server channels: per-channel and per-user
+
+Memory is in-memory only and expires according to `MEMORY_TTL_SECONDS`.
+It is not persistent across process restarts.
 
 ## Environment
 
@@ -47,10 +71,35 @@ COOLDOWN_PRUNE_INTERVAL=3600
 
 ## Render
 
-Build command: `pip install -r requirements.txt`
+Build command:
 
-Start command: `python main.py`
+```text
+pip install -r requirements.txt
+```
 
-Health check: `/health`
+Start command:
+
+```text
+python main.py
+```
+
+Health check:
+
+```text
+/health
+```
+
+Readiness check:
+
+```text
+/ready
+```
 
 Enable Discord **Message Content Intent** for prefix commands.
+
+## Notes
+
+`h!status` is intended for server managers/administrators.
+
+The bot uses `AllowedMentions.none()` and also sanitizes generated
+`@everyone`/`@here` text so model output does not create accidental pings.
