@@ -5,7 +5,7 @@ import random
 from google import genai
 from google.genai import types
 
-from .config import MAX_INPUT_CHARS, REQUEST_TIMEOUT
+from .config import GEMINI_THINKING_LEVEL, MAX_INPUT_CHARS, REQUEST_TIMEOUT
 from .persona import HADES_SYSTEM_PROMPT
 from .utils import clean_model_output
 
@@ -76,7 +76,7 @@ class GeminiService:
                     system_instruction=HADES_SYSTEM_PROMPT,
                     max_output_tokens=self.max_output_tokens,
                     thinking_config=types.ThinkingConfig(
-                        thinking_level="minimal"
+                        thinking_level=GEMINI_THINKING_LEVEL
                     ),
                 ),
             ),

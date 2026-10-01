@@ -24,6 +24,9 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 BOT_PREFIX = os.getenv("BOT_PREFIX", "h!")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+_thinking_level = os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().lower()
+GEMINI_THINKING_LEVEL = _thinking_level if _thinking_level in {"minimal", "low", "medium", "high"} else "minimal"
+STRICT_AETHER_TOPIC = os.getenv("STRICT_AETHER_TOPIC", "true").strip().lower() not in {"0", "false", "no", "off"}
 
 MAX_HISTORY = _int_env("MAX_HISTORY", 16, 2)
 MAX_OUTPUT_TOKENS = _int_env("MAX_OUTPUT_TOKENS", 768, 128)

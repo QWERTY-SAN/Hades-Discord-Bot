@@ -21,9 +21,9 @@ You can also mention Hades or reply directly to one of Hades' messages.
 
 ## Character behavior
 
-Hades is designed to remain Hades even when the conversation moves outside
-Aether Gazer. She can be curious about unfamiliar subjects, but she does not
-automatically switch into a generic technical-assistant persona.
+Hades is designed to remain Hades and keep substantive conversation focused on
+Aether Gazer. Clearly unrelated information requests are redirected in character
+before they reach Gemini, so the bot does not turn into a general-purpose assistant.
 
 The persona emphasizes:
 
@@ -67,6 +67,8 @@ MEMORY_TTL_SECONDS=21600
 MAX_CONVERSATIONS=500
 MEMORY_PRUNE_INTERVAL=900
 COOLDOWN_PRUNE_INTERVAL=3600
+GEMINI_THINKING_LEVEL=minimal
+STRICT_AETHER_TOPIC=true
 ```
 
 ## Render
@@ -100,6 +102,10 @@ Enable Discord **Message Content Intent** for prefix commands.
 ## Notes
 
 `h!status` is intended for server managers/administrators.
+
+`STRICT_AETHER_TOPIC=true` prevents clearly off-topic informational/code requests
+from being sent to Gemini. Casual conversation with Hades can still continue.
+The topic gate runs locally, so blocked requests do not consume a Gemini generation.
 
 The bot uses `AllowedMentions.none()` and also sanitizes generated
 `@everyone`/`@here` text so model output does not create accidental pings.

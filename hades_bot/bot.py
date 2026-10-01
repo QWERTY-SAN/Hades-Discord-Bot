@@ -19,10 +19,12 @@ from .config import (
     MAX_CONVERSATIONS,
     USER_COOLDOWN,
     COOLDOWN_PRUNE_INTERVAL,
+    STRICT_AETHER_TOPIC,
     validate,
 )
 from .gemini_client import GeminiService
 from .memory import ConversationMemory
+from .topic_gate import OFF_TOPIC_RESPONSES, is_aether_gazer_related
 from .utils import CooldownManager, split_message, strip_bot_mentions
 from .web import update_discord_state
 
@@ -163,6 +165,22 @@ class HadesBot(commands.Bot):
             self._cooldown_key(message)
         )
 
+    async def reject_off_topic(
+        self,
+        message: discord.Message,
+    ) -> None:
+        await message.reply(
+            self._rng.choice(OFF_TOPIC_RESPONSES),
+            mention_author=False,
+            allowed_mentions=ALLOWED_MENTIONS,
+        )
+
+    def topic_allowed(self, content: str) -> bool:
+        if not STRICT_AETHER_TOPIC:
+            return True
+
+        return is_aether_gazer_related(content)
+
     async def handle_ai_message(
         self,
         message: discord.Message,
@@ -179,6 +197,10 @@ class HadesBot(commands.Bot):
                 mention_author=False,
                 allowed_mentions=ALLOWED_MENTIONS,
             )
+            return
+
+        if not self.topic_allowed(content):
+            await self.reject_off_topic(message)
             return
 
         remaining = self._try_acquire_cooldown(message)
@@ -407,6 +429,10 @@ async def hades_command(
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )
+        return
+
+    if not bot.topic_allowed(prompt):
+        await bot.reject_off_topic(ctx.message)
         return
 
     remaining = bot._try_acquire_cooldown(ctx.message)
