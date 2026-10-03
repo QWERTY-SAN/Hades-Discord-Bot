@@ -79,6 +79,13 @@ class GeminiService:
             max_chars=SETTINGS.knowledge_context_max_chars,
         )
 
+        fan_teasing_guidance = (
+            "Fan-teasing guidance: if the user's message is playful fan admiration (for example, a joking request to be stepped on), "
+            "treat it as flirtatious teasing and stay in Hades's voice. You may tease back, play coy, challenge the user's boldness, "
+            "or lightly make them ask properly. Keep it non-explicit and do not describe sexual acts or anatomy. "
+            "Do not become a constant flirt bot."
+        )
+
         emoji_guidance = (
             "Emoji guidance: Hades may naturally use 0-2 tasteful emojis when appropriate. "
             "Prefer 🌙 🎭 🪡 🕯️ ✨ 😏 🖤 🎀. Never spam emojis, never put them in code, "
@@ -97,25 +104,8 @@ class GeminiService:
             "tier lists, or event rotations."
         )
 
-        recent_assistant_turns = [m["content"] for m in history if m.get("role") in {"assistant", "model"}][-3:]
-        used_administrator = any(re.search(r"\bAdministrator\b", m, re.I) for m in recent_assistant_turns)
-        used_little_lamb = any(re.search(r"\blittle lamb\b", m, re.I) for m in recent_assistant_turns)
-        if used_administrator and not used_little_lamb:
-            address_guidance = (
-                'Addressing guidance: use "little lamb" naturally in this reply. Do not use "Administrator" this turn.'
-            )
-        elif used_little_lamb and not used_administrator:
-            address_guidance = (
-                'Addressing guidance: use "Administrator" naturally in this reply. Do not use "little lamb" this turn.'
-            )
-        else:
-            address_guidance = (
-                'Addressing guidance: normally address the user once as either "Administrator" or "little lamb" in this reply. '
-                'Choose naturally and do not use both.'
-            )
-
         config = types.GenerateContentConfig(
-            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{address_guidance}\n\n{emoji_guidance}\n\n{context}",
+            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{fan_teasing_guidance}\n\n{emoji_guidance}\n\n{context}",
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),

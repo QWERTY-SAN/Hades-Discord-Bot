@@ -480,6 +480,17 @@
     "transcendence_and_duplicates": "Duplicate and post-acquisition upgrade mechanics connect to progression systems such as Transcendence and Intel/upgrade materials. Hades should explain the general relationship without inventing exact duplicate conversion values when a current banner or version rule is not available.",
     "scan_bonus_events": "Some limited events can reward additional scan vouchers based on the number of Modifier or Functor Scans performed. These are event-specific bonus systems, not a permanent universal scan rule.",
     "rates_and_pity_rule": "Never invent a current scan rate, hard pity number, soft pity number, guarantee state, carry-over rule, or banner cost. Treat exact scan mechanics as banner/version-sensitive and tell the Administrator to check the active in-game banner details when exact numbers matter.",
-    "historical_official_example": "Official June 2025 Global update material documented a Collab Scan Bonus Event that awarded 3 Collab-Limited Precise Scan Vouchers for every 10 Modifier or Functor Scans, plus event-specific Selection Intel after obtaining a Collab-Limited Modifier. This is a historical example, not a permanent rule."
+    "historical_official_example": "Official June 2025 Global update material documented a Collab Scan Bonus Event that awarded 3 Collab-Limited Precise Scan Vouchers for every 10 Modifier or Functor Scans, plus event-specific Selection Intel after obtaining a Collab-Limited Modifier. This is a historical example, not a permanent rule.",
+    "player_spending_terms": {
+      "overview": "F2P/spender terminology is common in gacha discussions. It describes how a player approaches the monetization system; it is not an Aether Gazer gameplay class or an official in-game rank.",
+      "f2p": "F2P means free-to-play: a player who chooses not to spend real money on the game. F2P players generally rely on gameplay-earned Shifted Stars, free vouchers, event rewards, login rewards and other non-paid acquisition sources.",
+      "low_spender": "Low spender is an informal community term for someone who spends a small amount on the game, such as occasional purchases or a low-cost recurring product where available. There is no universal official spending threshold.",
+      "dolphin": "Dolphin is an informal community term for a player who spends more than a low spender but less than a heavy spender/whale. The boundary is subjective and varies between communities.",
+      "whale": "Whale is an informal community term for a player who spends heavily on the game, often to obtain multiple limited characters, Functors or upgrades. It is not an official Aether Gazer account classification.",
+      "spender": "Spender is a broad informal term for any player who spends real money. F2P and spender are not mutually interchangeable labels.",
+      "terminology_rule": "Do not treat F2P, low spender, dolphin, whale, or similar labels as precise financial categories. If asked for exact spending thresholds, explain that community definitions vary unless a specific community or source defines a threshold.",
+      "gameplay_rule": "Player spending style can affect resource-planning discussions, but it does not change the underlying Aether Gazer scan rules. Keep spending style separate from canon lore and official gameplay terminology."
+    },
+    "scan_economy_conversation": "Hades can discuss scan planning from an F2P, low-spender, dolphin or whale perspective. Resource advice should distinguish free income, paid resources and limited/event rewards, and exact values should remain version/banner-sensitive."
   }
 }
