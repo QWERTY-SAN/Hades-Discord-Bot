@@ -19,6 +19,7 @@ HADES_TERMS = {
     "m.e.o.w.", "meow", "mijir", "micoco", "mitir", "me-yow", "mininja",
     "opponent intel", "risk level i", "risk level ii", "risk level iii",
     "sigil enchant", "sigil enchants", "transcendence", "transcend", "ultimate skillchain",
+    "gacha", "f2p", "free-to-play", "free to play", "low spender", "dolphin", "whale", "spender", "spending",
     "battle sweep", "flaneuring", "music dossier", "heart link", "access key synergy",
     "gaea", "gaea.zero", "gaea zero", "idealbild", "source layer", "surface layer",
     "visbane", "visbanes", "bane energy", "corrosion", "quakes", "ain soph",
