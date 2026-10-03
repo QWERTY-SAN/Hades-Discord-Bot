@@ -17,7 +17,7 @@ services:
       - key: BOT_PREFIX
         value: "h!"
       - key: STRICT_AETHER_TOPIC
-        value: "true"
+        value: "false"
       - key: MAX_HISTORY
         value: "16"
       - key: MAX_OUTPUT_TOKENS
@@ -42,3 +42,14 @@ services:
         value: "900"
       - key: COOLDOWN_PRUNE_INTERVAL
         value: "3600"
+      - key: EMOJIS_ENABLED
+        value: "true"
+      - key: HADES_GIF_ENABLED
+        value: "true"
+      - key: HADES_GIF_MODE
+        value: "every_mention"
+      - key: HADES_GIF_COOLDOWN_SECONDS
+        value: "300"
+      - key: HADES_GIF_RECENT_COUNT
+        value: "6"
+        value: ""

@@ -1,6 +1,8 @@
 # Hades Discord AI Bot
 
-A modular Discord AI chatbot that roleplays as Hades from **Aether Gazer** using Gemini.
+A modular Discord AI chatbot styled after **Hades from Aether Gazer**, powered by Google Gemini.
+
+This version keeps the current Hades bot architecture and `h!` prefix, while adding a Kafka-style presentation layer and a small local Aether Gazer reference layer.
 
 ## Commands
 
@@ -11,95 +13,160 @@ h!reset
 h!forget
 h!clear
 h!memory
+h!gif
+h!hadesgif
 h!ping
 h!status
 h!hadeshelp
 h!help
 ```
 
-You can also mention Hades or reply directly to one of Hades' messages.
+The bot can also respond to direct mentions, DMs, and direct replies to its messages.
 
-## Character behavior
+## Main improvements
 
-Hades is designed to remain Hades even when the conversation moves outside
-Aether Gazer. She can be curious about unfamiliar subjects, but she does not
-automatically switch into a generic technical-assistant persona.
+- Hades-first persona: she stays Hades rather than becoming a generic assistant.
+- Natural off-topic conversation by default (`STRICT_AETHER_TOPIC=false`).
+- Local Hades character data and Aether Gazer terminology.
+- Aether Gazer lore context is only injected when relevant.
+- Per-user/per-channel memory with TTL, locking and capacity control.
+- Gemini retries, queue limiting, cooldowns and error handling.
+- Discord-safe output splitting and mention sanitization.
+- Kafka-inspired configurable GIF behavior.
+- GIF hash-based recent-item avoidance.
+- Optional sparse emoji guidance.
+- Render-compatible `/`, `/health`, and `/ready` endpoints.
 
-The persona emphasizes:
+## GIFs
 
-- calm confidence and authority
-- controlled teasing and dry humor
-- selective use of "Administrator" and "little lamb"
-- puppetry and Society of Muses references when relevant
-- Mintha and Leuce familiarity
-- restrained affection and flirtation
-- serious, composed behavior when appropriate
-- anti-repetition and anti-performance rules
-- privacy and prompt-injection boundaries
+GIF URLs are stored in `hades_bot/gifs.py`, not in `.env`:
 
-## Conversation memory
+```python
+HADES_GIF_URLS = [
+    "https://example.com/hades1.gif",
+    "https://example.com/hades2.gif",
+]
+```
 
-Memory is isolated by Discord context:
+Optional mood prefixes are supported:
 
-- DMs: per-user
-- Server channels: per-channel and per-user
+```python
+HADES_GIF_URLS = [
+    "neutral=>https://example.com/hades-neutral.gif",
+    "smug=>https://example.com/hades-smug.gif",
+    "happy=>https://example.com/hades-happy.gif",
+    "annoyed=>https://example.com/hades-annoyed.gif",
+    "surprised=>https://example.com/hades-surprised.gif",
+]
+```
 
-Memory is in-memory only and expires according to `MEMORY_TTL_SECONDS`.
-It is not persistent across process restarts.
+Modes:
 
-## Environment
+```text
+off
+first_reply
+every_mention
+every_command
+every_response
+```
 
-Use `.env` locally or Render environment variables. Never commit real credentials.
+`h!gif` and `h!hadesgif` always force one GIF attempt when at least one URL is configured in `hades_bot/gifs.py`.
+
+The bot uploads the downloaded GIF to Discord rather than relying on an external embed. It also remembers recent SHA-256 hashes per user/channel to reduce repeats.
+
+## Setup
+
+### 1. Install Python
+
+Python 3.11 is the recommended runtime used by the repository.
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure environment variables
+
+Copy `.env.example` to `.env` and set:
 
 ```text
 DISCORD_TOKEN=...
 GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-3.5-flash-lite
-BOT_PREFIX=h!
-MAX_HISTORY=16
-MAX_OUTPUT_TOKENS=768
-MAX_INPUT_CHARS=6000
-USER_COOLDOWN=2.0
-MAX_CONCURRENT_REQUESTS=3
-MAX_QUEUE_WAIT=20
-REQUEST_TIMEOUT=45
-MEMORY_TTL_SECONDS=21600
-MAX_CONVERSATIONS=500
-MEMORY_PRUNE_INTERVAL=900
-COOLDOWN_PRUNE_INTERVAL=3600
+```
+
+Never commit `.env` or real keys.
+
+### 4. Discord Developer Portal
+
+Enable **Message Content Intent** for prefix commands and mentions.
+
+### 5. Run locally
+
+```bash
+python main.py
 ```
 
 ## Render
 
-Build command:
+Use a **Web Service** with:
 
 ```text
-pip install -r requirements.txt
+Build Command: pip install -r requirements.txt
+Start Command: python main.py
+Health Check Path: /health
 ```
 
-Start command:
+`render.yaml` is already configured for automatic deploys from the `main` branch.
+
+## Important model setting
+
+The default environment keeps the model name used by the current Hades repository:
 
 ```text
-python main.py
+GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
-Health check:
+Change it in Render when your Gemini project exposes a different supported model name.
 
-```text
-/health
+## Data policy
+
+The local `data/` files contain stable character/reference information only. They are not a live Aether Gazer database and deliberately avoid pretending that current banners, patch notes, balance values or tier lists are verified.
+
+Reference sites:
+
+- https://aethergazer.miraheze.org/wiki/Main_Page
+- https://mimir.cat/
+- https://mimir.cat/puppet-master/
+
+## GIF system
+
+GIF URLs are code configuration, not Render environment variables. Edit `hades_bot/gifs.py` and commit the change.
+
+
+The GIF system reads direct `.gif` URLs from `hades_bot/gifs.py` and supports optional mood tags:
+
+```python
+HADES_GIF_URLS = [
+    "neutral=>https://host/hades1.gif",
+    "smug=>https://host/hades2.gif",
+    "happy=>https://host/hades3.gif",
+    "annoyed=>https://host/hades4.gif",
+]
 ```
 
-Readiness check:
+Supported mood tags are `neutral`, `happy`, `smug`, `annoyed`, and `surprised`. Untagged URLs remain valid and are treated as neutral/general GIFs.
 
-```text
-/ready
+Useful settings:
+
+```env
+HADES_GIF_ENABLED=true
+HADES_GIF_MODE=every_mention
+HADES_GIF_COOLDOWN_SECONDS=300
+HADES_GIF_RECENT_COUNT=6
+HADES_GIF_CACHE_SECONDS=900
+HADES_GIF_MAX_BYTES=8000000
+HADES_GIF_REQUEST_TIMEOUT=15
 ```
 
-Enable Discord **Message Content Intent** for prefix commands.
-
-## Notes
-
-`h!status` is intended for server managers/administrators.
-
-The bot uses `AllowedMentions.none()` and also sanitizes generated
-`@everyone`/`@here` text so model output does not create accidental pings.
+Improvements include in-memory caching, GIF signature validation, an 8 MB safety limit, URL validation, per-channel duplicate protection, mood-aware selection, reuse fallback when the recent pool is exhausted, and a reusable HTTP session. The GIF download is temporary in memory; the bot does not write downloaded GIFs to Render's filesystem.

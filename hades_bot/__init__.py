@@ -1,1 +1,1 @@
-"""Hades Discord AI Bot."""
+"""Hades Discord AI Bot package."""

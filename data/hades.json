@@ -1,0 +1,10 @@
+{
+  "name": "Hades",
+  "title": "Puppet Master",
+  "rank": "S-Grade Modifier",
+  "affiliation": "Society of Muses",
+  "gen_zone": "Olympus",
+  "known_companions": ["Mintha", "Leuce"],
+  "themes": ["puppetry", "dolls", "performance", "Society of Muses"],
+  "canonical_guard": "Do not invent exact current balance, banner, tier-list, or patch information from this file."
+}

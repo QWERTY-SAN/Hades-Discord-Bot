@@ -1,38 +1,37 @@
 import os
 from dataclasses import dataclass
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
 def _int(name: str, default: int, minimum: int = 0) -> int:
-    value = os.getenv(name, str(default)).strip()
+    raw = os.getenv(name, str(default)).strip()
     try:
-        parsed = int(value)
+        value = int(raw)
     except ValueError as exc:
         raise RuntimeError(f"{name} must be an integer.") from exc
-    if parsed < minimum:
+    if value < minimum:
         raise RuntimeError(f"{name} must be >= {minimum}.")
-    return parsed
+    return value
 
 
 def _float(name: str, default: float, minimum: float = 0.0) -> float:
-    value = os.getenv(name, str(default)).strip()
+    raw = os.getenv(name, str(default)).strip()
     try:
-        parsed = float(value)
+        value = float(raw)
     except ValueError as exc:
         raise RuntimeError(f"{name} must be a number.") from exc
-    if parsed < minimum:
+    if value < minimum:
         raise RuntimeError(f"{name} must be >= {minimum}.")
-    return parsed
+    return value
 
 
 def _bool(name: str, default: bool) -> bool:
-    value = os.getenv(name, str(default)).strip().lower()
-    if value in {"1", "true", "yes", "on"}:
+    raw = os.getenv(name, str(default)).strip().lower()
+    if raw in {"1", "true", "yes", "on"}:
         return True
-    if value in {"0", "false", "no", "off"}:
+    if raw in {"0", "false", "no", "off"}:
         return False
     raise RuntimeError(f"{name} must be true or false.")
 
@@ -58,32 +57,40 @@ class Settings:
     memory_prune_interval: int
     cooldown_prune_interval: int
     port: int
+    emojis_enabled: bool
+    hades_gif_enabled: bool
+    hades_gif_mode: str
+    hades_gif_cooldown_seconds: float
+    hades_gif_recent_count: int
+    hades_gif_cache_seconds: float
+    hades_gif_max_bytes: int
+    hades_gif_request_timeout: float
 
     @classmethod
     def load(cls) -> "Settings":
         discord_token = os.getenv("DISCORD_TOKEN", "").strip()
         gemini_api_key = os.getenv("GEMINI_API_KEY", "").strip()
-
         if not discord_token:
             raise RuntimeError("DISCORD_TOKEN is not configured.")
         if not gemini_api_key:
             raise RuntimeError("GEMINI_API_KEY is not configured.")
 
-        bot_prefix = os.getenv("BOT_PREFIX", "h!").strip() or "h!"
-        gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
-        thinking_level = os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().lower()
-        if thinking_level not in {"minimal", "low", "medium", "high"}:
-            raise RuntimeError(
-                "GEMINI_THINKING_LEVEL must be minimal, low, medium, or high."
-            )
+        thinking = os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().lower()
+        if thinking not in {"minimal", "low", "medium", "high"}:
+            raise RuntimeError("GEMINI_THINKING_LEVEL must be minimal, low, medium, or high.")
+
+        gif_mode = os.getenv("HADES_GIF_MODE", "every_mention").strip().lower()
+        allowed_modes = {"off", "first_reply", "every_mention", "every_command", "every_response"}
+        if gif_mode not in allowed_modes:
+            raise RuntimeError(f"HADES_GIF_MODE must be one of: {', '.join(sorted(allowed_modes))}.")
 
         return cls(
             discord_token=discord_token,
             gemini_api_key=gemini_api_key,
-            bot_prefix=bot_prefix,
-            gemini_model=gemini_model,
-            gemini_thinking_level=thinking_level,
-            strict_aether_topic=_bool("STRICT_AETHER_TOPIC", True),
+            bot_prefix=os.getenv("BOT_PREFIX", "h!").strip() or "h!",
+            gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip(),
+            gemini_thinking_level=thinking,
+            strict_aether_topic=_bool("STRICT_AETHER_TOPIC", False),
             max_history=_int("MAX_HISTORY", 16, 2),
             max_output_tokens=_int("MAX_OUTPUT_TOKENS", 768, 128),
             max_input_chars=_int("MAX_INPUT_CHARS", 6000, 100),
@@ -97,6 +104,14 @@ class Settings:
             memory_prune_interval=_int("MEMORY_PRUNE_INTERVAL", 900, 60),
             cooldown_prune_interval=_int("COOLDOWN_PRUNE_INTERVAL", 3600, 60),
             port=_int("PORT", 10000, 1),
+            emojis_enabled=_bool("EMOJIS_ENABLED", True),
+            hades_gif_enabled=_bool("HADES_GIF_ENABLED", True),
+            hades_gif_mode=gif_mode,
+            hades_gif_cooldown_seconds=_float("HADES_GIF_COOLDOWN_SECONDS", 300.0, 0.0),
+            hades_gif_recent_count=_int("HADES_GIF_RECENT_COUNT", 6, 0),
+            hades_gif_cache_seconds=_float("HADES_GIF_CACHE_SECONDS", 900.0, 0.0),
+            hades_gif_max_bytes=_int("HADES_GIF_MAX_BYTES", 8000000, 1024),
+            hades_gif_request_timeout=_float("HADES_GIF_REQUEST_TIMEOUT", 15.0, 1.0),
         )
 
 
@@ -105,5 +120,4 @@ DISCORD_MESSAGE_LIMIT = 2000
 
 
 def validate() -> None:
-    """Force configuration validation at process startup."""
     _ = SETTINGS

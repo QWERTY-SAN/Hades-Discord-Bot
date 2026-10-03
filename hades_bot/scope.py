@@ -1,9 +1,3 @@
-"""Balanced conversation scope for Hades.
-
-Aether Gazer/Hades topics are allowed. Ordinary conversation is also allowed.
-Clearly unrelated specialist/informational requests are declined.
-"""
-
 from __future__ import annotations
 
 import random
@@ -13,108 +7,31 @@ import unicodedata
 from .lore import SCOPE_TERMS
 
 HADES_TERMS = {
-    "aether gazer", "aethergazer", "moda h", "hades", "administrator",
-    "skuld", "verthandi", "tsukuyomi", "buzenbo", "lingguang", "jinwu",
-    "gesh", "apollo", "poseidon", "osiris", "shera", "thor", "artemis",
-    "leviathan", "selene", "ausar", "tyr", "hel", "anubis", "sobek",
-    "hera", "oceanus", "modaeus", "sigil", "modification factor",
-    "gen-zone", "modifier sync",
+    "aether gazer", "aethergazer", "hades", "administrator", "modifier",
+    "society of muses", "olympus", "gen-zone", "sigil", "functor",
+    "mintha", "leuce", "puppet master", "aether code", "access key",
+    "modification factor", "modifier sync", "divine grace", "chthonic mark",
 }
 HADES_TERMS.update(SCOPE_TERMS)
 
-SPECIALIST_TERMS = {
-    "python", "javascript", "typescript", "java", "c++", "c#", "rust",
-    "golang", "ruby", "php", "sql", "html", "css", "programming", "coding",
-    "code", "script", "regex", "api", "github", "git", "docker", "linux",
-    "windows", "cpu", "gpu", "ram", "ssd", "nvme", "motherboard",
-    "processor", "graphics card", "power supply", "psu", "driver", "bios",
-    "uefi", "router", "ethernet", "wifi", "hardware", "overclock", "fl studio",
-    "vst", "formula 1", "f1", "motogp", "nascar", "indycar", "nba", "nfl",
-    "mlb", "ufc", "premier league", "champions league", "mathematics", "math",
-    "calculus", "algebra", "physics", "chemistry", "biology", "statistics",
-    "programming assignment", "homework", "essay", "thesis",
-}
-
-INFORMATIONAL_PATTERNS = (
-    re.compile(r"\bwhat(?:'s| is| are| was| were)\b"),
-    re.compile(r"\bwho(?:'s| is| are| was| were)\b"),
-    re.compile(r"\bwhen(?: did| was| were| is| are)?\b"),
-    re.compile(r"\bwhere(?: is| are| was| were| can| do| does)?\b"),
-    re.compile(r"\bwhy(?: is| are| was| were| does| do| did)?\b"),
-    re.compile(r"\bhow(?: does| do| did| can| would| to)?\b"),
-    re.compile(r"\bexplain\b"),
-    re.compile(r"\bcompare\b"),
-    re.compile(r"\bwhich (?:is|was|are|were|one|version|model)\b"),
-    re.compile(r"\b(?:best|worst|strongest|weakest|dominant|fastest|slowest)\b"),
-    re.compile(r"\b(?:write|make|create|build|code|calculate|solve|fix|debug)\b"),
-    re.compile(r"\b(?:guide|tutorial|instructions|steps|recommend|recommendation)\b"),
-    re.compile(r"\b(?:tell me about|teach me about|help me with)\b"),
+SPECIALIST_REQUESTS = (
+    re.compile(r"\b(?:write|build|code|debug|fix|program)\b.*\b(?:python|javascript|typescript|java|c\+\+|rust|sql|api|bot)\b", re.I),
+    re.compile(r"\b(?:calculate|solve)\b.*\b(?:equation|integral|derivative|matrix|physics|chemistry)\b", re.I),
 )
 
-CASUAL_PATTERNS = (
-    re.compile(r"\bdo you (?:like|love|hate|watch|play|enjoy|know)\b"),
-    re.compile(r"\bwhat do you (?:think|feel|prefer|like)\b"),
-    re.compile(r"\bwhat(?:'s| is) your (?:favorite|favourite|opinion|take)\b"),
-    re.compile(r"\bare you (?:a fan|into|interested)\b"),
-    re.compile(r"\bhow (?:are|were) you\b"),
-    re.compile(r"\bhow'?s (?:your|it going)\b"),
-    re.compile(r"\b(?:good morning|good afternoon|good evening|good night)\b"),
-    re.compile(r"^(?:hello|hey|hi|yo|sup)[!.? ]*$"),
-    re.compile(r"^(?:thanks|thank you|good job|nice|lol|lmao|bruh|bro)[!.? ]*$"),
-)
 
-OFF_TOPIC_RESPONSES = (
-    "That isn't really my area, little lamb. 🌙 Stay with Aether Gazer or simply talk to me instead.",
-    "You're wandering outside my domain. 🎭 I can chat with you, but that subject isn't mine to handle.",
-    "Tsk. That's outside my specialty. 😏 Ask me about Aether Gazer—or just talk to me.",
-    "That's not a thread I follow, Administrator. 🕯️ Bring me back to Aether Gazer or ordinary conversation.",
-)
-
-_SUMMON_RESPONSE = "Yes, Administrator? 🌙 You have my attention."
-_rng = random.SystemRandom()
-
-
-def _normalize(text: str) -> str:
-    value = unicodedata.normalize("NFKC", text).casefold()
-    value = re.sub(r"[\u200b-\u200d\ufeff]", "", value)
-    value = re.sub(r"[^\w+#'.!?-]+", " ", value)
-    return re.sub(r"\s+", " ", value).strip()
-
-
-def _contains_term(text: str, terms: set[str] | frozenset[str]) -> bool:
-    return any(
-        term in text
-        if " " in term
-        else re.search(rf"(?<!\w){re.escape(term)}(?!\w)", text)
-        for term in terms
-    )
-
-
-def _matches(patterns: tuple[re.Pattern[str], ...], text: str) -> bool:
-    return any(pattern.search(text) for pattern in patterns)
-
-
-def is_hades_scope_allowed(content: str) -> bool:
-    text = _normalize(content)
-    if not text:
+def is_hades_scope_allowed(text: str) -> bool:
+    normalized = unicodedata.normalize("NFKC", text).casefold()
+    if any(term in normalized for term in HADES_TERMS):
         return True
-    if _contains_term(text, HADES_TERMS):
-        return True
-    if _matches(CASUAL_PATTERNS, text):
-        return True
-
-    specialist_topic = _contains_term(text, SPECIALIST_TERMS)
-    informational_request = _matches(INFORMATIONAL_PATTERNS, text)
-    if specialist_topic and informational_request:
-        return False
-    if informational_request:
-        return False
-    return True
+    # Ordinary conversation is intentionally allowed. Only clearly explicit
+    # specialist-assistant requests can be filtered when strict mode is enabled.
+    return not any(pattern.search(normalized) for pattern in SPECIALIST_REQUESTS)
 
 
 def off_topic_response() -> str:
-    return _rng.choice(OFF_TOPIC_RESPONSES)
-
-
-def summon_response() -> str:
-    return _SUMMON_RESPONSE
+    return random.choice((
+        "You're asking me to perform as a specialist now? How ambitious. I can still talk with you, Administrator, but don't mistake me for a dedicated technical service.",
+        "That is rather outside my usual stage. Ask me as Hades, not as a substitute for an entire engineering department.",
+        "I can discuss it, little lamb, but I won't pretend to be an all-purpose specialist merely because you asked nicely.",
+    ))
