@@ -48,15 +48,14 @@ HADES_GIF_URLS = [
 ]
 ```
 
-Optional mood prefixes are supported:
 
 ```python
 HADES_GIF_URLS = [
-    "neutral=>https://example.com/hades-neutral.gif",
-    "smug=>https://example.com/hades-smug.gif",
-    "happy=>https://example.com/hades-happy.gif",
-    "annoyed=>https://example.com/hades-annoyed.gif",
-    "surprised=>https://example.com/hades-surprised.gif",
+    "https://example.com/hades1.gif",
+    "https://example.com/hades2.gif",
+    "https://example.com/hades3.gif",
+    "https://example.com/hades4.gif",
+    "https://example.com/hades5.gif",
 ]
 ```
 
@@ -144,18 +143,16 @@ Reference sites:
 GIF URLs are code configuration, not Render environment variables. Edit `hades_bot/gifs.py` and commit the change.
 
 
-The GIF system reads direct `.gif` URLs from `hades_bot/gifs.py` and supports optional mood tags:
 
 ```python
 HADES_GIF_URLS = [
-    "neutral=>https://host/hades1.gif",
-    "smug=>https://host/hades2.gif",
-    "happy=>https://host/hades3.gif",
-    "annoyed=>https://host/hades4.gif",
+    "https://host/hades1.gif",
+    "https://host/hades2.gif",
+    "https://host/hades3.gif",
+    "https://host/hades4.gif",
 ]
 ```
 
-Supported mood tags are `neutral`, `happy`, `smug`, `annoyed`, and `surprised`. Untagged URLs remain valid and are treated as neutral/general GIFs.
 
 Useful settings:
 
@@ -169,4 +166,3 @@ HADES_GIF_MAX_BYTES=8000000
 HADES_GIF_REQUEST_TIMEOUT=15
 ```
 
-Improvements include in-memory caching, GIF signature validation, an 8 MB safety limit, URL validation, per-channel duplicate protection, mood-aware selection, reuse fallback when the recent pool is exhausted, and a reusable HTTP session. The GIF download is temporary in memory; the bot does not write downloaded GIFs to Render's filesystem.
