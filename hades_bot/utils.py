@@ -71,7 +71,7 @@ def strip_bot_mentions(content: str, bot_id: int) -> str:
 
 def sanitize_model_output(text: str) -> str:
     text = re.sub(r"<@!?\d+>", "@user", text)
-    text = re.sub(r"@(everyone|here)", r"@\u200b\1", text, flags=re.I)
+    text = re.sub(r"@(everyone|here)", lambda m: "@\u200b" + m.group(1), text, flags=re.I)
     return text.strip()
 
 

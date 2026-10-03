@@ -91,6 +91,7 @@ class GeminiService:
             system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{emoji_guidance}\n\n{context}",
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         )
 
         try:
