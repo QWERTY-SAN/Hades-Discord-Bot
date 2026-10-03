@@ -51,11 +51,8 @@ class GeminiService:
     async def generate(self, history: list[dict[str, str]]) -> str:
         latest = next((m["content"] for m in reversed(history) if m.get("role") == "user"), "")
         context = build_aether_context(latest)
-        emoji_guidance = "" if not SETTINGS.emojis_enabled else (
-            "Emoji guidance: use 0-2 fitting emojis naturally when appropriate; never spam them or put them in code."
-        )
         config = types.GenerateContentConfig(
-            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{emoji_guidance}\n\n{context}",
+            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{context}",
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
         )
