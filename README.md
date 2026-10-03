@@ -53,6 +53,11 @@ Blocked:
 
 Scope decisions are deterministic, but refusal wording is generated dynamically in Hades' persona and the blocked subject is not discussed in the refusal.
 
+
+### Fan-service behavior
+
+The bot includes a narrow, dynamic fan-service layer for playful admiration and affectionate banter. Examples include compliments, exaggerated requests such as "step on me," light romance, hugs/kisses/headpats, and requests for attention. Responses are generated in Hades' persona rather than selected from fixed replies. The behavior is intentionally non-explicit and does not turn unrelated conversation into flirting.
+
 ### Emojis
 `EMOJIS_ENABLED=true` enables sparse Hades-style emoji use. Usually 0-2 emojis are used; many responses use none.
 
@@ -217,3 +222,6 @@ Hades-Discord-Bot/
 ```
 
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
+
+## Release
+This package consolidates the latest Hades persona, strict scope, dynamic refusals, fan-service, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, and external GIF embedding.

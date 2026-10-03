@@ -4,6 +4,7 @@ import re
 import unicodedata
 
 from ..knowledge.lore import SCOPE_TERMS
+from ..ai.fanservice import is_fanservice_message
 
 HADES_TERMS = {
     "aether gazer", "aethergazer", "hades", "administrator", "modifier",
@@ -91,16 +92,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:i|i'm|im|i've|ive|my|today\s+i|tonight\s+i|this\s+is|that\s+was)\b.{0,500}$", re.I | re.S),
 )
 
-FLIRTY_FAN_PATTERNS = (
-    re.compile(
-        r"\b(?:step\s+on\s+me|dominate\s+me|sit\s+on\s+me|pin\s+me|kiss\s+me|marry\s+me)\b",
-        re.I,
-    ),
-    re.compile(
-        r"\b(?:you(?:'re|\s+are)\s+(?:gorgeous|beautiful|pretty|hot)|you\s+look\s+(?:gorgeous|beautiful|pretty|hot)|i\s+(?:adore|love)\s+you)\b",
-        re.I,
-    ),
-)
+FLIRTY_FAN_PATTERNS = ()
 
 SUBJECTIVE_QUESTION = re.compile(
     r"^(?:what\s+do\s+you\s+(?:think|like|prefer|want|feel)|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|"
@@ -152,7 +144,7 @@ def is_specialist_request(text: str) -> bool:
 
 def is_social_message(text: str) -> bool:
     normalized = _normalize(text)
-    if any(pattern.search(normalized) for pattern in FLIRTY_FAN_PATTERNS):
+    if is_fanservice_message(normalized):
         return True
     return any(pattern.search(normalized) for pattern in SOCIAL_PATTERNS)
 

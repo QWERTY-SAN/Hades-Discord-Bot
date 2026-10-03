@@ -11,6 +11,7 @@ from google.genai import errors, types
 from ..config import SETTINGS
 from ..knowledge.lore import build_aether_context
 from .persona import HADES_SYSTEM_PROMPT
+from .fanservice import fanservice_guidance
 from ..core.utils import clean_model_output
 
 logger = logging.getLogger("hades-bot.gemini")
@@ -79,12 +80,7 @@ class GeminiService:
             max_chars=SETTINGS.knowledge_context_max_chars,
         )
 
-        fan_teasing_guidance = (
-            "Fan-teasing guidance: if the user's message is playful fan admiration (for example, a joking request to be stepped on), "
-            "treat it as flirtatious teasing and stay in Hades's voice. You may tease back, play coy, challenge the user's boldness, "
-            "or lightly make them ask properly. Keep it non-explicit and do not describe sexual acts or anatomy. "
-            "Do not become a constant flirt bot."
-        )
+        fan_teasing_guidance = fanservice_guidance(latest)
 
         emoji_guidance = (
             "Emoji guidance: Hades may naturally use 0-2 tasteful emojis when appropriate. "
