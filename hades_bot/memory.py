@@ -39,10 +39,14 @@ class ConversationMemory:
             if self._expired(conversation, now) and key != exclude_key and not conversation.lock.locked():
                 self._conversations.pop(key, None)
                 removed += 1
+
         while len(self._conversations) > self.max_conversations:
             removable = next(
-                (key for key, conversation in self._conversations.items()
-                 if key != exclude_key and not conversation.lock.locked()),
+                (
+                    key
+                    for key, conversation in self._conversations.items()
+                    if key != exclude_key and not conversation.lock.locked()
+                ),
                 None,
             )
             if removable is None:
@@ -69,7 +73,7 @@ class ConversationMemory:
         conversation = await self._get_or_create(key)
         async with conversation.lock:
             conversation.touched_at = time.monotonic()
-            yield MemorySession(conversation, self.max_history)
+            yield MemorySession(conversation)
 
     async def reset(self, key: str) -> None:
         async with self._index_lock:
@@ -94,9 +98,8 @@ class ConversationMemory:
 
 
 class MemorySession:
-    def __init__(self, conversation: Conversation, max_history: int) -> None:
+    def __init__(self, conversation: Conversation) -> None:
         self._conversation = conversation
-        self._max_history = max_history
 
     @property
     def history(self) -> list[dict[str, str]]:

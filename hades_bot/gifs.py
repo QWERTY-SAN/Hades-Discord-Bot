@@ -1,8 +1,8 @@
 """Hades GIF library.
 
-Add direct GIF URLs to HADES_GIF_URLS below.
-No mood/category system is used.
-The bot sends these URLs directly and does not re-upload them to Discord.
+Put direct, publicly reachable GIF URLs in HADES_GIF_URLS.
+There is intentionally no mood/category system and no GIF environment variable.
+The bot never downloads or re-uploads these GIFs.
 """
 
 HADES_GIF_URLS = [

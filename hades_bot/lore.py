@@ -43,6 +43,7 @@ LORE_ANCHORS = (
 )
 
 SCOPE_TERMS = frozenset(term for anchor in LORE_ANCHORS for term in anchor.terms)
+
 _CANON_GUARD = (
     "No live game-server connection is available. Do not present current banners, patch notes, balance values, "
     "tier lists, or other changing information as verified unless supplied by application data or the user."
@@ -52,7 +53,7 @@ _CANON_GUARD = (
 def _normalize(text: str) -> str:
     value = unicodedata.normalize("NFKC", text).casefold()
     value = re.sub(r"[\u200b-\u200d\ufeff]", "", value)
-    return re.sub(r"\s+", " ", re.sub(r"[^\w+#'.!?-]+", " ", value)).strip()
+    return re.sub(r"[^\w+#'.!?-]+", " ", value).strip()
 
 
 def _contains(text: str, term: str) -> bool:
@@ -63,7 +64,8 @@ def _contains(text: str, term: str) -> bool:
 
 def build_aether_context(user_text: str, max_anchors: int = 4) -> str:
     normalized = _normalize(user_text)
-    selected = []
+    selected: list[LoreAnchor] = []
+
     for anchor in LORE_ANCHORS:
         if any(_contains(normalized, term) for term in anchor.terms):
             selected.append(anchor)
@@ -74,11 +76,12 @@ def build_aether_context(user_text: str, max_anchors: int = 4) -> str:
     if selected:
         lines.append("Relevant stable anchors:")
         lines.extend(f"- {anchor.name}: {anchor.context}" for anchor in selected)
-
     if any(_contains(normalized, term) for term in ("build", "sigil", "functor", "aether code")):
         lines.append("- Hades-specific reference data is available locally; do not treat it as live patch data.")
-        lines.append(f"- Known Hades identity: {HADES_DATA.get('title', 'Puppet Master')} / {HADES_DATA.get('rank', 'S-Grade Modifier')}")
-
+        lines.append(
+            f"- Known Hades identity: {HADES_DATA.get('title', 'Puppet Master')} / "
+            f"{HADES_DATA.get('rank', 'S-Grade Modifier')}"
+        )
     if not selected:
         lines.append("No specific lore anchor matched. Stay in character and do not invent detailed canon.")
     return "\n".join(lines)

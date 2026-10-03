@@ -14,10 +14,14 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.5-flash-lite
+      - key: GEMINI_THINKING_LEVEL
+        value: minimal
       - key: BOT_PREFIX
         value: "h!"
       - key: STRICT_AETHER_TOPIC
         value: "false"
+      - key: EMOJIS_ENABLED
+        value: "true"
       - key: MAX_HISTORY
         value: "16"
       - key: MAX_OUTPUT_TOKENS
@@ -42,5 +46,3 @@ services:
         value: "900"
       - key: COOLDOWN_PRUNE_INTERVAL
         value: "3600"
-      - key: EMOJIS_ENABLED
-        value: "true"

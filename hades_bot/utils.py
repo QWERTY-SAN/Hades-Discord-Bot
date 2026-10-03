@@ -42,6 +42,7 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
         return ["…"]
     if len(text) <= limit:
         return [text]
+
     chunks: list[str] = []
     remaining = text
     while len(remaining) > limit:
@@ -56,6 +57,7 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
         if chunk:
             chunks.append(chunk)
         remaining = remaining[split_at:].lstrip()
+
     if remaining:
         chunks.append(remaining)
     return chunks
@@ -69,11 +71,10 @@ def strip_bot_mentions(content: str, bot_id: int) -> str:
 
 def sanitize_model_output(text: str) -> str:
     text = re.sub(r"<@!?\d+>", "@user", text)
-    text = re.sub(r"@(everyone|here)", r"@\1", text, flags=re.I)
+    text = re.sub(r"@(everyone|here)", r"@\u200b\1", text, flags=re.I)
     return text.strip()
 
 
 def clean_model_output(text: str) -> str:
-    # Gemini can occasionally return empty whitespace or accidental null chars.
     text = text.replace("\x00", "").strip()
     return sanitize_model_output(text)

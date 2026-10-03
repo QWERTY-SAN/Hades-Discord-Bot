@@ -10,7 +10,13 @@ def update_discord_state(*, ready: bool, user: str | None = None, guild_count: i
 
 
 async def index(request: web.Request) -> web.Response:
-    return web.json_response({"service": "Hades Discord AI Bot", "status": "online" if _state["discord_ready"] else "starting", **_state})
+    return web.json_response(
+        {
+            "service": "Hades Discord AI Bot",
+            "status": "online" if _state["discord_ready"] else "starting",
+            **_state,
+        }
+    )
 
 
 async def health(request: web.Request) -> web.Response:
@@ -19,19 +25,14 @@ async def health(request: web.Request) -> web.Response:
 
 async def ready(request: web.Request) -> web.Response:
     ready_state = _state["discord_ready"]
-    return web.json_response({"service": "hades-discord-bot", "status": "ready" if ready_state else "not-ready", **_state}, status=200 if ready_state else 503)
-
-
-async def start_health_server() -> web.AppRunner:
-    app = web.Application()
-    app.router.add_get("/", index)
-    app.router.add_get("/health", health)
-    app.router.add_get("/ready", ready)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", SETTINGS.port)
-    await site.start()
-    return runner
+    return web.json_response(
+        {
+            "service": "hades-discord-bot",
+            "status": "ready" if ready_state else "not-ready",
+            **_state,
+        },
+        status=200 if ready_state else 503,
+    )
 
 
 def start_web_server() -> None:
@@ -41,7 +42,19 @@ def start_web_server() -> None:
     def runner() -> None:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(start_health_server())
+
+        async def start() -> web.AppRunner:
+            app = web.Application()
+            app.router.add_get("/", index)
+            app.router.add_get("/health", health)
+            app.router.add_get("/ready", ready)
+            runner_obj = web.AppRunner(app)
+            await runner_obj.setup()
+            site = web.TCPSite(runner_obj, "0.0.0.0", SETTINGS.port)
+            await site.start()
+            return runner_obj
+
+        loop.run_until_complete(start())
         loop.run_forever()
 
-    threading.Thread(target=runner, daemon=True).start()
+    threading.Thread(target=runner, name="health-server", daemon=True).start()

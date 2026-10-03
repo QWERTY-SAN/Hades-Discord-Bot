@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -44,6 +47,7 @@ class Settings:
     gemini_model: str
     gemini_thinking_level: str
     strict_aether_topic: bool
+    emojis_enabled: bool
     max_history: int
     max_output_tokens: int
     max_input_chars: int
@@ -78,6 +82,7 @@ class Settings:
             gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip(),
             gemini_thinking_level=thinking,
             strict_aether_topic=_bool("STRICT_AETHER_TOPIC", False),
+            emojis_enabled=_bool("EMOJIS_ENABLED", True),
             max_history=_int("MAX_HISTORY", 16, 2),
             max_output_tokens=_int("MAX_OUTPUT_TOKENS", 768, 128),
             max_input_chars=_int("MAX_INPUT_CHARS", 6000, 100),

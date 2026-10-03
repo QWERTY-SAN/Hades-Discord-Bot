@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import random
@@ -13,6 +15,7 @@ from .utils import clean_model_output
 
 logger = logging.getLogger("hades-bot.gemini")
 
+
 class AIServiceError(RuntimeError):
     def __init__(self, user_message: str, status_code: int | None = None):
         super().__init__(user_message)
@@ -21,25 +24,18 @@ class AIServiceError(RuntimeError):
 
 
 _HADES_EMOJIS = ("🌙", "🎭", "🪡", "🕯️", "✨", "😏", "🖤", "🎀")
-_EMOJI_RE = re.compile(
-    r"[\U0001F300-\U0001FAFF\u2600-\u27BF]"
-)
+_EMOJI_RE = re.compile(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]")
 
 
 def _add_natural_emoji(text: str) -> str:
-    """Add at most one small Hades-style emoji to ordinary prose.
-
-    Model-generated emojis are left alone. Code blocks and very long responses
-    are not modified. There is intentionally a chance of adding nothing.
-    """
+    """Add at most one understated Hades-style emoji to ordinary prose."""
     if not text or "```" in text or _EMOJI_RE.search(text):
         return text
     if len(text) > 700:
         return text
     if random.SystemRandom().random() > 0.35:
         return text
-    suffix = random.SystemRandom().choice(_HADES_EMOJIS)
-    return f"{text.rstrip()} {suffix}"
+    return f"{text.rstrip()} {random.SystemRandom().choice(_HADES_EMOJIS)}"
 
 
 class GeminiService:
@@ -62,37 +58,41 @@ class GeminiService:
 
     @staticmethod
     def build_contents(history: list[dict[str, str]]) -> list[types.Content]:
-        contents = []
+        contents: list[types.Content] = []
         for message in history:
             role = "model" if message["role"] in {"assistant", "model"} else "user"
-            contents.append(types.Content(
-                role=role,
-                parts=[types.Part.from_text(text=message["content"])],
-            ))
+            contents.append(
+                types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=message["content"])],
+                )
+            )
         return contents
 
     async def generate(self, history: list[dict[str, str]]) -> str:
         latest = next((m["content"] for m in reversed(history) if m.get("role") == "user"), "")
         context = build_aether_context(latest)
+
         emoji_guidance = (
             "Emoji guidance: Hades may naturally use 0-2 tasteful emojis when appropriate. "
             "Prefer 🌙 🎭 🪡 🕯️ ✨ 😏 🖤 🎀. Never spam emojis, never put them in code, "
             "and many replies should use none."
-            if SETTINGS.emojis_enabled else
-            "Emoji guidance: do not add emojis."
+            if SETTINGS.emojis_enabled
+            else "Emoji guidance: do not add emojis."
         )
+
         scope_guidance = (
-            "Scope guard: do not write or generate programming code, scripts, technical tutorials, "
-            "academic assignments, generic how-to guides, or unrelated specialist content. "
-            "For those requests, give a brief in-character refusal instead."
+            "Specialist boundary: do not generate programming code, scripts, bots, technical tutorials, "
+            "academic assignments, or unrelated specialist work. For an explicit request for those, give a "
+            "brief in-character refusal and redirect to normal conversation as Hades."
         )
+
         config = types.GenerateContentConfig(
-            system_instruction=(
-                f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{emoji_guidance}\n\n{context}"
-            ),
+            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{emoji_guidance}\n\n{context}",
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
         )
+
         try:
             response = await self.client.aio.models.generate_content(
                 model=SETTINGS.gemini_model,

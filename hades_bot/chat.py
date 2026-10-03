@@ -18,6 +18,7 @@ class HadesChat:
             await asyncio.wait_for(self._semaphore.acquire(), timeout=SETTINGS.max_queue_wait)
         except asyncio.TimeoutError as exc:
             raise RuntimeError("The response queue is currently full.") from exc
+
         try:
             async with self.memory.session(key) as session:
                 trial_history = [*session.history, {"role": "user", "content": message}]
