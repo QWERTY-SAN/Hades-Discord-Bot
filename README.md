@@ -181,3 +181,13 @@ As of 2026-10-04, CN has already ended new content after V5.2 (2026-07-23) and e
 The bot includes structured reference data covering Hades, world/lore, regions and organizations, named historical events, combat resources and systems, endgame modes, version events, Shifted Star routines, Support Modules, M.E.O.W., Opponent Intel, Achievements, scans/economy, side content, and the service lifecycle.
 
 The knowledge layer distinguishes stable lore from dated gameplay data. It does not claim live access to banners, rotations, rewards, or current meta.
+
+## Additional improvements
+
+- Knowledge retrieval now scores multiple relevant Aether Gazer anchors instead of taking only the first few exact matches.
+- Follow-up questions can reuse the most recent user turns when selecting lore/gameplay context.
+- Scope matching distinguishes hard unrelated topics from generic words that can legitimately appear in Aether Gazer lore (for example, a character liking horse racing or the game's Music Dossier).
+- GIF cooldown/history state is periodically pruned.
+- Forbidden model output releases the user's cooldown instead of consuming it.
+- Hades' current profile snapshot includes her named outfits, Heart Link reference, Access Key synergy and current chips.
+- Ancient Shadow and Crisis Analysis are represented as version-sensitive event/challenge content.

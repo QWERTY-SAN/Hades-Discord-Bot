@@ -49,7 +49,12 @@
       "worldview": "2025-09-02",
       "sigil_enchants": "2025-10-05",
       "functors": "2026-07-23"
-    }
+    },
+    "mimir_meow_last_update": "2026-09-29",
+    "mimir_support_modules_last_update": "2026-09-29",
+    "mimir_opponent_intel_last_update": "2026-09-29",
+    "mimir_teams_last_update": "2026-09-28",
+    "snapshot_checked": "2026-10-04"
   },
   "world_and_setting": {
     "gaea": "Gaea is the system that supports the Idealbild data world and the continuation of human consciousness within it.",
@@ -163,7 +168,17 @@
       "m_e_o_w": "M.E.O.W. and M.E.O.W. Chips provide auxiliary progression/utility, with some unlocks tied directly to endgame and challenge milestones.",
       "achievement_and_event_rewards": "One-time and limited-time rewards can materially affect account progression and Shifted Star income, so they should be kept separate from repeatable endgame income."
     },
-    "endgame_advice_policy": "When Hades explains endgame, she should distinguish permanent content, recurring content, seasonal/periodic content, and one-time rewards. She should not invent current reset schedules, score thresholds, reward totals, rankings, or meta tier placements. For version-sensitive questions, she should qualify the answer and use the stored source/version snapshot."
+    "endgame_advice_policy": "When Hades explains endgame, she should distinguish permanent content, recurring content, seasonal/periodic content, and one-time rewards. She should not invent current reset schedules, score thresholds, reward totals, rankings, or meta tier placements. For version-sensitive questions, she should qualify the answer and use the stored source/version snapshot.",
+    "ancient_shadow": {
+      "type": "version-limited challenge/event content",
+      "knowledge": "Ancient Shadow is a recurring/versional Aether Gazer challenge event that has appeared in multiple content updates. It belongs in the event/endgame knowledge layer rather than being treated as a permanent core mode.",
+      "advice": "Treat its enemy roster, rules, score/ranking behavior, rewards and schedule as version-specific. Do not invent a current rotation from the historical reference."
+    },
+    "crisis_analysis": {
+      "type": "versional challenge event",
+      "knowledge": "Crisis Analysis is an Aether Gazer version event/challenge system that can appear alongside other limited activities. Its exact stages and rewards are version-sensitive.",
+      "advice": "Describe it from a dated source when the user asks about the currently active cycle."
+    }
   },
   "service_lifecycle": {
     "terminology": {

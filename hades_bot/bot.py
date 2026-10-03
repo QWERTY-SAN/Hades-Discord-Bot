@@ -17,6 +17,12 @@ from .web import update_discord_state
 
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
+SCOPE_FALLBACKS = (
+    "Mm. I have no interest in that matter, Administrator. Ask me about something within my realm.",
+    "That lies outside my stage, little lamb. Bring me something from Aether Gazer instead.",
+    "Some subjects are simply too dull to deserve my attention. Choose something closer to my world. 🌙",
+)
+
 EMPTY_CALL_RESPONSES = (
     "You summoned me, little lamb. Speak. 🌙",
     "Yes, Administrator? 😏",
@@ -118,7 +124,7 @@ class HadesBot(commands.Bot):
                 return
             except RuntimeError:
                 await message.reply(
-                    "I have no interest in that subject. Ask me about something within my realm.",
+                    self._rng.choice(SCOPE_FALLBACKS),
                     mention_author=False,
                     allowed_mentions=ALLOWED_MENTIONS,
                 )
@@ -152,7 +158,8 @@ class HadesBot(commands.Bot):
                 try:
                     refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
                 except (AIServiceError, RuntimeError):
-                    refusal = "That subject is of little interest to me, Administrator. Let us discuss something within my realm instead."
+                    refusal = self._rng.choice(SCOPE_FALLBACKS)
+                await self.cooldowns.release(key)
                 await self.send_chunks(message, refusal)
                 return
             reply = sanitize_model_output(reply)
@@ -198,6 +205,7 @@ class HadesBot(commands.Bot):
     async def maintenance_loop(self) -> None:
         await self.hades_chat.prune_memory()
         await self.cooldowns.prune(SETTINGS.cooldown_prune_interval)
+        await self.media.prune()
 
     @maintenance_loop.before_loop
     async def before_maintenance(self) -> None:

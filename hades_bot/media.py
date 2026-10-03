@@ -18,6 +18,8 @@ logger = logging.getLogger("hades-bot.media")
 GIF_AUTO_MODE = "every_mention"
 GIF_COOLDOWN_SECONDS = 300.0
 GIF_RECENT_COUNT = 6
+GIF_STATE_TTL_SECONDS = 7200.0
+MAX_TRACKED_CHANNELS = 1000
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,6 +33,7 @@ class HadesMedia:
     def __init__(self) -> None:
         self._rng = SystemRandom()
         self._last_sent: dict[str, float] = {}
+        self._channel_touched: dict[str, float] = {}
         self._recent_urls: dict[str, deque[str]] = defaultdict(
             lambda: deque(maxlen=GIF_RECENT_COUNT)
         )
@@ -70,6 +73,33 @@ class HadesMedia:
     def _history_key(self, message: discord.Message) -> str:
         guild = message.guild.id if message.guild else "dm"
         return f"{guild}:{message.channel.id}"
+
+    async def prune(self) -> int:
+        """Drop stale GIF cooldown/history entries so long-running services stay bounded."""
+        now = time.monotonic()
+        removed = 0
+        stale_users = [key for key, stamp in self._last_sent.items() if now - stamp >= GIF_STATE_TTL_SECONDS]
+        for key in stale_users:
+            self._last_sent.pop(key, None)
+            removed += 1
+        if len(self._recent_urls) > MAX_TRACKED_CHANNELS:
+            active_by_channel = {
+                key: self._channel_touched.get(key, 0.0)
+                for key in self._recent_urls
+            }
+            keep = set(
+                sorted(
+                    active_by_channel,
+                    key=active_by_channel.get,
+                    reverse=True,
+                )[:MAX_TRACKED_CHANNELS]
+            )
+            for key in list(self._recent_urls):
+                if key not in keep:
+                    self._recent_urls.pop(key, None)
+                    self._channel_touched.pop(key, None)
+                    removed += 1
+        return removed
 
     def should_auto_send(self, message: discord.Message, trigger: str) -> bool:
         if not self.entries:
@@ -118,7 +148,9 @@ class HadesMedia:
             return False
 
         history_key = self._history_key(message)
+        sent_at = time.monotonic()
         self._recent_urls[history_key].append(entry.url)
-        self._last_sent[self._cooldown_key(message)] = time.monotonic()
+        self._channel_touched[history_key] = sent_at
+        self._last_sent[self._cooldown_key(message)] = sent_at
         logger.info("Sent Hades GIF embed")
         return True

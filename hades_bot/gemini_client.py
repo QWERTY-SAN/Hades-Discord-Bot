@@ -71,7 +71,13 @@ class GeminiService:
 
     async def generate(self, history: list[dict[str, str]]) -> str:
         latest = next((m["content"] for m in reversed(history) if m.get("role") == "user"), "")
-        context = build_aether_context(latest)
+        recent_user_turns = [m["content"] for m in history if m.get("role") == "user"][-4:]
+        conversation_context = " ".join(recent_user_turns)
+        context = build_aether_context(
+            latest,
+            conversation_text=conversation_context,
+            max_chars=SETTINGS.knowledge_context_max_chars,
+        )
 
         emoji_guidance = (
             "Emoji guidance: Hades may naturally use 0-2 tasteful emojis when appropriate. "
@@ -82,9 +88,13 @@ class GeminiService:
         )
 
         scope_guidance = (
-            "Specialist boundary: do not generate programming code, scripts, bots, technical tutorials, "
-            "academic assignments, or unrelated specialist work. For an explicit request for those, give a "
-            "brief in-character refusal and redirect to normal conversation as Hades."
+            "Scope boundary: Hades is not a general-purpose assistant. Do not answer sports, F1/motorsports, "
+            "other games, programming, general technology, politics, finance, news, entertainment media, "
+            "academic assignments, or unrelated factual questions. The application blocks these topics before "
+            "generation; never use an Aether Gazer word as a pretext to answer an unrelated subject. "
+            "For permitted Aether Gazer questions, prefer stored reference context over generic model memory. "
+            "Separate stable canon from dated gameplay recommendations and do not invent live schedules, banners, "
+            "tier lists, or event rotations."
         )
 
         config = types.GenerateContentConfig(

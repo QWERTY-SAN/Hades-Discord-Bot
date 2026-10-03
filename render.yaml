@@ -28,6 +28,8 @@ services:
         value: "768"
       - key: MAX_INPUT_CHARS
         value: "6000"
+      - key: KNOWLEDGE_CONTEXT_MAX_CHARS
+        value: "9000"
       - key: USER_COOLDOWN
         value: "2.0"
       - key: MAX_CONCURRENT_REQUESTS

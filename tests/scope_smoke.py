@@ -21,5 +21,5 @@ for text in allowed:
 for text in blocked:
     assert not is_hades_scope_allowed(text), text
 
-assert scope_block_reason("Hades, what do you think about Formula One?") == "sports or motorsport"
+assert scope_block_reason("Hades, what do you think about Formula One?") == "F1 or motorsport"
 print("scope smoke checks passed")

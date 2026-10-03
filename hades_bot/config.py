@@ -51,6 +51,7 @@ class Settings:
     max_history: int
     max_output_tokens: int
     max_input_chars: int
+    knowledge_context_max_chars: int
     user_cooldown: float
     max_concurrent_requests: int
     max_queue_wait: float
@@ -86,6 +87,7 @@ class Settings:
             max_history=_int("MAX_HISTORY", 16, 2),
             max_output_tokens=_int("MAX_OUTPUT_TOKENS", 768, 128),
             max_input_chars=_int("MAX_INPUT_CHARS", 6000, 100),
+            knowledge_context_max_chars=_int("KNOWLEDGE_CONTEXT_MAX_CHARS", 9000, 1000),
             user_cooldown=_float("USER_COOLDOWN", 2.0, 0.0),
             max_concurrent_requests=_int("MAX_CONCURRENT_REQUESTS", 3, 1),
             max_queue_wait=_float("MAX_QUEUE_WAIT", 20.0, 0.0),

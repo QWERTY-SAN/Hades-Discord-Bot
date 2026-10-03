@@ -88,5 +88,30 @@
       "Hope - Skuld"
     ],
     "accuracy_rule": "Do not present this dated team snapshot as a guaranteed current meta recommendation if a newer source is available."
+  },
+  "profile_snapshot": {
+    "source": "https://mimir.cat/puppet-master/profile",
+    "last_update": "2026-09-01",
+    "outfits": [
+      "Puppet Master (Origin)",
+      "Nighttime Iris",
+      "Lantern of Lethe",
+      "Lazy Vacation"
+    ],
+    "heart_link_event": "A Gift From Hades",
+    "access_key_synergy": "Gift",
+    "access_key_unlock_reference": "Main Story 11-18 (Normal), use Puppet Master - Hades as team leader; additional unlock conditions are version-sensitive.",
+    "chips": [
+      "Aid",
+      "Cover",
+      "Hero Breaker"
+    ],
+    "identity_note": "Hades is described as the person actually in charge of Modifier activities at the Society of Muses and is known as the youthful witch."
+  },
+  "ultimate_skillchain_reference": {
+    "source_last_update": "2026-09-01",
+    "fantoccini_fancy": "Hades with Drowsie - Oneiroi; provides Shadow/Light skillchain effects and Olympus-oriented team support.",
+    "dream_luminous": "Hades with Dreamshade - Oneiroi; restores Hades Divine Grace during the chain and provides Crit support.",
+    "grand_finale": "Named Hades Ultimate Skillchain content; exact current effects should be read from the latest profile rather than this stable reference."
   }
 }
