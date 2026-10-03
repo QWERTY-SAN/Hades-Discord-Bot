@@ -57,14 +57,6 @@ class Settings:
     memory_prune_interval: int
     cooldown_prune_interval: int
     port: int
-    emojis_enabled: bool
-    hades_gif_enabled: bool
-    hades_gif_mode: str
-    hades_gif_cooldown_seconds: float
-    hades_gif_recent_count: int
-    hades_gif_cache_seconds: float
-    hades_gif_max_bytes: int
-    hades_gif_request_timeout: float
 
     @classmethod
     def load(cls) -> "Settings":
@@ -78,11 +70,6 @@ class Settings:
         thinking = os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().lower()
         if thinking not in {"minimal", "low", "medium", "high"}:
             raise RuntimeError("GEMINI_THINKING_LEVEL must be minimal, low, medium, or high.")
-
-        gif_mode = os.getenv("HADES_GIF_MODE", "every_mention").strip().lower()
-        allowed_modes = {"off", "first_reply", "every_mention", "every_command", "every_response"}
-        if gif_mode not in allowed_modes:
-            raise RuntimeError(f"HADES_GIF_MODE must be one of: {', '.join(sorted(allowed_modes))}.")
 
         return cls(
             discord_token=discord_token,
@@ -104,14 +91,6 @@ class Settings:
             memory_prune_interval=_int("MEMORY_PRUNE_INTERVAL", 900, 60),
             cooldown_prune_interval=_int("COOLDOWN_PRUNE_INTERVAL", 3600, 60),
             port=_int("PORT", 10000, 1),
-            emojis_enabled=_bool("EMOJIS_ENABLED", True),
-            hades_gif_enabled=_bool("HADES_GIF_ENABLED", True),
-            hades_gif_mode=gif_mode,
-            hades_gif_cooldown_seconds=_float("HADES_GIF_COOLDOWN_SECONDS", 300.0, 0.0),
-            hades_gif_recent_count=_int("HADES_GIF_RECENT_COUNT", 6, 0),
-            hades_gif_cache_seconds=_float("HADES_GIF_CACHE_SECONDS", 900.0, 0.0),
-            hades_gif_max_bytes=_int("HADES_GIF_MAX_BYTES", 8000000, 1024),
-            hades_gif_request_timeout=_float("HADES_GIF_REQUEST_TIMEOUT", 15.0, 1.0),
         )
 
 

@@ -44,12 +44,3 @@ services:
         value: "3600"
       - key: EMOJIS_ENABLED
         value: "true"
-      - key: HADES_GIF_ENABLED
-        value: "true"
-      - key: HADES_GIF_MODE
-        value: "every_mention"
-      - key: HADES_GIF_COOLDOWN_SECONDS
-        value: "300"
-      - key: HADES_GIF_RECENT_COUNT
-        value: "6"
-        value: ""

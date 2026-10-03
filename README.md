@@ -42,7 +42,6 @@ The bot can also respond to direct mentions, DMs, and direct replies to its mess
 GIF URLs are stored in `hades_bot/gifs.py`, not in `.env`:
 
 ```python
-HADES_GIF_URLS = [
     "https://example.com/hades1.gif",
     "https://example.com/hades2.gif",
 ]
@@ -50,7 +49,6 @@ HADES_GIF_URLS = [
 
 
 ```python
-HADES_GIF_URLS = [
     "https://example.com/hades1.gif",
     "https://example.com/hades2.gif",
     "https://example.com/hades3.gif",
@@ -145,7 +143,6 @@ GIF URLs are code configuration, not Render environment variables. Edit `hades_b
 
 
 ```python
-HADES_GIF_URLS = [
     "https://host/hades1.gif",
     "https://host/hades2.gif",
     "https://host/hades3.gif",
@@ -157,12 +154,5 @@ HADES_GIF_URLS = [
 Useful settings:
 
 ```env
-HADES_GIF_ENABLED=true
-HADES_GIF_MODE=every_mention
-HADES_GIF_COOLDOWN_SECONDS=300
-HADES_GIF_RECENT_COUNT=6
-HADES_GIF_CACHE_SECONDS=900
-HADES_GIF_MAX_BYTES=8000000
-HADES_GIF_REQUEST_TIMEOUT=15
 ```
 

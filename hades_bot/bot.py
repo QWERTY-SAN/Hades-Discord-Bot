@@ -197,7 +197,7 @@ async def status_command(ctx: commands.Context) -> None:
         f"Memory: `{count}` active conversations\n"
         f"Requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\n"
         f"Total AI requests: `{bot.hades_chat.total_requests}`\n"
-        f"GIF mode: `{SETTINGS.hades_gif_mode}`\n"
+        f"GIF auto mode: `every_mention`\n"
         f"GIFs: `{bot.media.configured_count}` configured / `{bot.media.cached_count}` cached\n"
         f"Latency: `{round(bot.latency * 1000)}ms`",
         mention_author=False, allowed_mentions=ALLOWED_MENTIONS,
