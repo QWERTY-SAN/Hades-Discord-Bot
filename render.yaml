@@ -19,7 +19,7 @@ services:
       - key: BOT_PREFIX
         value: "h!"
       - key: STRICT_AETHER_TOPIC
-        value: "false"
+        value: "true"
       - key: EMOJIS_ENABLED
         value: "true"
       - key: MAX_HISTORY
