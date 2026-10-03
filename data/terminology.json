@@ -9,7 +9,29 @@
     "modification factor",
     "aether code",
     "divine grace",
-    "chthonic mark"
+    "chthonic mark",
+    "sephirah zone",
+    "source layer",
+    "idealbild",
+    "visbanes",
+    "gaea"
   ],
-  "note": "Stable terminology only. Patch-specific mechanics are intentionally not stored here."
+  "hades_terms": [
+    "puppet master",
+    "society of muses",
+    "olympus",
+    "mintha",
+    "leuce",
+    "oneiroi",
+    "puppet show",
+    "puppet strings",
+    "dance partner",
+    "dance duo",
+    "astral council",
+    "omorfies",
+    "leuce & mintha",
+    "herald - cerberus",
+    "fantoccini fancy"
+  ],
+  "note": "Stable terminology only. Patch-specific mechanics are kept separate in hades_reference.json."
 }

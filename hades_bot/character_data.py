@@ -14,5 +14,8 @@ def _load_json(name: str) -> Any:
 
 
 HADES_DATA = _load_json("hades.json")
+HADES_REFERENCE = _load_json("hades_reference.json")
 TERMINOLOGY = _load_json("terminology.json")
+SOURCE_POLICY = _load_json("source_policy.json")
 SOURCES = _load_json("sources.json")
+GAME_KNOWLEDGE = _load_json("game_knowledge.json")

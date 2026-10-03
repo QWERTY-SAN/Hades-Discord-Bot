@@ -1,0 +1,252 @@
+{
+  "source_snapshot": {
+    "mimir_home_checked": "2026-10-04",
+    "mimir_sections": [
+      "Teams",
+      "Sigils",
+      "Functors",
+      "Warp Skills",
+      "Sigil Enchants",
+      "Support Modules",
+      "Opponent Intel",
+      "Achievements",
+      "Worldview",
+      "M.E.O.W.",
+      "Tier List"
+    ],
+    "mimir_version_labels_seen": [
+      "CN 5.2",
+      "CN 5.1"
+    ],
+    "mimir_guide_attribution": "Guide data adapted from 花舞组Official; English translations on Mimir may be credited to Admin.",
+    "current_endgame_references_checked": [
+      "Mimir M.E.O.W. page (current entries reference Recurring Dream, Dimensional Variable and Causality Survey unlocks)",
+      "Mimir team/guide data (current guide pages reference Iterative Testing and late-game team building)",
+      "Aether Gazer Wiki/FAQ result for Hazard Zone Sigil acquisition (2026-04-05)"
+    ],
+    "current_service_status_checked": "2026-10-04",
+    "lifecycle_sources_checked": [
+      "Aether Gazer official Global news page / July 2026 future announcement listing",
+      "Aether Gazer official Global announcement as reproduced by contemporary reports",
+      "Contemporary coverage cross-checking the Global Companion Server plan"
+    ],
+    "event_sources_checked": [
+      "2026 third-anniversary livestream summary for event/minigame examples",
+      "Contemporary Global 4.7 version tracking for shortened event cycle",
+      "Global V5.2 end-of-content announcement coverage",
+      "CN Companion Server September 2026 reports for observed post-update reward/event behavior"
+    ],
+    "mimir_hades_profile_last_update": "2026-09-01",
+    "mimir_global_teams_last_update": "2026-09-28",
+    "mimir_current_teams_checked": "2026-10-04"
+  },
+  "world_and_setting": {
+    "gaea": "Gaea is the system that supports the Idealbild data world and the continuation of human consciousness within it.",
+    "idealbild": "Idealbild is the calculated world line created to guide stable development within Gaea.",
+    "source_layer": "The Source Layer is the underlying reality/data layer referenced in Aether Gazer's setting and story terminology.",
+    "sephirah_zones": "Sephirah Zones are the major regions within the Aether Gazer setting, including places such as Olympus, Ain Soph, Xu Heng and others.",
+    "visbanes": "Visbanes are the major hostile threats that Aether Gazer's Modifiers fight.",
+    "aether_gazer": "Aether Gazer is an organization of Modifiers established by Odin to fight Visbanes, protect people, and conduct related research.",
+    "division_nine": "Division Nine contains specialized groups including Leaders, Special Task Force, General Office, Intelligence Office, and The Cryptics.",
+    "omorfies": "Omorfies is a Sephirah Zone associated with its own society and culture; Hades and Hera have established connections to it.",
+    "society_of_muses": "The Society of Muses is Hades' organization. Hades manages its Modifier activities and is described in the reference material as the person actually in charge.",
+    "cryptics": "The Cryptics are a technical/research group within Aether Gazer; Heimdall is one of the main people in charge and developed Aether Gazer's AI systems including Mimir.",
+    "quad": "The Quad is the organization associated with Xu Heng; Gengchen is identified as its founder and long-time protector in the current Mimir profile reference.",
+    "karasugo_family": "The Karasugo Family is associated with Izanami's background and leadership in Xu Heng-related story material."
+  },
+  "game_systems": {
+    "modifier": "Modifiers are awakened beings who can use Divine Power through Access Keys and fight Visbanes.",
+    "gen_zone": "A Gen-Zone is the source area from which a Modifier's Divine Power is derived.",
+    "access_key": "An Access Key is the core combat apparatus used by a Modifier to manifest and control Divine Power.",
+    "functor": "A Functor is a spirit-like form of an Access Key that can enhance a Modifier's power and, for stronger Functors, alter how an Access Key's Divine Power functions.",
+    "sigil": "Sigils are crests derived from significant events and legends; a Modifier can equip up to six, with additional imprint effects when enough of a matching set is equipped.",
+    "aether_code": "Aether Codes are branching upgrade choices that alter a Modifier's skills, passives, or combat behavior.",
+    "modified_mode": "Modified Mode is a high-level data-correction combat technique used against powerful enemies through an Access Key.",
+    "zero_time": "Zero Time is the slowed-time effect associated with an Extremity Dodge in the combat system; its duration and trigger rules depend on the Modifier and current game data.",
+    "transcend": "Transcend and related upgrade systems raise a Modifier's investment level and can unlock additional stats or effects; exact costs are version-specific.",
+    "modifier_sync": "Modifier Sync is a progression system used to strengthen Modifiers; exact bonuses depend on the Modifier and current version.",
+    "warp": "Warp Skills and related Warp effects are part of later-stage Modifier customization and can provide specialized combat effects.",
+    "support_modules": "Support Modules are Administrator-side support/customization systems that can enhance combat and team performance."
+  },
+  "currencies_and_resources": {
+    "shifted_star": {
+      "name": "Shifted Star",
+      "role": "Primary premium currency used for scans and other limited purchases in gameplay.",
+      "lore_note": "In the setting's data-world explanation, Shifted Stars are unstable fragments of Shifting Flowers that retain the future-reflecting properties of the original data crystal.",
+      "farming_note": "Daily, weekly, monthly and event income can vary by server version and active content. Do not quote a fixed current total unless fresh dated data is available."
+    },
+    "shifting_flower": "Shifting Flowers are larger data crystals associated with deflections in Idealbild; unstable disturbances can cause them to become Shifted Stars.",
+    "swigs": "Swigs represent Mimir's remaining functional value during combat. Battle assistance consumes Swigs, and coolant restores them.",
+    "ain_soph_coin": "Ain Soph Coin is the universal currency used across Gaea after becoming standardized from Ain Soph District's original currency.",
+    "coolant": "Coolant restores Mimir's usable Swigs.",
+    "divine_factor": "Divine Factors are progression materials associated with Modifier enhancement and mission/challenge rewards; exact uses and values can change with versions.",
+    "sigil_materials": "Sigil farming and enhancement use several material types and modes; exact reward tables are version-specific."
+  },
+  "shifted_star_routine": {
+    "daily": [
+      "Complete available Daily Missions/activity goals.",
+      "Check current daily free or low-cost shop rewards when available.",
+      "Use stamina efficiently on progression/material stages that also advance daily activity when practical.",
+      "Check limited-time events because event tasks can add to daily income."
+    ],
+    "weekly": [
+      "Complete available Weekly Missions/activity goals.",
+      "Clear the currently active weekly-reset combat/reward modes that provide Shifted Stars or other useful resources.",
+      "Collect weekly login or recurring rewards when the current version offers them."
+    ],
+    "monthly": [
+      "Check monthly or season-based reward tracks and any monthly reset shops.",
+      "Include recurring passes/subscriptions only when the Administrator actually has them; do not assume paid rewards.",
+      "Count event income separately because event schedules can dominate monthly Shifted Star totals."
+    ],
+    "accuracy_rule": "Never tell the Administrator that a single fixed daily/weekly/monthly Shifted Star total is guaranteed. Totals depend on server version, account progression, active modes, events, achievements, and one-time rewards."
+  },
+  "organizations_and_people": {
+    "odin": "Odin is the founder/leader of Aether Gazer and a major figure in the Modifiers' resistance against Visbanes.",
+    "heimdall": "Heimdall is a senior Cryptics figure who developed major Aether Gazer AI systems including Mimir; her profile emphasizes precision, research, and efficiency.",
+    "shu": "Shu handles many Aether Gazer administrative duties and is a trusted senior member associated with Division Nine.",
+    "poseidon": "Poseidon is a core Division Nine member known for support-oriented Divine Power, a gentle demeanor, and her friendship with Shu.",
+    "tsukuyomi": "Tsukuyomi leads the Pheasant Squad and is portrayed as highly disciplined, concise, and intensely focused on training and missions.",
+    "skuld": "Skuld is an Artificial Mod designated No. 0705 who awakened in a new vessel under Division Nine's Administrator; her profile emphasizes an unusual social understanding and an emerging identity.",
+    "gengchen": "Gengchen is the founder of the Quad and a long-time protector of Xu Heng, deeply concerned with its stability.",
+    "lingguang": "Lingguang is a prominent Modifier whose current Mimir reference includes Fire-focused team support mechanics; exact build and balance claims are version-sensitive.",
+    "izanami": "Izanami, originally Karasugo Senba, leads the Karasugo Family from behind the scenes and is portrayed as rational and aloof with a softer side around trusted people.",
+    "hera": "Hera is a Society of Muses Modifier from Omorfies known for elegance, beauty, social customs, and a strong sense of superiority."
+  },
+  "endgame_and_late_game": {
+    "overview": "Aether Gazer's late-game is a collection of recurring challenge modes and progression loops rather than one single endgame. Hades should distinguish permanent challenge content, recurring reward modes, roguelite/seasonal content, and high-difficulty progression checks.",
+    "recurring_dream": {
+      "type": "recurring boss/challenge content",
+      "knowledge": "Recurring Dream uses escalating difficulty/challenge rules and is associated with recurring rewards. Current Mimir data references difficulty levels and unlocks tied to clearing them.",
+      "advice": "When discussing it, focus on team building, boss mechanics, roster depth and the current rules/reward cycle rather than assuming an old score or reward table is permanent."
+    },
+    "hazard_zone": {
+      "type": "high-difficulty recurring combat content",
+      "knowledge": "Hazard Zone is a recurring high-difficulty combat mode with cycle-specific conditions and progression/reward systems. Current 2026 Aether Gazer reference material also identifies Hazard Zone as a source connected to specialized Sigil acquisition and late-game progression.",
+      "advice": "Do not hard-code reset days, reward quantities or exact difficulty names unless fresh version-specific data is available."
+    },
+    "dimensional_variable": {
+      "type": "roguelite / periodically refreshed challenge content",
+      "knowledge": "Dimensional Variable is a roguelite-style mode in which the player progresses through a run while selecting effects/buffs and facing changing encounters. Mimir currently references multiple difficulty levels and M.E.O.W. unlocks tied to clearing it.",
+      "advice": "Treat its current rules, rotation length, rewards and available trials as version-specific."
+    },
+    "iterative_testing": {
+      "type": "high-difficulty progression challenge",
+      "knowledge": "Iterative Testing is a late-game combat check that emphasizes roster depth, elemental matching and high-difficulty optimization. Current Mimir guide material references building teams specifically for cross-element Iterative Testing and elemental/non-element-advantaged stages.",
+      "advice": "Do not present old difficulty thresholds or reward tables as universal; the stage rules and balance are version-sensitive."
+    },
+    "past_grudges": {
+      "type": "permanent / long-term challenge content",
+      "knowledge": "Past Grudges is a boss-focused challenge system and an important source of long-term challenge and progression context. It should be distinguished from recurring weekly-style content.",
+      "advice": "Use current in-game rules when discussing exact unlocks or rewards; older guides may describe earlier cycles."
+    },
+    "causality_survey": {
+      "type": "exploration / roguelite-style challenge content",
+      "knowledge": "Causality Survey combines exploration, combat and route/puzzle decisions. Current Mimir references specific Causality Survey areas and rewards/unlocks, including M.E.O.W. and support-related progression.",
+      "advice": "Treat chapter layouts and puzzle solutions as version/content-specific."
+    },
+    "other_late_game_systems": {
+      "sigil_collection": "Weekly/recurring late-game progression associated with higher-level Sigil enhancement; exact schedule and reward tables are version-specific.",
+      "battle_sweep": "A convenience/reward system for repeatedly farming eligible stages; not every Sigil or material is available through it, and some items can instead be tied to specialized stores or challenge modes.",
+      "support_modules": "Administrator-side progression that increasingly matters for difficult content; current Mimir data ties some modules to clearing Dimensional Variable, Recurring Dream and Causality Survey milestones.",
+      "m_e_o_w": "M.E.O.W. and M.E.O.W. Chips provide auxiliary progression/utility, with some unlocks tied directly to endgame and challenge milestones.",
+      "achievement_and_event_rewards": "One-time and limited-time rewards can materially affect account progression and Shifted Star income, so they should be kept separate from repeatable endgame income."
+    },
+    "endgame_advice_policy": "When Hades explains endgame, she should distinguish permanent content, recurring content, seasonal/periodic content, and one-time rewards. She should not invent current reset schedules, score thresholds, reward totals, rankings, or meta tier placements. For version-sensitive questions, she should qualify the answer and use the stored source/version snapshot."
+  },
+  "service_lifecycle": {
+    "terminology": {
+      "eou": "Use EoU as shorthand for end of updates/content. For Global, this is more precise than calling December 1, 2026 an immediate EOS because the servers are planned to remain playable afterward.",
+      "eos": "Avoid treating EOS as synonymous with the December 1, 2026 Global update cutoff. The announced plan is an end of new version updates followed by a Companion Server."
+    },
+    "current_snapshot_date": "2026-10-04",
+    "china": {
+      "final_content_update": "Version 5.2",
+      "final_content_update_date": "2026-07-23",
+      "status_after_final_update": "Content updates ended; the CN service moved into a Companion Server / preservation phase.",
+      "companion_server_start": "2026-09-17",
+      "planned_service_period_end": "2031-09",
+      "reassessment": "Around 2031-03, the operator plans to reassess continuation and preservation options."
+    },
+    "global": {
+      "status_as_of_snapshot": "Still receiving planned content updates as of 2026-10-04.",
+      "catch_up_plan": "The Global version is planned to continue updating until it catches up with the latest CN version.",
+      "final_content_update": "Version 5.2",
+      "final_content_update_date": "2026-12-01",
+      "after_v5_2": "New version updates are scheduled to stop after V5.2; the game is planned to continue operating through a Companion Server.",
+      "companion_server": "Confirmed as the post-update operating model in the July 2026 Global announcement.",
+      "planned_service_period_end": "2031-09",
+      "reassessment": "Around 2031-03, the future of service is to be reassessed.",
+      "possible_future_options": [
+        "extend server operation",
+        "convert the game to a free standalone offline client",
+        "other preservation arrangements are not ruled out by the published wording"
+      ],
+      "uncertainties": [
+        "The exact Global Companion Server launch date was not published in the July 2026 announcement.",
+        "The September 2031 date is a planned service period, not a guaranteed hard shutdown date.",
+        "The offline-client possibility is an option under consideration, not a confirmed feature or release."
+      ]
+    },
+    "content_expectations": {
+      "after_global_v5_2": [
+        "Do not expect new version story chapters unless an official announcement changes the plan.",
+        "Do not expect new playable characters or normal new gameplay updates unless an official announcement changes the plan.",
+        "The focus shifts from content production to keeping the existing game playable and preservation arrangements."
+      ],
+      "answer_rule": "When discussing the future, separate confirmed dates, planned dates, and community speculation. Never present a rumored sequel, revival, new character, post-5.2 patch, or offline client as confirmed without a current official source."
+    },
+    "source_notes": {
+      "global_official_announcement_date": "2026-07-23",
+      "official_site_news_page": "https://www.aethergazer.com/main/news/",
+      "cross_check": "Contemporary reporting of the official Global announcement confirms V5.2 on 2026-12-01, the Companion Server plan, and the planned 2031-09 service horizon."
+    }
+  },
+  "events_and_event_endgame": {
+    "overview": "Aether Gazer uses version-based event structures that combine story content, limited-time minigames, challenge stages, login/reward campaigns, reruns, and permanent/recurring endgame modes. Hades should distinguish temporary events from permanent endgame systems and should never assume an event is currently active without a dated source.",
+    "version_event_structure": {
+      "knowledge": "A version can contain a main story/content chapter, event story stages, limited-time activities or minigames, reward campaigns, and parallel challenge content. Event names, duration, currencies and shop inventories are version-specific.",
+      "answer_rule": "When asked what is active now, require a fresh dated source or clearly state that the stored information is historical."
+    },
+    "endgame_event_types": {
+      "challenge_rotations": "Recurring challenge modes such as Recurring Dream, Hazard Zone and Iterative Testing can receive cycle-specific rules, bosses, conditions or reward changes. Treat each cycle as version-sensitive.",
+      "roguelite_events": "Dimensional Variable and Causality Survey provide roguelite/exploration-style content. Special event variants can alter encounters, buffs, routes or rewards.",
+      "minigame_events": "Limited-time versions can introduce alternate gameplay such as auto-battler, puzzle, fishing, exploration, or other minigame mechanics. These are event content, not permanent core combat systems unless the game explicitly promotes them.",
+      "seasonal_events": "Anniversary, summer, holiday and themed events can contain story chapters, login rewards, event currency, skins, selectors, tickets, and temporary activities. Exact rewards and dates must be treated as version-specific.",
+      "reward_campaigns": "Login campaigns, mission campaigns, mail gifts, free pulls/tickets and event shops can materially affect Shifted Star and pull income. Keep one-time/event income separate from recurring income."
+    },
+    "known_2026_examples": {
+      "third_anniversary": {
+        "status": "historical example",
+        "date": "2026-04",
+        "knowledge": "The third-anniversary campaign included free copies of Shrouded Night - Irkalla, a skin, free pulls/tickets, event rewards, and the Duel King auto-battler mode among the newly introduced content.",
+        "source_note": "Community summary of the April 2026 anniversary livestream; treat exact reward counts as historical and not permanently applicable."
+      },
+      "duel_king": {
+        "status": "event/minigame example",
+        "knowledge": "Duel King is an auto-battler-style mode with chibi presentation that was introduced as event content. It should be treated as a distinct event/minigame system rather than conflated with the core endgame combat modes.",
+        "source_note": "Referenced in the 2026 third-anniversary livestream summary and later community archive material."
+      },
+      "version_47_echoes_of_the_past": {
+        "status": "historical version event",
+        "knowledge": "Global version 4.7, Echoes of the Past, was run from August 4 to August 31, 2026 after a shortened cycle. It is a useful example of the compressed event/version cadence leading toward V5.2.",
+        "source_note": "Contemporary version tracking; do not treat the dates as a recurring annual schedule."
+      },
+      "version_52_final_content": {
+        "status": "planned/final content event",
+        "knowledge": "Global V5.2 is the final planned content update, scheduled for December 1, 2026. It should be treated as the final content version rather than as a guarantee that all individual event details are already known.",
+        "source_note": "Global end-of-content announcement cross-checked by contemporary coverage."
+      },
+      "cn_companion_server_rewards": {
+        "status": "observed on CN; not automatically Global",
+        "knowledge": "The CN Companion Server introduced recurring login-style rewards and a free-service structure after content updates stopped. Exact CN rewards and access rules must not be presented as confirmed Global policy unless Global announces equivalent details.",
+        "source_note": "CN companion-server reports from September 2026."
+      }
+    },
+    "endgame_event_relationship": {
+      "knowledge": "Aether Gazer endgame is not identical to its limited-time event layer. Recurring Dream, Hazard Zone, Dimensional Variable, Iterative Testing, Past Grudges and Causality Survey are long-term systems, while event versions can temporarily add special rules, rewards or side modes around them.",
+      "answer_rule": "When asked about an endgame event, identify whether the user means a recurring endgame mode, a temporary version event, a seasonal event, or a one-off challenge."
+    },
+    "companion_server_rule": "After content updates stop, do not assume future event rotations, reruns, or new endgame events will continue unchanged. Distinguish confirmed service plans from community expectations. Global Companion Server event details should be treated as unknown until officially announced."
+  }
+}

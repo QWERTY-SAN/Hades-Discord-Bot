@@ -148,12 +148,12 @@ class HadesBot(commands.Bot):
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
             if contains_forbidden_topic(reply):
-                logger.warning("Blocked off-topic model output for %s", key)
-                await message.reply(
-                    off_topic_response(),
-                    mention_author=False,
-                    allowed_mentions=ALLOWED_MENTIONS,
-                )
+                logger.warning("Blocked forbidden-topic model output for %s", key)
+                try:
+                    refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
+                except (AIServiceError, RuntimeError):
+                    refusal = "That subject is of little interest to me, Administrator. Let us discuss something within my realm instead."
+                await self.send_chunks(message, refusal)
                 return
             reply = sanitize_model_output(reply)
             await self.send_chunks(message, reply)

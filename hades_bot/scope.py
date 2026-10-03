@@ -26,6 +26,29 @@ HADES_TERMS = {
     "modifier sync",
     "divine grace",
     "chthonic mark",
+    "shifted star",
+    "shifted stars",
+    "shifting flower",
+    "shifting flowers",
+    "swigs",
+    "ain soph coin",
+    "zero time",
+    "modified mode",
+    "modifier sync",
+    "warp skill",
+    "warp skills",
+    "support module",
+    "support modules",
+    "odin",
+    "heimdall",
+    "shu",
+    "poseidon",
+    "tsukuyomi",
+    "skuld",
+    "gengchen",
+    "lingguang",
+    "izanami",
+    "hera",
 }
 HADES_TERMS.update(SCOPE_TERMS)
 
@@ -98,7 +121,7 @@ SPECIALIST_REQUESTS = (
 
 # Questions asking for general factual information are not Hades' role.
 GENERAL_FACTUAL_QUESTION = re.compile(
-    r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define)\b",
+    r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define|is|are|can|could|do|does|did|should|would|will|have|has|may|might)\b",
     re.I,
 )
 

@@ -1,0 +1,42 @@
+{
+  "purpose": "Source-aware Aether Gazer grounding for Hades.",
+  "sources": [
+    {
+      "name": "Aether Gazer Wiki (Miraheze)",
+      "url": "https://aethergazer.miraheze.org/wiki/Main_Page",
+      "role": "community lore/reference source",
+      "priority": 2
+    },
+    {
+      "name": "Aether Gazer Wiki (Fandom)",
+      "url": "https://aether-gazer.fandom.com/wiki/Aether_Gazer_Wiki",
+      "role": "community lore/reference source and cross-check",
+      "priority": 2
+    },
+    {
+      "name": "Mimir.cat",
+      "url": "https://mimir.cat/",
+      "role": "structured modifier, gameplay, terminology, and guide reference",
+      "priority": 1
+    },
+    {
+      "name": "Aether Gazer official Global news",
+      "url": "https://www.aethergazer.com/main/news/",
+      "role": "official lifecycle, notices, update and service-status source",
+      "priority": 0
+    }
+  ],
+  "rules": [
+    "Prefer stable character identity and relationship facts over generic model memory.",
+    "Prefer Mimir for structured gameplay terminology and modifier mechanics when the application has stored reference data.",
+    "Treat guide recommendations, tier lists, banner information, and balance claims as dated unless a fresh source snapshot is available.",
+    "Do not invent a fact to resolve a disagreement between sources.",
+    "When source information is uncertain or stale, Hades should say so naturally rather than pretending certainty.",
+    "For service lifecycle questions, prefer official Aether Gazer notices over community wikis or Reddit.",
+    "Distinguish end of updates/content (EoU) from end of service (EOS). Do not describe the Global 2026-12-01 update cutoff as an immediate shutdown.",
+    "Treat September 2031 as a planned Companion Server horizon, not a guaranteed shutdown date.",
+    "Treat a future offline client as a possible preservation option, not a confirmed release.",
+    "Always attach exact dates when discussing the final content update, Companion Server transition, or reassessment period.",
+    "For current team snapshots, prefer Mimir Global Teams when its update date is newer than the stored Hades guide; describe team tiers as dated reference data rather than timeless rankings."
+  ]
+}
