@@ -1,62 +1,46 @@
 from __future__ import annotations
 
-import asyncio
-import hashlib
 import logging
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from io import BytesIO
 from random import SystemRandom
 from urllib.parse import urlparse
 
-import aiohttp
 import discord
 
 from .gifs import HADES_GIF_URLS
 
 logger = logging.getLogger("hades-bot.media")
 
-# GIF settings intentionally live here instead of .env.
+# GIF behavior is intentionally kept internal.
 # The only user-editable GIF setting is HADES_GIF_URLS in gifs.py.
 GIF_AUTO_MODE = "every_mention"
 GIF_COOLDOWN_SECONDS = 300.0
 GIF_RECENT_COUNT = 6
-GIF_CACHE_SECONDS = 900.0
-GIF_MAX_BYTES = 8_000_000
-GIF_REQUEST_TIMEOUT = 15.0
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class GifEntry:
     url: str
 
 
-@dataclass(slots=True)
-class GifCacheItem:
-    data: bytes
-    digest: str
-    content_type: str
-    fetched_at: float
-
-
 class HadesMedia:
-    """GIF manager with caching, validation, cooldowns, and deduplication."""
+    """Sends configured external GIF URLs directly; never downloads or re-uploads them."""
 
     def __init__(self) -> None:
         self._rng = SystemRandom()
         self._last_sent: dict[str, float] = {}
-        self._recent_hashes: dict[str, deque[str]] = defaultdict(
+        self._recent_urls: dict[str, deque[str]] = defaultdict(
             lambda: deque(maxlen=GIF_RECENT_COUNT)
         )
-        self._cache: dict[str, GifCacheItem] = {}
-        self._session: aiohttp.ClientSession | None = None
         self.entries = self._parse_entries(tuple(HADES_GIF_URLS))
 
     @staticmethod
     def _parse_entries(urls: tuple[str, ...]) -> tuple[GifEntry, ...]:
         entries: list[GifEntry] = []
         expanded: list[str] = []
+
         for raw in urls:
             expanded.extend(
                 part.strip()
@@ -75,6 +59,7 @@ class HadesMedia:
                 continue
             seen.add(item)
             entries.append(GifEntry(url=item))
+
         return tuple(entries)
 
     @property
@@ -83,18 +68,12 @@ class HadesMedia:
 
     @property
     def cached_count(self) -> int:
-        return len(self._cache)
-
-    async def _get_session(self) -> aiohttp.ClientSession:
-        if self._session is None or self._session.closed:
-            timeout = aiohttp.ClientTimeout(total=GIF_REQUEST_TIMEOUT)
-            self._session = aiohttp.ClientSession(timeout=timeout)
-        return self._session
+        # External GIFs are never cached or downloaded by the bot.
+        return 0
 
     async def close(self) -> None:
-        if self._session is not None and not self._session.closed:
-            await self._session.close()
-        self._session = None
+        """Compatibility hook; there is no HTTP session to close."""
+        return None
 
     def _key(self, message: discord.Message) -> str:
         guild = message.guild.id if message.guild else "dm"
@@ -131,57 +110,6 @@ class HadesMedia:
             return False
         return True
 
-    async def _fetch(self, entry: GifEntry) -> GifCacheItem | None:
-        now = time.monotonic()
-        cached = self._cache.get(entry.url)
-        if cached and now - cached.fetched_at < GIF_CACHE_SECONDS:
-            return cached
-
-        session = await self._get_session()
-        try:
-            async with session.get(entry.url, allow_redirects=True) as response:
-                if response.status != 200:
-                    logger.warning(
-                        "Hades GIF returned HTTP %s: %s",
-                        response.status,
-                        entry.url,
-                    )
-                    return None
-
-                content_type = (response.headers.get("Content-Type") or "").lower()
-                declared_size = response.content_length
-                if declared_size and declared_size > GIF_MAX_BYTES:
-                    logger.warning("Skipping oversized Hades GIF: %s bytes", declared_size)
-                    return None
-
-                data = await response.content.read(GIF_MAX_BYTES + 1)
-                if len(data) > GIF_MAX_BYTES:
-                    logger.warning("Skipping oversized Hades GIF: %s", entry.url)
-                    return None
-
-                looks_like_gif = data[:6] in {b"GIF87a", b"GIF89a"}
-                url_says_gif = entry.url.lower().split("?", 1)[0].endswith(".gif")
-                if not looks_like_gif or ("image/gif" not in content_type and not url_says_gif):
-                    logger.warning(
-                        "Skipping non-GIF response: %s (%s)",
-                        entry.url,
-                        content_type or "unknown",
-                    )
-                    return None
-
-                digest = hashlib.sha256(data).hexdigest()
-                item = GifCacheItem(
-                    data=data,
-                    digest=digest,
-                    content_type=content_type or "image/gif",
-                    fetched_at=now,
-                )
-                self._cache[entry.url] = item
-                return item
-        except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as exc:
-            logger.warning("Hades GIF fetch failed for %s: %s", entry.url, exc)
-            return None
-
     async def send_gif(
         self,
         destination,
@@ -190,49 +118,50 @@ class HadesMedia:
         force: bool = False,
         text: str = "",
     ) -> bool:
+        """Send the original configured GIF URL directly to Discord."""
+        del text  # Kept for compatibility with existing callers.
+
         if not self.entries:
             return False
 
         key = self._key(message)
         history_key = self._history_key(message)
-        recent = self._recent_hashes[history_key]
+        recent = self._recent_urls[history_key]
         candidates = self._choose_candidates()
 
+        # First prefer a URL that is not in the recent per-channel history.
         for entry in candidates:
-            item = await self._fetch(entry)
-            if item is None:
+            if not force and entry.url in recent:
                 continue
-            if not force and item.digest in recent:
-                continue
-
             try:
+                # Sending the URL itself is intentional. Discord handles the
+                # preview from the original host; the bot never re-uploads it.
                 await destination.send(
-                    file=discord.File(BytesIO(item.data), filename="hades.gif")
+                    entry.url,
+                    allowed_mentions=discord.AllowedMentions.none(),
                 )
             except discord.HTTPException as exc:
-                logger.warning("Discord rejected Hades GIF %s: %s", entry.url, exc)
+                logger.warning("Discord rejected Hades GIF URL %s: %s", entry.url, exc)
                 continue
 
-            recent.append(item.digest)
+            recent.append(entry.url)
             self._last_sent[key] = time.monotonic()
+            logger.info("Sent external Hades GIF URL: %s", entry.url)
             return True
 
-        # If every GIF is currently in the recent-history window, allow one reuse
-        # rather than failing completely.
+        # If every URL is in recent history, reuse one rather than sending nothing.
         if not force and recent:
             for entry in candidates:
-                item = await self._fetch(entry)
-                if item is None:
-                    continue
                 try:
                     await destination.send(
-                        file=discord.File(BytesIO(item.data), filename="hades.gif")
+                        entry.url,
+                        allowed_mentions=discord.AllowedMentions.none(),
                     )
-                except discord.HTTPException as exc:
-                    logger.warning("Discord rejected fallback Hades GIF %s: %s", entry.url, exc)
+                except discord.HTTPException:
                     continue
-                recent.append(item.digest)
+                recent.append(entry.url)
                 self._last_sent[key] = time.monotonic()
+                logger.info("Reused external Hades GIF URL: %s", entry.url)
                 return True
 
         return False
