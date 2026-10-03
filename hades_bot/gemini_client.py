@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import random
+import re
 
 from google import genai
 from google.genai import errors, types
@@ -11,12 +13,33 @@ from .utils import clean_model_output
 
 logger = logging.getLogger("hades-bot.gemini")
 
-
 class AIServiceError(RuntimeError):
     def __init__(self, user_message: str, status_code: int | None = None):
         super().__init__(user_message)
         self.user_message = user_message
         self.status_code = status_code
+
+
+_HADES_EMOJIS = ("🌙", "🎭", "🪡", "🕯️", "✨", "😏", "🖤", "🎀")
+_EMOJI_RE = re.compile(
+    r"[\U0001F300-\U0001FAFF\u2600-\u27BF]"
+)
+
+
+def _add_natural_emoji(text: str) -> str:
+    """Add at most one small Hades-style emoji to ordinary prose.
+
+    Model-generated emojis are left alone. Code blocks and very long responses
+    are not modified. There is intentionally a chance of adding nothing.
+    """
+    if not text or "```" in text or _EMOJI_RE.search(text):
+        return text
+    if len(text) > 700:
+        return text
+    if random.SystemRandom().random() > 0.35:
+        return text
+    suffix = random.SystemRandom().choice(_HADES_EMOJIS)
+    return f"{text.rstrip()} {suffix}"
 
 
 class GeminiService:
@@ -51,8 +74,22 @@ class GeminiService:
     async def generate(self, history: list[dict[str, str]]) -> str:
         latest = next((m["content"] for m in reversed(history) if m.get("role") == "user"), "")
         context = build_aether_context(latest)
+        emoji_guidance = (
+            "Emoji guidance: Hades may naturally use 0-2 tasteful emojis when appropriate. "
+            "Prefer 🌙 🎭 🪡 🕯️ ✨ 😏 🖤 🎀. Never spam emojis, never put them in code, "
+            "and many replies should use none."
+            if SETTINGS.emojis_enabled else
+            "Emoji guidance: do not add emojis."
+        )
+        scope_guidance = (
+            "Scope guard: do not write or generate programming code, scripts, technical tutorials, "
+            "academic assignments, generic how-to guides, or unrelated specialist content. "
+            "For those requests, give a brief in-character refusal instead."
+        )
         config = types.GenerateContentConfig(
-            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{context}",
+            system_instruction=(
+                f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{emoji_guidance}\n\n{context}"
+            ),
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
         )
@@ -85,6 +122,8 @@ class GeminiService:
         text = clean_model_output(response.text or "")
         if not text:
             raise AIServiceError("Gemini returned an empty response. Try again.")
+        if SETTINGS.emojis_enabled:
+            text = _add_natural_emoji(text)
         return text
 
     async def close(self) -> None:
