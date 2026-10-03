@@ -14,7 +14,7 @@ from .gifs import HADES_GIF_URLS
 logger = logging.getLogger("hades-bot.media")
 
 # GIF behavior is intentionally internal. The only user-editable GIF setting is
-# the URL list in hades_bot/gifs.py.
+# the URL list in hades_bot/media/gifs.py.
 GIF_AUTO_MODE = "every_mention"
 GIF_COOLDOWN_SECONDS = 300.0
 GIF_RECENT_COUNT = 6

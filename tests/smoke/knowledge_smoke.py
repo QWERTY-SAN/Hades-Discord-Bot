@@ -1,4 +1,4 @@
-from hades_bot.lore import build_aether_context
+from hades_bot.knowledge.lore import build_aether_context
 
 checks = {
     "Shifted Stars": ["Shifted Star", "daily", "weekly", "monthly"],

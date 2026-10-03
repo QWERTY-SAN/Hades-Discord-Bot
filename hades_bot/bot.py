@@ -6,13 +6,13 @@ import random
 import discord
 from discord.ext import commands, tasks
 
-from .chat import HadesChat
+from .ai.chat import HadesChat
 from .config import SETTINGS
-from .gemini_client import AIServiceError, GeminiService
-from .memory import ConversationMemory
-from .media import HadesMedia
-from .scope import contains_forbidden_topic, is_hades_scope_allowed, scope_block_reason
-from .utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
+from .ai.gemini_client import AIServiceError, GeminiService
+from .core.memory import ConversationMemory
+from .media.media import HadesMedia
+from .core.scope import contains_forbidden_topic, is_hades_scope_allowed, scope_block_reason
+from .core.utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
 from .web import update_discord_state
 
 logger = logging.getLogger("hades-bot")
@@ -292,7 +292,7 @@ async def memory_command(ctx: commands.Context) -> None:
 async def gif_command(ctx: commands.Context) -> None:
     if not bot.media.entries:
         await ctx.reply(
-            "My stage has no GIFs configured yet. Add direct `.gif` URLs to `hades_bot/gifs.py`.",
+            "My stage has no GIFs configured yet. Add direct `.gif` URLs to `hades_bot/media/gifs.py`.",
             mention_author=False,
             allowed_mentions=ALLOWED_MENTIONS,
         )

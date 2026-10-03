@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from .lore import SCOPE_TERMS
+from ..knowledge.lore import SCOPE_TERMS
 
 # Terms that identify an Aether Gazer/Hades context. These are deliberately
 # broader than the small list used by the scope gate; lore.py still controls

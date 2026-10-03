@@ -2,7 +2,7 @@ import asyncio
 import re
 import time
 
-from .config import DISCORD_MESSAGE_LIMIT
+from ..config import DISCORD_MESSAGE_LIMIT
 
 
 class CooldownManager:

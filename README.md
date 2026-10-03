@@ -60,7 +60,7 @@ Scope decisions are deterministic, but refusal wording is generated dynamically 
 Edit:
 
 ```text
-hades_bot/gifs.py
+hades_bot/media/gifs.py
 ```
 
 Example:
@@ -191,3 +191,29 @@ The knowledge layer distinguishes stable lore from dated gameplay data. It does 
 - Forbidden model output releases the user's cooldown instead of consuming it.
 - Hades' current profile snapshot includes her named outfits, Heart Link reference, Access Key synergy and current chips.
 - Ancient Shadow and Crisis Analysis are represented as version-sensitive event/challenge content.
+
+
+## Repository structure
+
+The repository is split by responsibility so knowledge updates and runtime changes stay isolated:
+
+```text
+Hades-Discord-Bot/
+├── hades_bot/
+│   ├── bot.py
+│   ├── config.py
+│   ├── core/       # memory, scope, shared utilities
+│   ├── ai/         # Gemini, chat orchestration, persona
+│   ├── knowledge/  # local knowledge loading and retrieval
+│   └── media/      # external GIF list and media handling
+├── data/aether_gazer/
+│   ├── game_knowledge.json
+│   ├── terminology.json
+│   ├── source_policy.json
+│   ├── sources.json
+│   └── characters/
+├── docs/
+└── tests/smoke/
+```
+
+The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.

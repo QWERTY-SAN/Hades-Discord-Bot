@@ -5,7 +5,7 @@ import py_compile
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 for path in ROOT.rglob("*.py"):
     if "__pycache__" not in path.parts:
@@ -15,7 +15,7 @@ os.environ.setdefault("DISCORD_TOKEN", "test-token")
 os.environ.setdefault("GEMINI_API_KEY", "test-key")
 
 from hades_bot.config import SETTINGS  # noqa: E402
-from hades_bot.scope import contains_forbidden_topic, is_hades_scope_allowed  # noqa: E402
+from hades_bot.core.scope import contains_forbidden_topic, is_hades_scope_allowed  # noqa: E402
 
 assert SETTINGS.strict_aether_topic is True
 assert SETTINGS.emojis_enabled is True

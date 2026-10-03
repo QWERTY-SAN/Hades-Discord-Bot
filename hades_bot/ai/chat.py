@@ -1,8 +1,8 @@
 import asyncio
 
-from .config import SETTINGS
+from ..config import SETTINGS
 from .gemini_client import GeminiService
-from .memory import ConversationMemory
+from ..core.memory import ConversationMemory
 
 
 class HadesChat:

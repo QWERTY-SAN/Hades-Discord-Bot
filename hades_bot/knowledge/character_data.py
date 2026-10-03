@@ -4,11 +4,14 @@ import json
 from pathlib import Path
 from typing import Any
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "aether_gazer"
 
 
 def _load_json(name: str) -> Any:
-    path = DATA_DIR / name
+    if name in {"hades.json", "hades_reference.json"}:
+        path = DATA_DIR / "characters" / name
+    else:
+        path = DATA_DIR / name
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 

@@ -8,10 +8,10 @@ import re
 from google import genai
 from google.genai import errors, types
 
-from .config import SETTINGS
-from .lore import build_aether_context
+from ..config import SETTINGS
+from ..knowledge.lore import build_aether_context
 from .persona import HADES_SYSTEM_PROMPT
-from .utils import clean_model_output
+from ..core.utils import clean_model_output
 
 logger = logging.getLogger("hades-bot.gemini")
 

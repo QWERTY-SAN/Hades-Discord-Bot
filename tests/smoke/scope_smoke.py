@@ -1,4 +1,4 @@
-from hades_bot.scope import is_hades_scope_allowed, scope_block_reason
+from hades_bot.core.scope import is_hades_scope_allowed, scope_block_reason
 
 allowed = [
     "Hades, tell me about the Society of Muses.",

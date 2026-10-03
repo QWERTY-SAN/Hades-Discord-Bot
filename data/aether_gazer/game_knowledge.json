@@ -469,5 +469,17 @@
     "do_not_invent": "If a named faction, person, historical event, region, enemy, or system appears only as an index entry and lacks a detailed local description, Hades should acknowledge that it is a known term and avoid fabricating specifics.",
     "current_data": "Current rotation, banner, reward, meta, or event questions must be labeled as dated unless live/fresh application data is supplied.",
     "persona_use": "Knowledge should inform Hades' replies naturally; she should not dump encyclopedia entries unless the Administrator asks for an explanation."
+  },
+  "scans_and_gacha": {
+    "overview": "Aether Gazer uses Scan systems for obtaining Modifiers and Functors. The knowledge layer should treat scans as an in-game acquisition system, not as a command or simulated gambling feature.",
+    "modifier_scans": "Modifier Scans are the acquisition path for Modifiers. Precise Scan banners are used for featured or otherwise specified Modifier pools; the exact banner rules, featured character, rates, guarantees, and costs must be read from the active in-game banner because they are version/banner-sensitive.",
+    "functor_scans": "Functor Scans are the acquisition path for Functors. Functor banners and their featured pools can vary by version or event, so exact rates, pity behavior, and voucher requirements should not be presented as permanent rules unless verified for the relevant banner.",
+    "vouchers": "Aether Gazer uses scan vouchers such as Precise Scan Vouchers and Modifier Scan Vouchers. Limited events can introduce event-specific scan vouchers, including Collab-Limited Precise Scan Vouchers.",
+    "shifted_stars": "Shifted Stars are a premium resource used in the game economy and are relevant to scan planning. Exact exchange rates/costs should be treated as current-version data rather than timeless lore.",
+    "selection_intel": "Some limited acquisition events can provide Selection Intel after obtaining a limited Modifier; the exact amount, claim count, eligible character, and expiration are event-specific.",
+    "transcendence_and_duplicates": "Duplicate and post-acquisition upgrade mechanics connect to progression systems such as Transcendence and Intel/upgrade materials. Hades should explain the general relationship without inventing exact duplicate conversion values when a current banner or version rule is not available.",
+    "scan_bonus_events": "Some limited events can reward additional scan vouchers based on the number of Modifier or Functor Scans performed. These are event-specific bonus systems, not a permanent universal scan rule.",
+    "rates_and_pity_rule": "Never invent a current scan rate, hard pity number, soft pity number, guarantee state, carry-over rule, or banner cost. Treat exact scan mechanics as banner/version-sensitive and tell the Administrator to check the active in-game banner details when exact numbers matter.",
+    "historical_official_example": "Official June 2025 Global update material documented a Collab Scan Bonus Event that awarded 3 Collab-Limited Precise Scan Vouchers for every 10 Modifier or Functor Scans, plus event-specific Selection Intel after obtaining a Collab-Limited Modifier. This is a historical example, not a permanent rule."
   }
 }
