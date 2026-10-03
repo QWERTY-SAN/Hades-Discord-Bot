@@ -10,7 +10,6 @@ Untagged URLs are treated as neutral/general GIFs.
 """
 
 HADES_GIF_URLS = [
-    # Example:
-    # "https://example.com/hades1.gif",
-    # "smug=>https://example.com/hades-smug.gif",
+    "https://media1.tenor.com/m/wF4bgdHbIswAAAAC/aether-gazer-hades.gif",
+    "https://i.imgur.com/cTRelnU.gif",
 ]
