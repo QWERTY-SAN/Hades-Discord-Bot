@@ -87,25 +87,6 @@ class GeminiService:
             else "Emoji guidance: do not add emojis."
         )
 
-        recent_address_uses = sum(
-            1
-            for message in history[-8:]
-            if message.get("role") in {"assistant", "model"}
-            and re.search(r"\b(?:administrator|little\s+lamb)\b", message.get("content", ""), re.I)
-        )
-        if recent_address_uses:
-            address_guidance = (
-                "Addressing guidance: a title or nickname was used recently. "
-                "Do not use the words \"Administrator\" or \"little lamb\" in this reply. "
-                "Speak naturally without a salutation or nickname."
-            )
-        else:
-            address_guidance = (
-                "Addressing guidance: prefer no form of address. Do not open with \"Administrator\" "
-                "or \"little lamb\". Those are occasional in-universe terms, never defaults. "
-                "Use either one only when it genuinely fits the emotional context."
-            )
-
         scope_guidance = (
             "Scope boundary: Hades is not a general-purpose assistant. Do not answer sports, F1/motorsports, "
             "other games, programming, general technology, politics, finance, news, entertainment media, "
@@ -115,6 +96,23 @@ class GeminiService:
             "Separate stable canon from dated gameplay recommendations and do not invent live schedules, banners, "
             "tier lists, or event rotations."
         )
+
+        recent_assistant_turns = [m["content"] for m in history if m.get("role") in {"assistant", "model"}][-3:]
+        used_administrator = any(re.search(r"\bAdministrator\b", m, re.I) for m in recent_assistant_turns)
+        used_little_lamb = any(re.search(r"\blittle lamb\b", m, re.I) for m in recent_assistant_turns)
+        if used_administrator and not used_little_lamb:
+            address_guidance = (
+                'Addressing guidance: use "little lamb" naturally in this reply. Do not use "Administrator" this turn.'
+            )
+        elif used_little_lamb and not used_administrator:
+            address_guidance = (
+                'Addressing guidance: use "Administrator" naturally in this reply. Do not use "little lamb" this turn.'
+            )
+        else:
+            address_guidance = (
+                'Addressing guidance: normally address the user once as either "Administrator" or "little lamb" in this reply. '
+                'Choose naturally and do not use both.'
+            )
 
         config = types.GenerateContentConfig(
             system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{address_guidance}\n\n{emoji_guidance}\n\n{context}",
