@@ -5,6 +5,9 @@ import unicodedata
 
 from ..knowledge.lore import SCOPE_TERMS
 
+# Terms that identify an Aether Gazer/Hades context. These are deliberately
+# broader than the small list used by the scope gate; lore.py still controls
+# the detailed knowledge injected into Gemini.
 HADES_TERMS = {
     "aether gazer", "aethergazer", "hades", "administrator", "modifier",
     "society of muses", "olympus", "gen-zone", "gen zone", "sigil", "functor",
@@ -19,7 +22,6 @@ HADES_TERMS = {
     "m.e.o.w.", "meow", "mijir", "micoco", "mitir", "me-yow", "mininja",
     "opponent intel", "risk level i", "risk level ii", "risk level iii",
     "sigil enchant", "sigil enchants", "transcendence", "transcend", "ultimate skillchain",
-    "gacha", "f2p", "free-to-play", "free to play", "low spender", "dolphin", "whale", "spender", "spending",
     "battle sweep", "flaneuring", "music dossier", "heart link", "access key synergy",
     "gaea", "gaea.zero", "gaea zero", "idealbild", "source layer", "surface layer",
     "visbane", "visbanes", "bane energy", "corrosion", "quakes", "ain soph",
@@ -30,6 +32,7 @@ HADES_TERMS = {
 }
 HADES_TERMS.update(SCOPE_TERMS)
 
+# Hard unrelated topics. These remain blocked even if the user mentions Hades.
 HARD_OFF_TOPIC_PATTERNS = (
     ("F1 or motorsport", re.compile(
         r"\b(?:f1|formula\s*(?:1|one)|motogp|nascar|indycar|motorsport|grand\s*prix)\b", re.I)),
@@ -43,6 +46,9 @@ HARD_OFF_TOPIC_PATTERNS = (
         r"\b(?:politics?|politician|president|prime\s+minister|election|elections|senate|congress|government|political|breaking\s+news|stock|stocks|share\s+price|crypto|cryptocurrency|bitcoin|ethereum|forex|investment|trading|finance|financial)\b", re.I)),
 )
 
+# Broad terms such as music, anime, and racing can also occur inside Aether
+# Gazer lore. They are blocked when no Aether context is present, but not when
+# the message is clearly about an Aether Gazer entity/system.
 CONTEXTUAL_OFF_TOPIC_PATTERNS = (
     ("unrelated entertainment or media", re.compile(
         r"\b(?:movie|movies|film|films|tv|television|series|anime|manga|celebrity|actor|actress|singer|song|songs|band|concert|netflix|youtube|twitch|streamer|influencer|music)\b", re.I)),
@@ -63,38 +69,17 @@ SPECIALIST_REQUESTS = (
 )
 
 GENERAL_FACTUAL_QUESTION = re.compile(
-    r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define|is|are|can|could|do|does|did|should|would|will|have|has|may|might)\b",
-    re.I,
-)
+    r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define|is|are|can|could|do|does|did|should|would|will|have|has|may|might)\b", re.I)
 
-# Ordinary conversation is intentionally broad, but is still bounded by the
-# hard off-topic filters above. These patterns cover greetings, feelings,
-# preferences, day-to-day chat, playful banter, and conversational requests.
 SOCIAL_PATTERNS = (
-    re.compile(r"^(?:hi|hello|hey|hiya|yo|sup|good\s+(?:morning|afternoon|evening|night))[!. ]*$", re.I),
+    re.compile(r"^(?:hi|hello|hey|hiya|yo|good\s+(?:morning|afternoon|evening|night))[!. ]*$", re.I),
     re.compile(
         r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+okay|are\s+you\s+tired|"
         r"what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|how\s+was\s+your\s+day|did\s+you\s+sleep|"
         r"can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|tell\s+me\s+about\s+yourself|"
-        r"what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember)\s+me|"
-        r"what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|what\s+do\s+you\s+(?:like|enjoy|prefer)|"
-        r"do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat)|"
-        r"are\s+you\s+(?:bored|busy|lonely|happy|sad|curious|sleepy)|"
-        r"what\s+have\s+you\s+been\s+doing)[?.! ]*$", re.I),
-    re.compile(
-        r"^(?:guess\s+what|look\s+at\s+this|listen|you\s+know\s+what|i\s+have\s+something\s+to\s+tell\s+you|"
-        r"want\s+to\s+hear\s+something|let's\s+(?:talk|chat)|let\s+us\s+(?:talk|chat)|"
-        r"tell\s+me\s+something|say\s+something|make\s+me\s+smile|cheer\s+me\s+up|"
-        r"i'?m\s+(?:bored|tired|sad|happy|lonely|excited|upset|fine|okay|back)|"
-        r"i\s+(?:miss|like|love|hate|need|want|feel|think|guess|remember)\b).{0,500}$", re.I | re.S),
-    re.compile(r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|hmm+|oh+|seriously\??)[!. ]*$", re.I),
-    re.compile(r"^(?:i|i'm|im|i've|ive|my|today\s+i|tonight\s+i|this\s+is|that\s+was)\b.{0,500}$", re.I | re.S),
+        r"what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember)\s+me)[?.! ]*$", re.I),
+    re.compile(r"^(?:i|i'm|im|i've|ive|my|today\s+i|tonight\s+i)\b.{0,260}$", re.I | re.S),
 )
-
-SUBJECTIVE_QUESTION = re.compile(
-    r"^(?:what\s+do\s+you\s+(?:think|like|prefer|want|feel)|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|"
-    r"do\s+you\s+(?:like|enjoy|prefer|want|remember|mind|care|agree)|would\s+you\s+rather|"
-    r"how\s+do\s+you\s+feel|are\s+you\s+(?:okay|tired|happy|sad|bored|busy|lonely))\b", re.I)
 
 
 def _normalize(text: str) -> str:
@@ -111,6 +96,7 @@ def _contains_term(normalized: str, term: str) -> bool:
 
 def has_aether_context(text: str) -> bool:
     normalized = _normalize(text)
+    # Require a meaningful game/lore term, not merely the word Hades or Administrator.
     meaningful = HADES_TERMS - {"hades", "administrator"}
     return any(_contains_term(normalized, term) for term in meaningful)
 
@@ -144,11 +130,6 @@ def is_social_message(text: str) -> bool:
     return any(pattern.search(normalized) for pattern in SOCIAL_PATTERNS)
 
 
-def is_subjective_question(text: str) -> bool:
-    normalized = _normalize(text)
-    return bool(SUBJECTIVE_QUESTION.search(normalized))
-
-
 def is_hades_scope_allowed(text: str) -> bool:
     normalized = _normalize(text)
     if not normalized:
@@ -159,7 +140,7 @@ def is_hades_scope_allowed(text: str) -> bool:
         return False
     if any(_contains_term(normalized, term) for term in HADES_TERMS):
         return True
-    if is_social_message(normalized) or is_subjective_question(normalized):
+    if is_social_message(normalized):
         return True
     return False
 

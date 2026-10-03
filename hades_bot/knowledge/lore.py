@@ -57,10 +57,6 @@ KNOWLEDGE_ALIASES = {
     "v5.2": "service_lifecycle", "version 5.2": "service_lifecycle", "2031": "service_lifecycle",
     "event": "events_and_event_endgame", "events": "events_and_event_endgame",
     "event shop": "events_and_event_endgame", "anniversary": "events_and_event_endgame",
-    "f2p": "player_spending_terms", "free-to-play": "player_spending_terms", "free to play": "player_spending_terms",
-    "low spender": "player_spending_terms", "dolphin": "player_spending_terms", "whale": "player_spending_terms",
-    "spender": "player_spending_terms", "spending": "player_spending_terms", "scan planning": "scan_economy_conversation",
-    "gacha": "scans_and_gacha", "gacha economy": "scan_economy_conversation",
     "limited time": "events_and_event_endgame", "endgame event": "events_and_event_endgame",
     "team": "current_team_snapshot", "team comp": "current_team_snapshot",
     "team composition": "current_team_snapshot", "teammates": "current_team_snapshot",
@@ -237,14 +233,6 @@ def _knowledge_context(normalized: str) -> list[str]:
             _append_value(lines, key, world[key])
         elif key in endgame:
             _append_value(lines, key, endgame[key])
-        elif key == "player_spending_terms":
-            spending = GAME_KNOWLEDGE.get("scans_and_gacha", {}).get("player_spending_terms", {})
-            lines.append(f"Player spending terminology: {spending.get('overview', '')}")
-            for field in ("f2p", "low_spender", "dolphin", "whale", "spender", "terminology_rule", "gameplay_rule"):
-                if spending.get(field):
-                    lines.append(f"- {field.replace('_', ' ').title()}: {spending[field]}")
-        elif key == "scan_economy_conversation":
-            lines.append(GAME_KNOWLEDGE.get("scans_and_gacha", {}).get("scan_economy_conversation", ""))
         elif key == "events_and_event_endgame":
             events = GAME_KNOWLEDGE.get("events_and_event_endgame", {})
             lines.append(f"Event-system reference: {events.get('overview', '')}")

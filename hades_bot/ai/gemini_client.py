@@ -87,6 +87,25 @@ class GeminiService:
             else "Emoji guidance: do not add emojis."
         )
 
+        recent_address_uses = sum(
+            1
+            for message in history[-8:]
+            if message.get("role") in {"assistant", "model"}
+            and re.search(r"\b(?:administrator|little\s+lamb)\b", message.get("content", ""), re.I)
+        )
+        if recent_address_uses:
+            address_guidance = (
+                "Addressing guidance: a title or nickname was used recently. "
+                "Do not use the words \"Administrator\" or \"little lamb\" in this reply. "
+                "Speak naturally without a salutation or nickname."
+            )
+        else:
+            address_guidance = (
+                "Addressing guidance: prefer no form of address. Do not open with \"Administrator\" "
+                "or \"little lamb\". Those are occasional in-universe terms, never defaults. "
+                "Use either one only when it genuinely fits the emotional context."
+            )
+
         scope_guidance = (
             "Scope boundary: Hades is not a general-purpose assistant. Do not answer sports, F1/motorsports, "
             "other games, programming, general technology, politics, finance, news, entertainment media, "
@@ -98,7 +117,7 @@ class GeminiService:
         )
 
         config = types.GenerateContentConfig(
-            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{emoji_guidance}\n\n{context}",
+            system_instruction=f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{address_guidance}\n\n{emoji_guidance}\n\n{context}",
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),

@@ -49,19 +49,7 @@
     "modifier scan",
     "functor scan",
     "precise scan voucher",
-    "imprint shop",
-    "f2p",
-    "free-to-play",
-    "free to play",
-    "low spender",
-    "dolphin",
-    "whale",
-    "spender",
-    "spending",
-    "f2p planning",
-    "scan planning",
-    "gacha",
-    "gacha economy"
+    "imprint shop"
   ],
   "hades_terms": [
     "puppet master",
@@ -80,5 +68,5 @@
     "herald - cerberus",
     "fantoccini fancy"
   ],
-  "note": "Stable terminology and major named systems are included here. Patch-specific mechanics and time-sensitive values remain in game_knowledge.json as dated reference data. Player spending labels such as F2P, low spender, dolphin and whale are informal community terminology, not official Aether Gazer classifications."
+  "note": "Stable terminology and major named systems are included here. Patch-specific mechanics and time-sensitive values remain in game_knowledge.json as dated reference data."
 }

@@ -23,6 +23,3 @@ for text in blocked:
 
 assert scope_block_reason("Hades, what do you think about Formula One?") == "F1 or motorsport"
 print("scope smoke checks passed")
-
-for text in ["Hades, I am F2P.", "What does whale mean in gacha?", "Should I save as a low spender?"]:
-    assert is_hades_scope_allowed(text), text

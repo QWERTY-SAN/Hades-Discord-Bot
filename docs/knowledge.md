@@ -10,8 +10,3 @@ When adding a new system:
 5. Add a smoke test if the term is important to scope or retrieval.
 
 Gacha/scan information is knowledge only; this bot does not implement a virtual gacha command system.
-
-
-## Gacha spending terminology
-
-The knowledge layer understands F2P/free-to-play, low spender, dolphin, whale, and spender as informal player-spending labels. These are discussion terminology, not official Aether Gazer account classifications. No gacha command or spending tracker is implemented.
