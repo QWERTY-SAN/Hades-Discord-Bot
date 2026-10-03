@@ -38,5 +38,10 @@
     "Treat a future offline client as a possible preservation option, not a confirmed release.",
     "Always attach exact dates when discussing the final content update, Companion Server transition, or reassessment period.",
     "For current team snapshots, prefer Mimir Global Teams when its update date is newer than the stored Hades guide; describe team tiers as dated reference data rather than timeless rankings."
-  ]
+  ],
+  "source_snapshot_notes": {
+    "mimir": "Current site navigation exposes Teams, Sigils, Functors, Warp Skills, Sigil Enchants, Support Modules, Opponent Intel, Achievements, Worldview, M.E.O.W. and Tier List.",
+    "worldview": "Mimir Worldview index includes locations, factions, characters, historical events and named concepts such as Gaea.Zero, Core of Gaea, Surface Layer, Cycle, Bane Energy, Corrosion, Quakes, AGI Mecha and Photon Rail.",
+    "freshness": "Current Mimir page update dates vary by section; never assume the entire site has a single universal last-updated date."
+  }
 }

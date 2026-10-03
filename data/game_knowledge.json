@@ -38,7 +38,18 @@
     ],
     "mimir_hades_profile_last_update": "2026-09-01",
     "mimir_global_teams_last_update": "2026-09-28",
-    "mimir_current_teams_checked": "2026-10-04"
+    "mimir_current_teams_checked": "2026-10-04",
+    "mimir_page_updates_observed": {
+      "home": "2026-10-04",
+      "teams": "2026-08-31",
+      "support_modules": "2026-09-29",
+      "meow": "2026-09-29",
+      "opponent_intel": "2026-09-01",
+      "achievements": "2026-09-29",
+      "worldview": "2025-09-02",
+      "sigil_enchants": "2025-10-05",
+      "functors": "2026-07-23"
+    }
   },
   "world_and_setting": {
     "gaea": "Gaea is the system that supports the Idealbild data world and the continuation of human consciousness within it.",
@@ -248,5 +259,200 @@
       "answer_rule": "When asked about an endgame event, identify whether the user means a recurring endgame mode, a temporary version event, a seasonal event, or a one-off challenge."
     },
     "companion_server_rule": "After content updates stop, do not assume future event rotations, reruns, or new endgame events will continue unchanged. Distinguish confirmed service plans from community expectations. Global Companion Server event details should be treated as unknown until officially announced."
+  },
+  "locations_and_zones": {
+    "ain_soph": "A major human settlement and Sephirah Zone connected with Aether Gazer headquarters and the central administration of the Idealbild world.",
+    "neuhansa": "A Sephirah Zone in Gaea with its own culture and institutions; treat detailed local history as source-grounded rather than inferred.",
+    "shashvat": "A Sephirah Zone in the Aether Gazer setting; use it as a distinct region rather than collapsing all zones into one generic city.",
+    "omorfies": "A Sephirah Zone strongly associated with art, culture and the Society of Muses; Hades and Hera have direct connections to it.",
+    "xu_heng": "A major Sephirah Zone associated with the Quad, the Five Clans, trade, and related Chinese-inspired institutions.",
+    "sasanami": "A Sephirah Zone associated with the Pheasant Squad and Japanese-inspired institutions and culture.",
+    "olympus": "The Gen-Zone associated with Hades and the Society of Muses; it is also one of the major Gen-Zones in the setting.",
+    "corg_supreme_directorate": "A named organization in Mimir worldbuilding references; do not invent its internal hierarchy when a specific source is not present.",
+    "core_of_gaea": "A named setting concept connected to the deeper infrastructure of Gaea; details should follow source material rather than generic AI assumptions.",
+    "surface_layer": "The accessible/constructed layer of the Gaea world contrasted with the Source Layer; stories can move between or reference both layers."
+  },
+  "organizations_catalog": {
+    "aether_gazer_division_nine": "The main Aether Gazer organizational structure, including leadership and specialist offices such as the Special Task Force and Cryptics.",
+    "corg_supreme_directorate": "A named organization in the worldview reference. Keep its details source-grounded.",
+    "olympia_express": "A named transport/trade organization in the worldview reference; avoid inventing operations not documented by the stored source.",
+    "spealght_industries": "A named industrial organization/faction connected to later story content and Causality Survey areas.",
+    "children_of_iron": "A named organization/faction in the Aether Gazer worldview reference.",
+    "akkadian_guild": "A named guild in the worldview reference.",
+    "stellaris_academy": "A named academic organization in the worldview reference.",
+    "astral_council": "A named governing/administrative body in the setting; Hades may reference its duties when appropriate without inventing exact ranks.",
+    "society_of_muses": "Hades' organization and one of her strongest identity anchors.",
+    "knights_of_convallaria": "A named organization connected with the Convallaria characters and related stories.",
+    "izuru_family": "A named family in Sasanami/Xu Heng-related setting material.",
+    "miyahebi_family": "A named family in the worldview reference.",
+    "karasugo_family": "Izanami's family/organization; important to her background and Xu Heng/Sasanami-related material.",
+    "meruism": "A named organization/belief group in the worldview reference.",
+    "tian_lu_traders": "A named trading organization in the worldview reference.",
+    "quad": "The Xu Heng organization founded/protected by Gengchen."
+  },
+  "notable_people_and_entities_index": {
+    "morgan_spealght": "Named figure in the Spealght Industries worldview material. Treat as a source-indexed figure and do not invent a biography.",
+    "miller_spealght": "Named figure in the Spealght Industries worldview material.",
+    "eugene_spealght": "Named figure in the Spealght Industries worldview material.",
+    "ethan": "Named figure in the worldview reference; details should follow sourced material.",
+    "olheim": "Named figure in the worldview reference; details should follow sourced material.",
+    "zero_one": "Named entity/figure in the worldview reference; do not infer identity beyond stored sources.",
+    "izuru_masayoshi": "Named figure in the worldview reference associated with Izuru-family material.",
+    "miyahebi_syuu": "Named figure in the worldview reference associated with the Miyahebi family.",
+    "the_strategist": "Named figure/title in the worldview reference.",
+    "the_general": "Named figure/title in the worldview reference.",
+    "the_monk": "Named figure/title in the worldview reference.",
+    "the_singer": "Named figure/title in the worldview reference.",
+    "ron_dowles": "Named figure in the worldview reference.",
+    "ardisis": "Named figure/entity in the worldview reference and associated with an Ardisis Ceremony.",
+    "colleen_pallas": "Named figure in the worldview reference.",
+    "everard": "Named figure in the worldview reference.",
+    "star_dust_calamity": "Major historical event/name in the worldview reference; treat its exact chronology as source-dependent."
+  },
+  "world_concepts_and_history": {
+    "gaea_zero": "Gaea.Zero is a named concept in the worldview reference and should not be confused with Gaea itself.",
+    "bane_energy": "Bane Energy is a dangerous energy concept associated with Visbanian/Source Layer phenomena; it is not interchangeable with generic corruption terminology.",
+    "corrosion": "Corrosion is a named phenomenon in Aether Gazer worldbuilding. Exact causes/effects should follow the relevant story or reference text.",
+    "quakes": "Quakes are a named phenomenon/event concept in the worldview reference.",
+    "cycle": "Cycle is a named world/system concept in the worldview reference. Do not invent a universal definition beyond stored canon context.",
+    "agi_mecha": "AGI Mecha are artificial-intelligence mecha within the setting; they are distinct from ordinary human equipment and from Visbanes.",
+    "visbanic_agi_mecha": "Visbanic AGI Mecha are AGI Mecha associated with Visbanian influence and should be treated as a distinct enemy/category concept.",
+    "photon_rail": "Photon Rail is a named worldbuilding/transport concept in the worldview reference.",
+    "establishing_of_gaea": "A historical event/name in the worldview reference concerning Gaea's establishment.",
+    "tranzist_revolution": "A named historical event in the worldview reference.",
+    "first_agi_mecha_crisis": "A named historical crisis involving AGI Mecha.",
+    "five_clans_mountain_ceremony": "A named historical event in Xu Heng-related lore.",
+    "klein_protocol": "A named historical/system event in the worldview reference.",
+    "ardisis_ceremony": "A named historical event/ceremony in the worldview reference."
+  },
+  "combat_and_progression_reference": {
+    "combat_resources": [
+      "Rage",
+      "Energy",
+      "Trace",
+      "Divine Grace",
+      "Harmony"
+    ],
+    "damage_elements": [
+      "Physical",
+      "Fire",
+      "Water",
+      "Wind",
+      "Thunder",
+      "Ice",
+      "Light",
+      "Shadow"
+    ],
+    "common_statuses": [
+      "Freeze",
+      "Stun",
+      "Petrified",
+      "Shackle",
+      "Trauma",
+      "Scorch",
+      "Confuse"
+    ],
+    "dodge_and_breakfall": "Dodge effects, Extremity Dodge/Zero Time, and Break-fall effects are recurring combat vocabulary. Exact timings and interactions can be Modifier-specific.",
+    "skill_categories": "Later game/reference material distinguishes skill behaviors such as Channeling, Set-up, Charge and other skill categories; do not assume every Modifier uses them identically.",
+    "ultimate_skillchain": "Ultimate Skillchains combine specific Modifiers into coordinated team attacks. Available chains and pairings are character/version dependent.",
+    "rating_and_mod_index": "Rating gain, Mod Index Multiplier and related performance terms appear in later progression and Sigil Enchant references.",
+    "sigil_enchants": "Sigil Enchants are stat/behavior modifiers attached to Sigils. Mimir groups them into Offensive, Auxiliary and Defensive categories and lists effects such as Fierce Assault, Berserk, Enraged, elemental blessings, anti-enemy tactics and defensive effects; exact current values are version-specific.",
+    "functor_awakenable": "Some Functors can be Awakenable and may have stronger progression dependencies; current availability and exact requirements are version-specific.",
+    "transcendence": "Transcendence raises a Modifier's investment and unlocks or scales effects. Current Mimir Support Module entries use thresholds such as SS and SSS for specific modules; do not universalize one Modifier's requirements."
+  },
+  "support_and_auxiliary_systems": {
+    "support_modules": {
+      "current_page_last_update": "2026-09-29",
+      "known_examples": [
+        "Rāhu",
+        "Roaring Thunder",
+        "Chord of Convallaria",
+        "Flower of Yomi",
+        "Early Sakura",
+        "Tenblaze",
+        "Jin-ei",
+        "Darkstar",
+        "Living Soul",
+        "Flowfly Mist",
+        "Countertide",
+        "Phantasmal Dawn",
+        "Arctic Abyss",
+        "Shinri",
+        "Dimglare"
+      ],
+      "rule": "Support Modules provide Administrator/team effects and unlock through Modifier investment, affinity, stat boosts and/or specific progression milestones. Treat exact stats and unlock requirements as dated Mimir data."
+    },
+    "meow": {
+      "current_page_last_update": "2026-09-29",
+      "known_meows": [
+        "Mimtastic",
+        "Mitir",
+        "Me-Yow",
+        "Mijir",
+        "Micoco",
+        "Mininja"
+      ],
+      "chips": [
+        "Tactical Assembly",
+        "Power Strike Support",
+        "Feedback Force Field",
+        "Rift Surge",
+        "Emergency Rescue",
+        "Shadow Hunter",
+        "Battlefield Dominance",
+        "Challenger",
+        "Sudden Offensive",
+        "Marginal Benefit",
+        "Hold the Wall",
+        "Countermeasure",
+        "Heavy Core"
+      ],
+      "rule": "M.E.O.W. units and chips are auxiliary AI/progression systems. Many unlocks are tied to Admin level, story, Recurring Dream, Dimensional Variable or Causality Survey."
+    },
+    "opponent_intel": {
+      "current_page_last_update": "2026-09-01",
+      "risk_levels": [
+        "Risk Level I",
+        "Risk Level II",
+        "Risk Level III"
+      ],
+      "rule": "Opponent Intel is the structured enemy reference. Use it to distinguish enemy types/risk categories when current data is available; do not invent mechanics for enemies absent from the stored reference."
+    },
+    "achievements": {
+      "current_page_last_update": "2026-09-29",
+      "categories": [
+        "Overview",
+        "Cultivation",
+        "Collections",
+        "Battle",
+        "Admin",
+        "Stage",
+        "Other"
+      ],
+      "rule": "Achievements are a separate source of one-time progression/reward context and should not be counted as recurring income."
+    },
+    "account_and_side_content": {
+      "flaneuring": "A side/lifestyle content system used for social/collection-style activities and event interactions; exact current features vary by version.",
+      "idol_competition": "A limited/side gameplay system with its own stages, modifiers and dance content in versions where it is active; it is not the core combat loop.",
+      "music_dossier": "Music collection/archive content that can receive album updates alongside versions and events.",
+      "furniture": "Housing/collection-style furniture content can be added through versions and events.",
+      "event_story_and_heart_link": "Heart Link and character side stories add relationship/lore content distinct from the main story and combat progression."
+    }
+  },
+  "content_catalog": {
+    "main_story": "The main story is divided into numbered chapters/arcs and can have Normal, Hard/Extra Hard or other difficulty variants depending on the release. New story chapters are part of version updates.",
+    "heart_link": "Character Heart Link stories provide personal background and relationship lore; use character-specific references rather than inventing personal history.",
+    "synergy_past_story": "Synergy Past Story content is character-specific lore tied to individual Modifiers/Access Keys and can explain relationships, trauma, or history.",
+    "access_key_story": "Access Key descriptions and related stories can contain canon background about the weapon/construct and its prior owners or legends.",
+    "training_and_tutorial_content": "Tutorial and training stages explain systems such as combat skills, dodge, Modified Mode and progression; exact stage naming can differ by version.",
+    "regular_challenges": "Regular Challenges are distinct from limited-time version events and can persist or rotate according to the version structure.",
+    "scan_and_shop_context": "Modifier and Functor scans, vouchers, event shops, Imprint Shop exchanges and limited vouchers are part of the acquisition economy. Exact pity, banner pools, exchange prices and expiration rules are version-specific.",
+    "outfits_and_cosmetics": "Outfits, furniture, music, chibi modifiers and other cosmetic/collection content are often introduced alongside versions and events; they should not be confused with combat balance."
+  },
+  "missing_knowledge_policy": {
+    "purpose": "When a user asks about a named Aether Gazer term, first try the local expanded catalog before relying on general model memory.",
+    "do_not_invent": "If a named faction, person, historical event, region, enemy, or system appears only as an index entry and lacks a detailed local description, Hades should acknowledge that it is a known term and avoid fabricating specifics.",
+    "current_data": "Current rotation, banner, reward, meta, or event questions must be labeled as dated unless live/fresh application data is supplied.",
+    "persona_use": "Knowledge should inform Hades' replies naturally; she should not dump encyclopedia entries unless the Administrator asks for an explanation."
   }
 }

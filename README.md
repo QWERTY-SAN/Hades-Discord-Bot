@@ -175,3 +175,9 @@ The bot has a dated Aether Gazer service-lifecycle snapshot. It distinguishes Eo
 
 As of 2026-10-04, CN has already ended new content after V5.2 (2026-07-23) and entered its Companion Server phase. Global is still scheduled to receive content through V5.2 on 2026-12-01, after which it is planned to continue through a Companion Server with a planned horizon of 2031-09 and a reassessment around 2031-03.
 
+
+## Aether Gazer knowledge layer
+
+The bot includes structured reference data covering Hades, world/lore, regions and organizations, named historical events, combat resources and systems, endgame modes, version events, Shifted Star routines, Support Modules, M.E.O.W., Opponent Intel, Achievements, scans/economy, side content, and the service lifecycle.
+
+The knowledge layer distinguishes stable lore from dated gameplay data. It does not claim live access to banners, rotations, rewards, or current meta.
