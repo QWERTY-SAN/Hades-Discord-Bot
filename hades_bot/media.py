@@ -110,7 +110,6 @@ class HadesMedia:
         embed.set_image(url=entry.url)
         try:
             await destination.send(
-                content=entry.url,
                 embed=embed,
                 allowed_mentions=discord.AllowedMentions.none(),
             )
@@ -121,5 +120,5 @@ class HadesMedia:
         history_key = self._history_key(message)
         self._recent_urls[history_key].append(entry.url)
         self._last_sent[self._cooldown_key(message)] = time.monotonic()
-        logger.info("Sent external Hades GIF URL: %s", entry.url)
+        logger.info("Sent Hades GIF embed")
         return True

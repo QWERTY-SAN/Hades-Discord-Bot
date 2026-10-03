@@ -113,7 +113,7 @@ class HadesBot(commands.Bot):
             return
 
         # Optional narrower mode: rejects non-Aether requests only when explicitly enabled.
-        if SETTINGS.strict_aether_topic and not is_hades_scope_allowed(content):
+        if not is_hades_scope_allowed(content):
             await message.reply(
                 off_topic_response(),
                 mention_author=False,

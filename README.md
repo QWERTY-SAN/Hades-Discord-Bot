@@ -87,3 +87,11 @@ Enable Discord **Message Content Intent** for prefix commands.
 
 Copy `.env.example` for local development. In Render, add the same variables through Environment.
 Keep the actual `DISCORD_TOKEN` and `GEMINI_API_KEY` out of Git.
+
+## Conversation scope
+
+Hades is intentionally not a general-purpose assistant. Aether Gazer/Hades topics and brief direct social conversation are allowed. Unrelated subjects—including Formula 1, sports, programming, technology, politics, entertainment, finance, schoolwork, and other unrelated factual topics—are declined before Gemini is called.
+
+## GIFs
+
+GIFs are configured only in `hades_bot/gifs.py`. The bot uses the original external URL as an embed image and does not put the URL in the message body or re-upload the GIF to Discord.
