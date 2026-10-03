@@ -1,35 +1,33 @@
 from __future__ import annotations
 
-import ast
+import os
+import py_compile
 from pathlib import Path
 
+
 ROOT = Path(__file__).resolve().parents[1]
-PY_FILES = sorted((ROOT / "hades_bot").glob("*.py")) + [ROOT / "main.py"]
 
-for path in PY_FILES:
-    ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+for path in ROOT.rglob("*.py"):
+    if "__pycache__" not in path.parts:
+        py_compile.compile(str(path), doraise=True)
 
-config_source = (ROOT / "hades_bot/config.py").read_text(encoding="utf-8")
-gemini_source = (ROOT / "hades_bot/gemini_client.py").read_text(encoding="utf-8")
-render_source = (ROOT / "render.yaml").read_text(encoding="utf-8")
-media_source = (ROOT / "hades_bot/media.py").read_text(encoding="utf-8")
-gifs_source = (ROOT / "hades_bot/gifs.py").read_text(encoding="utf-8")
-env_source = (ROOT / ".env.example").read_text(encoding="utf-8")
-scope_source = (ROOT / "hades_bot/scope.py").read_text(encoding="utf-8")
+os.environ.setdefault("DISCORD_TOKEN", "test-token")
+os.environ.setdefault("GEMINI_API_KEY", "test-key")
 
-assert "emojis_enabled: bool" in config_source
-assert 'emojis_enabled=_bool("EMOJIS_ENABLED", True)' in config_source
-assert "SETTINGS.emojis_enabled" in gemini_source
-assert "EMOJIS_ENABLED" in render_source
-assert "HADES_GIF_URLS" in gifs_source
-assert "discord.File" not in media_source
-assert "_get_session" not in media_source
-assert "discord.File" not in media_source
-assert "HADES_GIF_URLS" not in env_source
-assert "smug" not in gifs_source.lower()
-assert "happy" not in gifs_source.lower()
-assert "neutral" not in gifs_source.lower()
-assert "annoyed" not in gifs_source.lower()
-assert "is_specialist_request" in scope_source
+from hades_bot.config import SETTINGS  # noqa: E402
+from hades_bot.scope import contains_forbidden_topic, is_hades_scope_allowed  # noqa: E402
 
-print(f"Static smoke check passed for {len(PY_FILES)} Python files.")
+assert SETTINGS.strict_aether_topic is True
+assert SETTINGS.emojis_enabled is True
+assert is_hades_scope_allowed("Tell me about Hades")
+assert is_hades_scope_allowed("How are you?")
+assert is_hades_scope_allowed("I had a rough day.")
+assert not is_hades_scope_allowed("Hades, what do you think about F1?")
+assert not is_hades_scope_allowed("Hades, who won the NBA finals?")
+assert not is_hades_scope_allowed("Hades, write me Python code.")
+assert not is_hades_scope_allowed("What is the capital of Japan?")
+assert contains_forbidden_topic("Formula One")
+assert contains_forbidden_topic("basketball")
+assert not contains_forbidden_topic("Aether Gazer")
+
+print("Hades static smoke tests passed.")

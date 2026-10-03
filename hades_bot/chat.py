@@ -33,6 +33,18 @@ class HadesChat:
         finally:
             self._semaphore.release()
 
+    async def scope_refusal(self, blocked_category: str) -> str:
+        """Generate a brief in-character scope refusal without touching conversation memory."""
+        try:
+            await asyncio.wait_for(self._semaphore.acquire(), timeout=SETTINGS.max_queue_wait)
+        except asyncio.TimeoutError as exc:
+            raise RuntimeError("The response queue is currently full.") from exc
+
+        try:
+            return await self.gemini.generate_scope_refusal(blocked_category)
+        finally:
+            self._semaphore.release()
+
     async def reset(self, key: str) -> None:
         await self.memory.reset(key)
 

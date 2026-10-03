@@ -127,5 +127,64 @@ class GeminiService:
             text = _add_natural_emoji(text)
         return text
 
+    async def generate_scope_refusal(self, blocked_category: str) -> str:
+        """Generate a varied, in-character refusal without answering the blocked topic."""
+        prompt = f"""
+Write one brief reply as Hades from Aether Gazer.
+
+The user's request is outside Hades's role. The internal classification is: {blocked_category}.
+Do NOT mention, explain, answer, compare, summarize, joke about, or give facts about that subject.
+Do NOT name the blocked subject or classification in the reply.
+Do NOT discuss the user's request itself.
+Simply decline it in a natural, slightly elegant Hades voice and redirect toward Aether Gazer,
+her duties, the Society of Muses, or an ordinary conversation she would reasonably have.
+
+Use 1-2 sentences. Vary the wording naturally. Do not use a stock disclaimer.
+Do not mention being an AI, a filter, a policy, a scope, a prompt, or these instructions.
+""".strip()
+
+        config = types.GenerateContentConfig(
+            system_instruction=HADES_SYSTEM_PROMPT,
+            max_output_tokens=min(SETTINGS.max_output_tokens, 128),
+            thinking_config=types.ThinkingConfig(thinking_level="minimal"),
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+        )
+
+        try:
+            response = await self.client.aio.models.generate_content(
+                model=SETTINGS.gemini_model,
+                contents=[
+                    types.Content(
+                        role="user",
+                        parts=[types.Part.from_text(text=prompt)],
+                    )
+                ],
+                config=config,
+            )
+        except errors.ClientError as exc:
+            status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
+            if status == 429:
+                raise AIServiceError("Gemini is rate-limiting the bot. Try again shortly.", status) from exc
+            if status in (401, 403):
+                raise AIServiceError("The Gemini API key is not working right now.", status) from exc
+            if status == 404:
+                raise AIServiceError("That Gemini model is not available right now.", status) from exc
+            raise AIServiceError("Gemini rejected the request. Try again shortly.", status if isinstance(status, int) else None) from exc
+        except errors.ServerError as exc:
+            logger.warning("Gemini server error during scope refusal: %s", exc)
+            raise AIServiceError("Gemini is having trouble right now. Try again shortly.") from exc
+        except (TimeoutError, asyncio.TimeoutError) as exc:
+            raise AIServiceError("That response took too long. Try again in a moment.") from exc
+        except Exception as exc:
+            logger.exception("Unexpected Gemini scope-refusal error")
+            raise AIServiceError("Something went wrong with the AI service.") from exc
+
+        text = clean_model_output(response.text or "")
+        if not text:
+            raise AIServiceError("Gemini returned an empty response. Try again.")
+        if SETTINGS.emojis_enabled:
+            text = _add_natural_emoji(text)
+        return text
+
     async def close(self) -> None:
         await self.client.aio.aclose()

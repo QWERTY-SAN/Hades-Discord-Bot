@@ -11,7 +11,7 @@ from .config import SETTINGS
 from .gemini_client import AIServiceError, GeminiService
 from .memory import ConversationMemory
 from .media import HadesMedia
-from .scope import is_hades_scope_allowed, is_specialist_request, off_topic_response
+from .scope import contains_forbidden_topic, is_hades_scope_allowed, scope_block_reason
 from .utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
 from .web import update_discord_state
 
@@ -102,23 +102,28 @@ class HadesBot(commands.Bot):
                 await self.media.send_gif(message.channel, message)
             return
 
-        # This guard is always active: Hades is not turned into a programming,
-        # homework, or unrelated specialist assistant.
-        if is_specialist_request(content):
-            await message.reply(
-                off_topic_response(),
-                mention_author=False,
-                allowed_mentions=ALLOWED_MENTIONS,
-            )
-            return
-
-        # Optional narrower mode: rejects non-Aether requests only when explicitly enabled.
+        # Hades has a deliberately narrow conversation scope. This is enforced
+        # regardless of the environment toggle so an old Render setting cannot
+        # accidentally turn her into a general-purpose chatbot.
         if not is_hades_scope_allowed(content):
-            await message.reply(
-                off_topic_response(),
-                mention_author=False,
-                allowed_mentions=ALLOWED_MENTIONS,
-            )
+            try:
+                refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
+            except AIServiceError as exc:
+                logger.warning("Scope refusal generation failed: %s", exc)
+                await message.reply(
+                    exc.user_message,
+                    mention_author=False,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                )
+                return
+            except RuntimeError:
+                await message.reply(
+                    "I have no interest in that subject. Ask me about something within my realm.",
+                    mention_author=False,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                )
+                return
+            await self.send_chunks(message, refusal)
             return
 
         if len(content) > SETTINGS.max_input_chars:
@@ -142,6 +147,14 @@ class HadesBot(commands.Bot):
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
+            if contains_forbidden_topic(reply):
+                logger.warning("Blocked off-topic model output for %s", key)
+                await message.reply(
+                    off_topic_response(),
+                    mention_author=False,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                )
+                return
             reply = sanitize_model_output(reply)
             await self.send_chunks(message, reply)
             if self.media.should_auto_send(message, trigger):

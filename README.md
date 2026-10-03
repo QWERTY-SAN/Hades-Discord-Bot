@@ -6,7 +6,7 @@ A modular Discord AI bot that roleplays as Hades from *Aether Gazer* using Gemin
 
 - `EMOJIS_ENABLED` is defined consistently in the settings, `.env.example`, `render.yaml`, and Gemini service.
 - Programming, coding, homework/assignment, and other explicit specialist-work requests are blocked before Gemini is called.
-- `STRICT_AETHER_TOPIC=false` keeps ordinary conversation allowed while the specialist guard stays active.
+- `STRICT_AETHER_TOPIC=true` keeps Hades strictly focused on Aether Gazer/Hades and direct personal conversation.
 - Hades keeps her character instead of turning into a generic programming or technical assistant.
 - Emojis are sparse and optional rather than spammy.
 - GIFs use one plain `HADES_GIF_URLS` list in `hades_bot/gifs.py`.
@@ -87,11 +87,3 @@ Enable Discord **Message Content Intent** for prefix commands.
 
 Copy `.env.example` for local development. In Render, add the same variables through Environment.
 Keep the actual `DISCORD_TOKEN` and `GEMINI_API_KEY` out of Git.
-
-## Conversation scope
-
-Hades is intentionally not a general-purpose assistant. Aether Gazer/Hades topics and brief direct social conversation are allowed. Unrelated subjects—including Formula 1, sports, programming, technology, politics, entertainment, finance, schoolwork, and other unrelated factual topics—are declined before Gemini is called.
-
-## GIFs
-
-GIFs are configured only in `hades_bot/gifs.py`. The bot uses the original external URL as an embed image and does not put the URL in the message body or re-upload the GIF to Discord.
