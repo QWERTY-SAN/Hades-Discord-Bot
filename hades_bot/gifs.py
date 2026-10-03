@@ -5,6 +5,6 @@ No mood/category system is used.
 """
 
 HADES_GIF_URLS = [
-    "https://media1.tenor.com/m/wF4bgdHbIswAAAAd/aether-gazer-hades.gif",
+    "https://c.tenor.com/wF4bgdHbIswAAAAd/tenor.gif",
     "https://i.imgur.com/cTRelnU.gif",
 ]
