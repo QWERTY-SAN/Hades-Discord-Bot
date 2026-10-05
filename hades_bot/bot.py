@@ -18,6 +18,8 @@ from .web import update_discord_state
 
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
+
+
 SCOPE_FALLBACKS = (
     "Mm. I have no interest in that matter, Administrator. Ask me about something within my realm.",
     "That lies outside my stage, little lamb. Bring me something from Aether Gazer instead.",
@@ -105,8 +107,10 @@ class HadesBot(commands.Bot):
                 mention_author=False,
                 allowed_mentions=ALLOWED_MENTIONS,
             )
-            if self.media.should_auto_send(message, trigger):
-                await self.media.send_gif(message.channel, message)
+            if self.media.should_auto_send_gif(message, trigger):
+                await self.media.send_auto_gif(message.channel, message)
+            if self.media.should_auto_send_image(message, trigger):
+                await self.media.send_auto_image(message.channel, message)
             return
 
         # Hades has a deliberately narrow conversation scope. This is enforced
@@ -165,8 +169,10 @@ class HadesBot(commands.Bot):
                 return
             reply = sanitize_model_output(reply)
             await self.send_chunks(message, reply)
-            if self.media.should_auto_send(message, trigger):
-                await self.media.send_gif(message.channel, message)
+            if self.media.should_auto_send_gif(message, trigger):
+                await self.media.send_auto_gif(message.channel, message)
+            if self.media.should_auto_send_image(message, trigger):
+                await self.media.send_auto_image(message.channel, message)
         except AIServiceError as exc:
             await self.cooldowns.release(key)
             await message.reply(
@@ -254,6 +260,12 @@ class HadesBot(commands.Bot):
 bot = HadesBot()
 
 
+def info_embed(title: str, description: str) -> discord.Embed:
+    embed = discord.Embed(title=title, description=description)
+    embed.set_footer(text=f"Hades Bot {__version__}")
+    return embed
+
+
 @bot.command(name="hades", aliases=["ask"])
 async def hades_command(ctx: commands.Context, *, prompt: str | None = None) -> None:
     if not prompt:
@@ -289,6 +301,18 @@ async def memory_command(ctx: commands.Context) -> None:
     )
 
 
+@bot.command(name="image", aliases=["hadesimage"])
+async def image_command(ctx: commands.Context) -> None:
+    """Send one configured Hades image as a standalone Discord message."""
+    sent = await bot.media.send_image(ctx.channel, ctx.message, force=True)
+    if not sent:
+        await ctx.reply(
+            "The portrait refused to appear. Check the configured image URLs.",
+            mention_author=False,
+            allowed_mentions=ALLOWED_MENTIONS,
+        )
+
+
 @bot.command(name="gif", aliases=["hadesgif"])
 async def gif_command(ctx: commands.Context) -> None:
     if not bot.media.entries:
@@ -319,14 +343,16 @@ async def ping_command(ctx: commands.Context) -> None:
 @bot.command(name="about")
 async def about_command(ctx: commands.Context) -> None:
     await ctx.reply(
-        "**🌙 Hades — Aether Gazer AI**\n"
-        "A character-focused Discord bot portraying Hades from *Aether Gazer*.\n\n"
-        f"Version: `{__version__}`\n"
-        f"Model: `{SETTINGS.gemini_model}`\n"
-        f"Prefix: `{SETTINGS.bot_prefix}`\n"
-        "Scope: `Aether Gazer / Hades-focused conversation`\n"
-        "Memory: `per-user/per-channel, in-memory`\n\n"
-        "She is meant to feel like Hades herself—not a generic assistant. 🎭",
+        embed=info_embed(
+            "🌙 Hades — Aether Gazer AI",
+            "A character-focused Discord bot portraying Hades from *Aether Gazer*.\n\n"
+            f"Version: `{__version__}`\n"
+            f"Model: `{SETTINGS.gemini_model}`\n"
+            f"Prefix: `{SETTINGS.bot_prefix}`\n"
+            "Scope: `Aether Gazer / Hades-focused conversation`\n"
+            "Memory: `per-user/per-channel, in-memory`\n\n"
+            "She is meant to feel like Hades herself—not a generic assistant. 🎭",
+        ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -335,9 +361,12 @@ async def about_command(ctx: commands.Context) -> None:
 @bot.command(name="version")
 async def version_command(ctx: commands.Context) -> None:
     await ctx.reply(
-        f"**Hades Bot**\nVersion: `{__version__}`\n"
-        f"discord.py: `{discord.__version__}`\n"
-        f"Gemini model: `{SETTINGS.gemini_model}`",
+        embed=info_embed(
+            "Hades Bot — Version",
+            f"Version: `{__version__}`\n"
+            f"discord.py: `{discord.__version__}`\n"
+            f"Gemini model: `{SETTINGS.gemini_model}`",
+        ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -346,12 +375,14 @@ async def version_command(ctx: commands.Context) -> None:
 @bot.command(name="privacy")
 async def privacy_command(ctx: commands.Context) -> None:
     await ctx.reply(
-        "**🔒 Privacy**\n"
-        "• Conversation memory is kept in the bot process and is not written to a local database.\n"
-        f"• Memory expires after `{SETTINGS.memory_ttl_seconds // 3600}` hour(s), or you can clear it with `{SETTINGS.bot_prefix}reset`.\n"
-        "• Discord messages used for AI replies are sent to the configured Google Gemini API for generation.\n"
-        "• The bot does not display or expose your Discord token or Gemini API key through commands.\n"
-        "• Avoid sending passwords, API keys, payment details, or other secrets in chat. 🔐",
+        embed=info_embed(
+            "🔒 Privacy",
+            "• Conversation memory is kept in the bot process and is not written to a local database.\n"
+            f"• Memory expires after `{SETTINGS.memory_ttl_seconds // 3600}` hour(s), or you can clear it with `{SETTINGS.bot_prefix}reset`.\n"
+            "• Discord messages used for AI replies are sent to the configured Google Gemini API for generation.\n"
+            "• The bot does not display or expose your Discord token or Gemini API key through commands.\n"
+            "• Avoid sending passwords, API keys, payment details, or other secrets in chat. 🔐",
+        ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -383,7 +414,7 @@ async def diagnose_command(ctx: commands.Context) -> None:
     lines.append("No Gemini test request was sent.")
 
     await ctx.reply(
-        "\n".join(lines),
+        embed=info_embed("🩺 Hades Diagnostics", "\n".join(lines[1:])),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -403,16 +434,20 @@ async def status_command(ctx: commands.Context) -> None:
 
     count = await bot.hades_chat.memory.conversation_count()
     await ctx.reply(
-        "**🌙 Hades Status**\n"
-        f"Model: `{SETTINGS.gemini_model}`\n"
-        f"Guilds: `{len(bot.guilds)}`\n"
-        f"Memory: `{count}` active conversations\n"
-        f"Requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\n"
-        f"Total AI requests: `{bot.hades_chat.total_requests}`\n"
-        f"GIF auto mode: `every_mention`\n"
-        f"GIFs: `{bot.media.configured_count}` external URLs\n"
-        f"Emojis: `{'enabled' if SETTINGS.emojis_enabled else 'disabled'}`\n"
-        f"Latency: `{round(bot.latency * 1000)}ms`",
+        embed=info_embed(
+            "🌙 Hades Status",
+            f"Model: `{SETTINGS.gemini_model}`\n"
+            f"Guilds: `{len(bot.guilds)}`\n"
+            f"Memory: `{count}` active conversations\n"
+            f"Requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\n"
+            f"Total AI requests: `{bot.hades_chat.total_requests}`\n"
+            f"Auto GIFs: `every_mention`\n"
+            f"Auto images: `every_mention`\n"
+            f"GIFs: `{bot.media.configured_count}` external URLs\n"
+            f"Images: `{bot.media.image_configured_count}` external URLs\n"
+            f"Emojis: `{'enabled' if SETTINGS.emojis_enabled else 'disabled'}`\n"
+            f"Latency: `{round(bot.latency * 1000)}ms`",
+        ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )
@@ -422,19 +457,22 @@ async def status_command(ctx: commands.Context) -> None:
 async def help_command(ctx: commands.Context) -> None:
     p = SETTINGS.bot_prefix
     await ctx.reply(
-        "**🌙 Hades — Aether Gazer AI**\n\n"
-        f"`{p}hades <message>` — Talk to Hades\n"
-        f"`{p}ask <message>` — Same as `hades`\n"
-        f"`{p}reset` / `{p}forget` / `{p}clear` — Clear your conversation\n"
-        f"`{p}memory` — Show conversation memory\n"
-        f"`{p}gif` / `{p}hadesgif` — Send a Hades GIF\n"
-        f"`{p}ping` — Check Discord latency\n"
-        f"`{p}about` — About Hades and this bot\n"
-        f"`{p}version` — Show bot/software versions\n"
-        f"`{p}privacy` — Show memory and data-handling info\n"
-        f"`{p}status` — Show bot status (staff)\n"
-        f"`{p}diagnose` — Check bot configuration/runtime health\n\n"
-        "You can also mention Hades, DM her, or reply directly to one of her messages.",
+        embed=info_embed(
+            "🌙 Hades — Aether Gazer AI",
+            f"`{p}hades <message>` — Talk to Hades\n"
+            f"`{p}ask <message>` — Same as `hades`\n"
+            f"`{p}reset` / `{p}forget` / `{p}clear` — Clear your conversation\n"
+            f"`{p}memory` — Show conversation memory\n"
+            f"`{p}image` / `{p}hadesimage` — Send a Hades image\n"
+            f"`{p}gif` / `{p}hadesgif` — Send a Hades GIF\n"
+            f"`{p}ping` — Check Discord latency\n"
+            f"`{p}about` — About Hades and this bot\n"
+            f"`{p}version` — Show bot/software versions\n"
+            f"`{p}privacy` — Show memory and data-handling info\n"
+            f"`{p}status` — Show bot status (staff)\n"
+            f"`{p}diagnose` — Check bot configuration/runtime health\n\n"
+            "You can also mention Hades, DM her, or reply directly to one of her messages.",
+        ),
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,
     )

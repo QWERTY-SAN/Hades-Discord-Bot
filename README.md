@@ -69,6 +69,17 @@ The bot includes a narrow, dynamic fan-service layer for playful admiration and 
 ### Emojis
 `EMOJIS_ENABLED=true` enables sparse Hades-style emoji use. Usually 0-2 emojis are used; many responses use none.
 
+### Hades images
+
+Standalone Hades images are configured separately from GIFs in `hades_bot/media/images.py`:
+
+```python
+HADES_IMAGE_URLS = [
+    "https://i.imgur.com/uNBcXQg.jpeg",
+    "https://i.imgur.com/gQN3GNb.jpeg",
+]
+```
+
 ### GIFs
 Edit:
 
@@ -85,7 +96,7 @@ HADES_GIF_URLS = [
 ]
 ```
 
-GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content.
+GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content. Image URLs are handled separately in `hades_bot/media/images.py` and are sent as standalone image messages.
 
 ### Endgame, events, and service lifecycle knowledge
 The local knowledge layer also covers:
@@ -237,3 +248,8 @@ The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisitio
 
 ## Release
 This package consolidates the latest Hades persona, strict scope, dynamic refusals, fan-service, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
+
+
+### Automatic media
+
+When Hades is mentioned, GIFs and images are handled as separate automatic media systems. Each has its own 5-minute per-user/channel cooldown, so a mention can send one GIF and one image independently. The manual `h!gif` and `h!image` commands remain separate as well.
