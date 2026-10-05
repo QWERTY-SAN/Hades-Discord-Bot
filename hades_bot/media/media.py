@@ -175,16 +175,14 @@ class HadesMedia:
         last_sent = self._last_auto_media_sent.get(key)
         return last_sent is None or now - last_sent >= AUTO_MEDIA_COOLDOWN_SECONDS
 
-    async def send_auto_media(
+    def choose_auto_media_embed(
         self,
-        destination: discord.abc.Messageable,
         message: discord.Message,
-    ) -> bool:
-        """Send exactly one randomly selected automatic media item.
+    ) -> discord.Embed | None:
+        """Choose exactly one random GIF/image and return it as an embed.
 
-        The GIF and image URL libraries stay completely separate. Only the
-        automatic trigger chooses randomly between the two media types.
-        Manual ``h!gif`` and ``h!image`` commands are unaffected.
+        The embed is attached to Hades' normal reply message; no separate
+        media message is sent. The GIF/image libraries remain independent.
         """
         choices: list[str] = []
         if self.entries:
@@ -192,18 +190,52 @@ class HadesMedia:
         if self.image_entries:
             choices.append("image")
         if not choices:
-            return False
+            return None
 
         selected = self._rng.choice(choices)
-        if selected == "gif":
-            sent = await self.send_gif(destination, message)
-        else:
-            sent = await self.send_image(destination, message)
+        history_key = self._history_key(message)
+        sent_at = time.monotonic()
 
-        if sent:
-            self._last_auto_media_sent[self._cooldown_key(message)] = time.monotonic()
-            logger.info("Sent one automatic Hades %s", selected)
-        return sent
+        if selected == "gif":
+            entry = self._choose_gif(message, force=False)
+            if entry is None:
+                return None
+            self._recent_gif_urls[history_key].append(entry.url)
+            self._gif_channel_touched[history_key] = sent_at
+            embed = discord.Embed()
+            embed.set_image(url=entry.url)
+        else:
+            entry = self._choose_image(message, force=False)
+            if entry is None:
+                return None
+            self._recent_image_urls[history_key].append(entry.url)
+            self._image_channel_touched[history_key] = sent_at
+            embed = discord.Embed()
+            embed.set_image(url=entry.url)
+
+        self._last_auto_media_sent[self._cooldown_key(message)] = sent_at
+        logger.info("Attached one automatic Hades %s to response embed", selected)
+        return embed
+
+    async def send_auto_media(
+        self,
+        destination: discord.abc.Messageable,
+        message: discord.Message,
+    ) -> bool:
+        """Compatibility helper: send the random media as its own embed.
+
+        Normal Hades replies should use ``choose_auto_media_embed`` so the
+        media is attached to the same response message.
+        """
+        embed = self.choose_auto_media_embed(message)
+        if embed is None:
+            return False
+        try:
+            await destination.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+        except discord.HTTPException as exc:
+            logger.warning("Discord rejected automatic Hades media embed: %s", exc)
+            return False
+        return True
 
     def should_auto_send_gif(self, message: discord.Message, trigger: str) -> bool:
         """Compatibility helper for older callers.
@@ -281,9 +313,11 @@ class HadesMedia:
         if entry is None:
             return False
 
+        embed = discord.Embed()
+        embed.set_image(url=entry.url)
         try:
             await destination.send(
-                entry.url,
+                embed=embed,
                 allowed_mentions=discord.AllowedMentions.none(),
             )
         except discord.HTTPException as exc:

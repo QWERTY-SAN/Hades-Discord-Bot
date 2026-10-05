@@ -96,7 +96,7 @@ HADES_GIF_URLS = [
 ]
 ```
 
-GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content. Image URLs are handled separately in `hades_bot/media/images.py` and are sent as standalone image messages.
+GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content. Image URLs are handled separately in `hades_bot/media/images.py`. Automatic media is attached to Hades' normal response embed rather than sent as a second message.
 
 ### Endgame, events, and service lifecycle knowledge
 The local knowledge layer also covers:
@@ -252,4 +252,4 @@ This package consolidates the latest Hades persona, strict scope, dynamic refusa
 
 ### Automatic media
 
-When Hades is mentioned, the bot randomly chooses **one** automatic media type: a GIF **or** an image. It never sends both from the same automatic trigger. The GIF and image libraries remain separate, and the automatic media trigger uses one 5-minute per-user/channel cooldown. The manual `h!gif` and `h!image` commands remain separate as well.
+When Hades is mentioned, the bot randomly chooses **one** automatic media type: a GIF **or** an image. It never sends both from the same automatic trigger. The GIF and image libraries remain separate, and the automatic media trigger uses one 5-minute per-user/channel cooldown. The selected media is placed inside the same embed as Hades' response, so no second media message is sent. The manual `h!gif` and `h!image` commands remain separate as well.

@@ -74,11 +74,26 @@ class HadesBot(commands.Bot):
         guild_id = message.guild.id if message.guild else "no-guild"
         return f"guild:{guild_id}:channel:{message.channel.id}:user:{message.author.id}"
 
-    async def send_chunks(self, message: discord.Message, text: str) -> None:
+    async def send_chunks(
+        self,
+        message: discord.Message,
+        text: str,
+        *,
+        attach_auto_media: bool = False,
+    ) -> None:
         chunks = split_message(text)
+        media_embed = None
+        if attach_auto_media and self.media.should_auto_send_media(message, "mention"):
+            media_embed = self.media.choose_auto_media_embed(message)
+
         for index, chunk in enumerate(chunks):
             if index == 0:
-                await message.reply(chunk, mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+                await message.reply(
+                    chunk,
+                    mention_author=False,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                    embed=media_embed,
+                )
             else:
                 await message.channel.send(chunk, allowed_mentions=ALLOWED_MENTIONS)
 
@@ -102,13 +117,16 @@ class HadesBot(commands.Bot):
     ) -> None:
         content = content.strip()
         if not content:
+            response = self._rng.choice(EMPTY_CALL_RESPONSES)
+            media_embed = None
+            if self.media.should_auto_send_media(message, trigger):
+                media_embed = self.media.choose_auto_media_embed(message)
             await message.reply(
-                self._rng.choice(EMPTY_CALL_RESPONSES),
+                response,
                 mention_author=False,
                 allowed_mentions=ALLOWED_MENTIONS,
+                embed=media_embed,
             )
-            if self.media.should_auto_send_media(message, trigger):
-                await self.media.send_auto_media(message.channel, message)
             return
 
         # Hades has a deliberately narrow conversation scope. This is enforced
@@ -166,9 +184,11 @@ class HadesBot(commands.Bot):
                 await self.send_chunks(message, refusal)
                 return
             reply = sanitize_model_output(reply)
-            await self.send_chunks(message, reply)
-            if self.media.should_auto_send_media(message, trigger):
-                await self.media.send_auto_media(message.channel, message)
+            await self.send_chunks(
+                message,
+                reply,
+                attach_auto_media=(trigger == "mention"),
+            )
         except AIServiceError as exc:
             await self.cooldowns.release(key)
             await message.reply(
