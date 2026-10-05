@@ -108,30 +108,7 @@ class HadesBot(commands.Bot):
                 await self.media.send_gif(message.channel, message)
             return
 
-        # Hades has a deliberately narrow conversation scope. This is enforced
-        # regardless of the environment toggle so an old Render setting cannot
-        # accidentally turn her into a general-purpose chatbot.
-        if not is_hades_scope_allowed(content):
-            try:
-                refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
-            except AIServiceError as exc:
-                logger.warning("Scope refusal generation failed: %s", exc)
-                await message.reply(
-                    exc.user_message,
-                    mention_author=False,
-                    allowed_mentions=ALLOWED_MENTIONS,
-                )
-                return
-            except RuntimeError:
-                await message.reply(
-                    self._rng.choice(SCOPE_FALLBACKS),
-                    mention_author=False,
-                    allowed_mentions=ALLOWED_MENTIONS,
-                )
-                return
-            await self.send_chunks(message, refusal)
-            return
-
+        # Reject oversized requests before any model call, including generated refusals.
         if len(content) > SETTINGS.max_input_chars:
             await message.reply(
                 f"That's quite a manuscript, little lamb. Keep it under `{SETTINGS.max_input_chars:,}` characters.",
@@ -140,6 +117,8 @@ class HadesBot(commands.Bot):
             )
             return
 
+        # Acquire cooldown before *any* Gemini-backed path. Otherwise blocked-topic
+        # refusals could repeatedly call Gemini without respecting USER_COOLDOWN.
         key = self.conversation_key(message)
         remaining = await self.cooldowns.try_acquire(key)
         if remaining > 0:
@@ -151,17 +130,46 @@ class HadesBot(commands.Bot):
             return
 
         try:
+            if not is_hades_scope_allowed(content):
+                try:
+                    async with message.channel.typing():
+                        refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
+                except AIServiceError as exc:
+                    await self.cooldowns.release(key)
+                    logger.warning("Scope refusal generation failed: %s", exc)
+                    await message.reply(
+                        exc.user_message,
+                        mention_author=False,
+                        allowed_mentions=ALLOWED_MENTIONS,
+                    )
+                    return
+                except RuntimeError:
+                    await self.cooldowns.release(key)
+                    await message.reply(
+                        "The response queue is full. Try again in a moment.",
+                        mention_author=False,
+                        allowed_mentions=ALLOWED_MENTIONS,
+                    )
+                    return
+
+                await self.send_chunks(message, refusal)
+                return
+
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
+
             if contains_forbidden_topic(reply):
                 logger.warning("Blocked forbidden-topic model output for %s", key)
                 try:
                     refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
                 except (AIServiceError, RuntimeError):
                     refusal = self._rng.choice(SCOPE_FALLBACKS)
+                # Match the documented behavior: a response rejected by the output
+                # guard does not consume the user's cooldown.
                 await self.cooldowns.release(key)
                 await self.send_chunks(message, refusal)
                 return
+
             reply = sanitize_model_output(reply)
             await self.send_chunks(message, reply)
             if self.media.should_auto_send(message, trigger):
@@ -317,9 +325,17 @@ async def ping_command(ctx: commands.Context) -> None:
 
 @bot.command(name="status")
 async def status_command(ctx: commands.Context) -> None:
-    if ctx.guild and not (
-        ctx.author.guild_permissions.manage_guild or ctx.author.guild_permissions.administrator
-    ):
+    is_owner = await bot.is_owner(ctx.author)
+    is_guild_staff = bool(
+        ctx.guild
+        and (
+            ctx.author.guild_permissions.manage_guild
+            or ctx.author.guild_permissions.administrator
+        )
+    )
+    # DM users do not have guild permissions, so only the bot owner can view
+    # aggregate deployment and conversation statistics in DMs.
+    if not (is_owner or is_guild_staff):
         await ctx.reply(
             "That information is for those managing the stage. 🎭",
             mention_author=False,
@@ -355,7 +371,7 @@ async def help_command(ctx: commands.Context) -> None:
         f"`{p}memory` — Show conversation memory\n"
         f"`{p}gif` / `{p}hadesgif` — Send a Hades GIF\n"
         f"`{p}ping` — Check Discord latency\n"
-        f"`{p}status` — Show bot status (staff)\n\n"
+        f"`{p}status` — Show bot status (owner or authorized guild staff)\n\n"
         "You can also mention Hades, DM her, or reply directly to one of her messages.",
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,

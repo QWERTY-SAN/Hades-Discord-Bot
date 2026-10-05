@@ -51,7 +51,7 @@ Blocked:
 - Homework and other specialist work
 - Unrelated factual questions
 
-Scope decisions are deterministic, but refusal wording is generated dynamically in Hades' persona and the blocked subject is not discussed in the refusal.
+Scope decisions are deterministic, but refusal wording is generated dynamically in Hades' persona and the blocked subject is not discussed in the refusal. Because those refusals use Gemini, they are subject to the same per-user/per-channel cooldown as ordinary AI replies.
 
 
 ### Fan-service behavior
@@ -122,13 +122,13 @@ GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_THINKING_LEVEL=minimal
 BOT_PREFIX=h!
-STRICT_AETHER_TOPIC=true
 EMOJIS_ENABLED=true
 MAX_HISTORY=16
 MEMORY_TTL_SECONDS=21600
 MAX_CONVERSATIONS=500
 MAX_OUTPUT_TOKENS=768
 MAX_INPUT_CHARS=6000
+KNOWLEDGE_CONTEXT_MAX_CHARS=9000
 USER_COOLDOWN=2.0
 MAX_CONCURRENT_REQUESTS=3
 MAX_QUEUE_WAIT=20
@@ -152,23 +152,38 @@ Start command:
 python main.py
 ```
 
-Health check:
+Health check (`/health`) confirms the web process is serving requests. It is used by the Render blueprint as a liveness check.
 
-```text
-/health
-```
-
-Readiness check:
-
-```text
-/ready
-```
+Readiness check (`/ready`) returns HTTP 200 only after Discord connects and HTTP 503 while the bot is starting or disconnected. Monitor this endpoint separately when troubleshooting; do not use it as Render's liveness check because a Discord reconnect can temporarily make the bot unready.
 
 Enable Discord **Message Content Intent** for prefix commands.
 
-### Tests
+### Tests and CI
 
-The repository contains lightweight smoke tests for scope enforcement and the source-grounded Hades reference layer.
+The smoke checks cover Python compilation, topic boundaries, fan-service scope, knowledge retrieval, and expected project files. GitHub Actions runs the checks on pushes and pull requests. Locally, install the dependencies and run:
+
+```bash
+python -m pip install -r requirements.txt pytest
+python -m pytest -q tests/test_bot_hardening.py tests/smoke/fan_teasing_smoke.py
+python -m compileall -q main.py hades_bot tests
+for f in tests/smoke/*_smoke.py; do
+  if [ "$f" != "tests/smoke/fan_teasing_smoke.py" ]; then
+    module="${f%.py}"
+    module="${module//\//.}"
+    python -m "$module"
+  fi
+done
+```
+
+### Secret handling
+
+- Keep real Discord and Gemini credentials in local `.env` files or Render environment secrets; never paste them into source code or commits.
+- The distributable archive intentionally excludes `.env` and includes only `.env.example`.
+- If `.env` was previously committed, remove it from Git tracking with `git rm --cached .env` and commit that change. If any real key was ever committed or shared, rotate it; deleting the file does not erase Git history.
+
+### Project status and fan disclaimer
+
+This is an unofficial fan-made project and is not affiliated with or endorsed by the Aether Gazer rights holders. Aether Gazer, Hades, and official game assets remain the property of their respective owners. No open-source license is currently provided for this repository; do not assume permission to reuse or redistribute its code.
 
 ## Endgame knowledge
 

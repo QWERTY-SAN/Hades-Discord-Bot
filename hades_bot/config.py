@@ -46,7 +46,6 @@ class Settings:
     bot_prefix: str
     gemini_model: str
     gemini_thinking_level: str
-    strict_aether_topic: bool
     emojis_enabled: bool
     max_history: int
     max_output_tokens: int
@@ -82,7 +81,6 @@ class Settings:
             bot_prefix=os.getenv("BOT_PREFIX", "h!").strip() or "h!",
             gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip(),
             gemini_thinking_level=thinking,
-            strict_aether_topic=_bool("STRICT_AETHER_TOPIC", True),
             emojis_enabled=_bool("EMOJIS_ENABLED", True),
             max_history=_int("MAX_HISTORY", 16, 2),
             max_output_tokens=_int("MAX_OUTPUT_TOKENS", 768, 128),

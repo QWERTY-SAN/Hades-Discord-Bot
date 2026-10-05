@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+    env:
+      DISCORD_TOKEN: test-token-not-a-real-secret
+      GEMINI_API_KEY: test-key-not-a-real-secret
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Guard against a committed local environment file
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env must not be tracked. Remove it with git rm --cached .env."
+            exit 1
+          fi
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt pytest
+      - name: Compile Python files
+        run: python -m compileall -q main.py hades_bot tests
+      - name: Run unit and fan-service tests
+        run: python -m pytest -q tests/test_bot_hardening.py tests/smoke/fan_teasing_smoke.py
+      - name: Run smoke checks
+        shell: bash
+        run: |
+          for test_file in tests/smoke/*_smoke.py; do
+            if [[ "$test_file" == "tests/smoke/fan_teasing_smoke.py" ]]; then
+              continue
+            fi
+            echo "Running $test_file"
+            module="${test_file%.py}"
+            module="${module//\//.}"
+            python -m "$module"
+          done
