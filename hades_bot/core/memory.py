@@ -92,12 +92,8 @@ class ConversationMemory:
             return len(self._conversations)
 
     async def message_count(self, key: str) -> int:
-        """Return a count without creating a phantom conversation for a new user."""
-        async with self._index_lock:
-            conversation = self._conversations.get(key)
-            if conversation is None:
-                return 0
-            # A read-only status check should not keep an idle conversation alive.
+        conversation = await self._get_or_create(key)
+        async with conversation.lock:
             return len(conversation.turns)
 
 

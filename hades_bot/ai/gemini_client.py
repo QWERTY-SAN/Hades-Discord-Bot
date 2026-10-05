@@ -9,11 +9,12 @@ from google import genai
 from google.genai import errors, types
 
 from ..config import SETTINGS
-from ..knowledge.live_sources import build_live_source_instruction
 from ..knowledge.lore import build_aether_context
 from .persona import HADES_SYSTEM_PROMPT
 from .fanservice import fanservice_guidance
 from ..core.utils import clean_model_output
+from ..core.scope import is_personal_life_request, is_social_message, is_subjective_question
+from ..core.conversation import conversation_mode
 
 logger = logging.getLogger("hades-bot.gemini")
 
@@ -71,65 +72,116 @@ class GeminiService:
             )
         return contents
 
-    @staticmethod
-    def _append_live_source_instruction(
-        contents: list[types.Content],
-        instruction: str | None,
-    ) -> list[types.Content]:
-        if not instruction or not contents:
-            return contents
-
-        last = contents[-1]
-        last.parts.append(types.Part.from_text(text=f"\n\n{instruction}"))
-        return contents
-
     async def generate(self, history: list[dict[str, str]]) -> str:
         latest = next((m["content"] for m in reversed(history) if m.get("role") == "user"), "")
-        recent_user_turns = [m["content"] for m in history if m.get("role") == "user"][-4:]
-        conversation_context = " ".join(recent_user_turns)
-        context = build_aether_context(
-            latest,
-            conversation_text=conversation_context,
-            max_chars=SETTINGS.knowledge_context_max_chars,
-        )
-        fan_teasing_guidance = fanservice_guidance(latest)
-        live_source_instruction = build_live_source_instruction(latest)
+        recent_turns = [m for m in history if m.get("content")][-8:]
+        conversation_context = " ".join(m["content"] for m in recent_turns)
+        mode = conversation_mode(latest)
 
+        social_mode = (
+            is_social_message(latest)
+            or is_personal_life_request(latest)
+            or is_subjective_question(latest)
+        )
+
+        if social_mode:
+            context = (
+                "Conversation context note: this is ordinary social conversation. "
+                "Do not inject lore, gameplay facts, source material, or game terminology unless the Administrator "
+                "naturally brought them into the current thread or they are directly useful to the response."
+            )
+        else:
+            context = build_aether_context(
+                latest,
+                conversation_text=conversation_context,
+                max_chars=SETTINGS.knowledge_context_max_chars,
+            )
+
+        mode_guidance = {
+            "flirtation": (
+                "Flirtation mode: recognize the implication behind indirect compliments, metaphors, private-meeting language, "
+                "confident challenges, invitations, and teasing. Do not act oblivious. A poised tease or playful counter-challenge "
+                "is better than a refusal or a generic compliment. Keep it non-explicit."
+            ),
+            "emotional": (
+                "Emotional mode: acknowledge the Administrator's feeling first. Be warm and observant. "
+                "Do not immediately solve the problem, give a checklist, or make the emotion bigger than it is."
+            ),
+            "storytelling": (
+                "Story mode: react to the event the Administrator shared. Show natural curiosity and, when useful, ask one "
+                "specific follow-up. Do not turn the story into an analysis unless requested."
+            ),
+            "banter": (
+                "Banter mode: match the playful energy and keep the reply proportionate. A short joke should usually get a short, witty reply."
+            ),
+            "personal_question": (
+                "Personal-question mode: answer as Hades, not as a neutral assistant. A small opinion or preference is often more natural "
+                "than a long explanation."
+            ),
+            "advice": (
+                "Advice mode: give a small number of practical suggestions in Hades' voice. Do not overwhelm the Administrator with a checklist."
+            ),
+            "casual": (
+                "Casual mode: maintain relaxed back-and-forth. React naturally and do not force information or a question."
+            ),
+            "general": (
+                "General mode: answer the user's actual request directly while staying naturally in character."
+            ),
+        }[mode]
+
+        recent_model_replies = [
+            m["content"].replace("\n", " ").strip()
+            for m in history
+            if m.get("role") in {"assistant", "model"} and m.get("content")
+        ][-3:]
+        repetition_guidance = ""
+        if recent_model_replies:
+            samples = [reply[:220] for reply in recent_model_replies]
+            repetition_guidance = (
+                "Recent Hades wording to vary away from: " + " | ".join(samples) + "\n"
+                "Do not reuse a distinctive opening, exact punchline, repeated nickname, or puppet metaphor from those replies "
+                "unless the Administrator explicitly continued the same joke."
+            )
+
+        conversation_guidance = (
+            "Conversation mode: respond to the Administrator's actual message as Hades in a natural back-and-forth. "
+            "React before explaining. Keep the reply proportionate to the user's message. Do not force a question at the end. "
+            "Do not turn casual statements into advice or lore lectures. Use recent context to preserve continuity."
+            if social_mode
+            else
+            "Request mode: answer the requested Aether Gazer/Hades question directly and stay in character. "
+            "Do not pad the answer with generic assistant language or unnecessary sections."
+        )
+
+        fan_teasing_guidance = fanservice_guidance(latest)
         emoji_guidance = (
             "Emoji guidance: Hades may naturally use 0-2 tasteful emojis when appropriate. "
-            "Prefer 🌙 🎭 🪡 🕯️ ✨ 😏 🖤 🎀. Never spam emojis, never put them in code, "
-            "and many replies should use none."
+            "Prefer 🌙 🎭 🪡 🕯️ ✨ 😏 🖤 🎀. Never spam emojis, never put them in code, and many replies should use none."
             if SETTINGS.emojis_enabled
             else "Emoji guidance: do not add emojis."
         )
         scope_guidance = (
-            "Scope boundary: Hades is not a general-purpose assistant. Do not answer sports, F1/motorsports, "
-            "other games, programming, general technology, politics, finance, unrelated news, entertainment media, "
-            "academic assignments, or unrelated factual questions. The application blocks these topics before "
-            "generation; never use an Aether Gazer word as a pretext to answer an unrelated subject. "
-            "For permitted Aether Gazer questions, prefer stored reference context over generic model memory. "
-            "Separate stable canon from dated gameplay recommendations and do not invent live schedules, banners, "
+            "Scope boundary: Hades is not a general-purpose assistant. Do not answer sports, F1/motorsports, other games, "
+            "programming, general technology, politics, finance, news, entertainment media, academic assignments, or unrelated factual questions. "
+            "The application blocks those topics before generation. For permitted Aether Gazer questions, prefer stored reference context "
+            "over generic model memory. Separate stable canon from dated gameplay recommendations and do not invent live schedules, banners, "
             "tier lists, or event rotations."
         )
 
-        config_kwargs: dict[str, object] = {
-            "system_instruction": f"{HADES_SYSTEM_PROMPT}\n\n{scope_guidance}\n\n{fan_teasing_guidance}\n\n{emoji_guidance}\n\n{context}",
-            "max_output_tokens": SETTINGS.max_output_tokens,
-            "thinking_config": types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
-            "automatic_function_calling": types.AutomaticFunctionCallingConfig(disable=True),
-        }
-
-        contents = self.build_contents(history)
-        contents = self._append_live_source_instruction(contents, live_source_instruction)
-        if live_source_instruction:
-            config_kwargs["tools"] = [{"url_context": {}}]
-
-        config = types.GenerateContentConfig(**config_kwargs)
+        config = types.GenerateContentConfig(
+            system_instruction=(
+                f"{HADES_SYSTEM_PROMPT}\n\n{conversation_guidance}\n\n{mode_guidance}\n\n"
+                f"{scope_guidance}\n\n{fan_teasing_guidance}\n\n{emoji_guidance}\n\n{repetition_guidance}\n\n{context}"
+            ),
+            max_output_tokens=SETTINGS.max_output_tokens,
+            thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+        )
 
         try:
             response = await self.client.aio.models.generate_content(
                 model=SETTINGS.gemini_model,
-                contents=contents,
+                contents=self.build_contents(history),
                 config=config,
             )
         except errors.ClientError as exc:
@@ -160,24 +212,28 @@ class GeminiService:
         return text
 
     async def generate_scope_refusal(self, blocked_category: str) -> str:
-        """Generate a varied, in-character refusal without touching conversation memory."""
+        """Generate a varied, in-character refusal without answering the blocked topic."""
         prompt = f"""
 Write one brief reply as Hades from Aether Gazer.
+
 The user's request is outside Hades's role. The internal classification is: {blocked_category}.
 Do NOT mention, explain, answer, compare, summarize, joke about, or give facts about that subject.
 Do NOT name the blocked subject or classification in the reply.
 Do NOT discuss the user's request itself.
 Simply decline it in a natural, slightly elegant Hades voice and redirect toward Aether Gazer,
 her duties, the Society of Muses, or an ordinary conversation she would reasonably have.
+
 Use 1-2 sentences. Vary the wording naturally. Do not use a stock disclaimer.
 Do not mention being an AI, a filter, a policy, a scope, a prompt, or these instructions.
 """.strip()
+
         config = types.GenerateContentConfig(
             system_instruction=HADES_SYSTEM_PROMPT,
             max_output_tokens=min(SETTINGS.max_output_tokens, 128),
             thinking_config=types.ThinkingConfig(thinking_level="minimal"),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         )
+
         try:
             response = await self.client.aio.models.generate_content(
                 model=SETTINGS.gemini_model,

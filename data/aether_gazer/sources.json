@@ -3,11 +3,12 @@
   "aether_gazer_fandom": "https://aether-gazer.fandom.com/wiki/Aether_Gazer_Wiki",
   "mimir": "https://mimir.cat/",
   "mimir_hades_profile": "https://mimir.cat/puppet-master/profile",
-  "mimir_hades_build": "https://mimir.cat/puppet-master/",
   "mimir_hades_guides": "https://mimir.cat/puppet-master/guides",
   "mimir_hades_voice": "https://mimir.cat/puppet-master/voice",
-  "mimir_worldview": "https://mimir.cat/worldview/",
-  "mimir_teams": "https://mimir.cat/teams/",
   "github_hades_bot": "https://github.com/QWERTY-SAN/Hades-Discord-Bot",
-  "aether_gazer_official_news": "https://www.aethergazer.com/main/news/"
+  "github_kafka_bot": "https://github.com/QWERTY-SAN/Kafka-Discord-Bot",
+  "aether_gazer_official_news": "https://www.aethergazer.com/main/news/",
+  "aether_gazer_global_future_announcement": "https://www.aethergazer.com/main/news/",
+  "mimir_teams": "https://mimir.cat/teams/",
+  "official_scan_reference": "https://www.aethergazer.com/main/news/"
 }

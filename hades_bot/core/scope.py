@@ -68,50 +68,76 @@ GENERAL_FACTUAL_QUESTION = re.compile(
     re.I,
 )
 
+# Ordinary conversation is intentionally broad, but is still bounded by the
+# hard off-topic filters above. These patterns cover greetings, short replies,
+# feelings, preferences, day-to-day chat, playful banter, and conversational requests.
 SOCIAL_PATTERNS = (
-    re.compile(r"^(?:hi|hello|hey|hiya|yo|sup|good\s+(?:morning|afternoon|evening|night))[!. ]*$", re.I),
     re.compile(
-        r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+okay|are\s+you\s+tired|"
-        r"what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|how\s+was\s+your\s+day|did\s+you\s+sleep|"
-        r"can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|tell\s+me\s+about\s+yourself|"
-        r"what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember)\s+me|"
+        r"^(?:so\s+today|today\s+i|earlier\s+i|yesterday\s+i|last\s+night\s+i|"
+        r"guess\s+what|you\s+won'?t\s+believe|you\s+know\s+what\s+happened|"
+        r"i\s+just\s+(?:got|came|saw|watched|met|bought|found|heard|did|finished|"
+        r"received|started|ended)|i\s+have\s+to\s+tell\s+you|i\s+need\s+to\s+tell\s+you)\b", re.I
+    ),
+    re.compile(
+        r"^(?:hi|hello|hey|hiya|yo|sup|morning|evening|night|good\s+(?:morning|afternoon|evening|night)|"
+        r"welcome\s+back|good\s+to\s+see\s+you|nice\s+to\s+see\s+you|long\s+time\s+no\s+see)[!. ]*$", re.I),
+    re.compile(
+        r"^(?:thanks?|thank\s+you|thx|ty|you're\s+welcome|youre\s+welcome|no\s+worries|my\s+bad|sorry|"
+        r"good\s+luck|same|same\s+here|me\s+too|me\s+neither|you\s+too|exactly|true|fair|"
+        r"fair\s+enough|makes\s+sense|that\s+makes\s+sense|for\s+real|fr|ngl|tbh|right|"
+        r"no\s+way|really\??|seriously\??|of\s+course|sure|okay|ok|alright|fine|yep|yes|yeah|yup|"
+        r"nope|nah|maybe|perhaps)[!. ]*$", re.I),
+    re.compile(
+        r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+(?:okay|good|tired|busy|bored|happy|sad|lonely|curious|sleepy)|"
+        r"what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|what\s+about\s+you|how\s+about\s+you|and\s+you\??|"
+        r"how\s+was\s+your\s+day|did\s+you\s+sleep|did\s+you\s+rest|what\s+have\s+you\s+been\s+doing|"
+        r"can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|keep\s+me\s+company|"
+        r"tell\s+me\s+about\s+yourself|tell\s+me\s+something|say\s+something|"
+        r"what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember|miss)\s+me|"
         r"what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|what\s+do\s+you\s+(?:like|enjoy|prefer)|"
-        r"do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat)|"
-        r"are\s+you\s+(?:bored|busy|lonely|happy|sad|curious|sleepy)|"
-        r"what\s+have\s+you\s+been\s+doing)[?.! ]*$", re.I),
+        r"do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat))[?.! ]*$", re.I),
     re.compile(
-        r"^(?:guess\s+what|look\s+at\s+this|listen|you\s+know\s+what|i\s+have\s+something\s+to\s+tell\s+you|"
-        r"want\s+to\s+hear\s+something|let's\s+(?:talk|chat)|let\s+us\s+(?:talk|chat)|"
-        r"tell\s+me\s+something|say\s+something|make\s+me\s+smile|cheer\s+me\s+up|"
-        r"i'?m\s+(?:bored|tired|sad|happy|lonely|excited|upset|fine|okay|back)|"
-        r"i\s+(?:miss|like|love|hate|need|want|feel|think|guess|remember)\b).{0,500}$", re.I | re.S),
-    re.compile(r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|hmm+|oh+|seriously\??)[!. ]*$", re.I),
-    re.compile(r"^(?:i|i'm|im|i've|ive|my|today\s+i|tonight\s+i|this\s+is|that\s+was)\b.{0,500}$", re.I | re.S),
+        r"^(?:guess\s+what|look\s+at\s+this|listen|you\s+know\s+what|you\s+know|"
+        r"i\s+have\s+something\s+to\s+tell\s+you|want\s+to\s+hear\s+something|"
+        r"let's\s+(?:talk|chat)|let\s+us\s+(?:talk|chat)|make\s+me\s+smile|cheer\s+me\s+up|"
+        r"i'?m\s+(?:bored|tired|sad|happy|lonely|excited|upset|fine|okay|back|home|sleepy)|"
+        r"i\s+(?:just\s+got\s+home|just\s+woke\s+up|just\s+got\s+back|miss|missed|like|love|hate|need|want|"
+        r"feel|think|guess|remember)\b).{0,700}$", re.I | re.S),
+    re.compile(
+        r"^(?:that's|thats|this\s+is|this\s+was|that\s+is|that\s+was|it(?:'s|\s+is)|it\s+was|"
+        r"sounds\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|looks\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|"
+        r"seems\s+(?:like|good|fun|nice|rough|wild|crazy|interesting))\b.{0,700}$", re.I | re.S),
+    re.compile(
+        r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|oof|welp|bruh|based|real|"
+        r"hmm+|oh+|ah+|yikes|whoa+|wow+|phew|that's|thats|this\s+is|that\s+was|"
+        r"you'?re\s+funny|you\s+know|oh\s+really|is\s+that\s+so)(?:[!. ]|$).{0,300}$", re.I | re.S),
+    # Normal first-person statements are conversation too. Specialist/off-topic
+    # checks still run first, so this never overrides a hard block.
+    re.compile(
+        r"^(?:i|i'm|im|i've|ive|my|mine|today\s+i|tonight\s+i|this\s+is|that\s+was|"
+        r"just|currently|honestly|literally)\b.{0,700}$", re.I | re.S),
 )
 
-# Personal-life prompts intentionally stay broad enough to feel like natural chat.
-# They are allowed before GENERAL_FACTUAL_QUESTION would otherwise block them.
 PERSONAL_LIFE_PATTERNS = (
     re.compile(
-        r"^(?:what\s+should\s+i\s+do|what\s+else\s+(?:can|should)\s+i\s+do|"
-        r"what\s+can\s+i\s+do|what\s+could\s+i\s+do)"
-        r"(?:\s+(?:today|tonight|right\s+now|this\s+morning|this\s+afternoon|this\s+evening|"
-        r"tomorrow|this\s+weekend|with\s+my\s+day|with\s+my\s+time|for\s+fun|when\s+i'?m\s+bored))?[?.! ]*$", re.I),
-    re.compile(
-        r"^(?:what\s+do\s+you\s+suggest\s+i\s+do|how\s+should\s+i\s+spend\s+(?:my\s+time|my\s+day|my\s+evening|my\s+night)|"
+        r"^(?:what\s+should\s+i\s+do|what\s+can\s+i\s+do|what\s+could\s+i\s+do|"
+        r"what\s+else\s+(?:can|should)\s+i\s+do|what\s+should\s+we\s+do|what\s+can\s+we\s+do|"
+        r"what\s+do\s+you\s+suggest\s+i\s+do|how\s+should\s+i\s+spend\s+(?:my\s+time|my\s+day|my\s+evening|my\s+night)|"
         r"give\s+me\s+(?:something|an\s+idea)\s+to\s+do|give\s+me\s+an?\s+idea|"
-        r"pick\s+something\s+for\s+me|choose\s+something\s+for\s+me|surprise\s+me(?:\s+with\s+something)?|"
-        r"what\s+should\s+we\s+do|what\s+can\s+we\s+do|"
+        r"pick\s+something\s+for\s+me|choose\s+something\s+for\s+me|surprise\s+me|"
         r"help\s+me\s+decide\s+(?:what\s+to\s+do|what\s+i\s+should\s+do)|"
-        r"i\s+(?:don't|do\s+not)\s+know\s+what\s+to\s+do|i\s+have\s+nothing\s+to\s+do)[?.! ]*$", re.I),
-    re.compile(r"^(?:what\s+else|anything\s+else|anything\s+else\s+to\s+do)\??$", re.I),
-    re.compile(r"^should\s+i\s+.+\s+or\s+.+$", re.I | re.S),
+        r"i\s+(?:don't|do\s+not)\s+know\s+what\s+to\s+do|i\s+have\s+nothing\s+to\s+do|"
+        r"anything\s+else)(?:\s+(?:tonight|today|right\s+now|this\s+(?:morning|afternoon|evening|weekend)|tomorrow|for\s+fun|when\s+i'?m\s+bored))?[?.! ]*$", re.I),
+    re.compile(
+        r"^(?:should\s+i\s+.+\s+or\s+.+|which\s+one\s+should\s+i\s+(?:pick|choose)|"
+        r"do\s+you\s+think\s+i\s+should\s+.+|what\s+would\s+you\s+do)[?.! ]*$", re.I | re.S),
 )
 
 SUBJECTIVE_QUESTION = re.compile(
     r"^(?:what\s+do\s+you\s+(?:think|like|prefer|want|feel)|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|"
     r"do\s+you\s+(?:like|enjoy|prefer|want|remember|mind|care|agree)|would\s+you\s+rather|"
-    r"how\s+do\s+you\s+feel|are\s+you\s+(?:okay|tired|happy|sad|bored|busy|lonely))\b", re.I)
+    r"how(?:'re|\s+are)\s+you(?:\s+doing|\s+holding\s+up)?|how\s+do\s+you\s+feel|"
+    r"are\s+you\s+(?:okay|tired|happy|sad|bored|busy|lonely))\b", re.I)
 
 
 def _normalize(text: str) -> str:
@@ -156,16 +182,18 @@ def is_specialist_request(text: str) -> bool:
     return any(pattern.search(normalized) for pattern in SPECIALIST_REQUESTS)
 
 
+def is_personal_life_request(text: str) -> bool:
+    normalized = _normalize(text)
+    return any(pattern.search(normalized) for pattern in PERSONAL_LIFE_PATTERNS)
+
+
 def is_social_message(text: str) -> bool:
     normalized = _normalize(text)
     if is_fanservice_message(normalized):
         return True
+    if is_personal_life_request(normalized):
+        return True
     return any(pattern.search(normalized) for pattern in SOCIAL_PATTERNS)
-
-
-def is_personal_life_request(text: str) -> bool:
-    normalized = _normalize(text)
-    return any(pattern.search(normalized) for pattern in PERSONAL_LIFE_PATTERNS)
 
 
 def is_subjective_question(text: str) -> bool:
@@ -183,7 +211,10 @@ def is_hades_scope_allowed(text: str) -> bool:
         return False
     if any(_contains_term(normalized, term) for term in HADES_TERMS):
         return True
-    if is_social_message(normalized) or is_personal_life_request(normalized) or is_subjective_question(normalized):
+    # Personal/social conversation is deliberately checked before the generic
+    # factual-question fallback so questions like "what should I do tonight?"
+    # remain normal conversation rather than being treated as unrelated QA.
+    if is_personal_life_request(normalized) or is_social_message(normalized) or is_subjective_question(normalized):
         return True
     return False
 
@@ -194,7 +225,7 @@ def scope_block_reason(text: str) -> str:
         return category
     if is_specialist_request(text):
         return "programming or specialist work"
-    if is_personal_life_request(text):
+    if is_personal_life_request(text) or is_social_message(text) or is_subjective_question(text):
         return ""
     if GENERAL_FACTUAL_QUESTION.search(_normalize(text)):
         return "unrelated factual information"
