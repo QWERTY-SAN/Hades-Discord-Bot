@@ -48,6 +48,8 @@ class Settings:
     gemini_thinking_level: str
     strict_aether_topic: bool
     emojis_enabled: bool
+    live_source_refresh: bool
+    live_source_max_urls: int
     max_history: int
     max_output_tokens: int
     max_input_chars: int
@@ -84,6 +86,8 @@ class Settings:
             gemini_thinking_level=thinking,
             strict_aether_topic=_bool("STRICT_AETHER_TOPIC", True),
             emojis_enabled=_bool("EMOJIS_ENABLED", True),
+            live_source_refresh=_bool("LIVE_SOURCE_REFRESH", True),
+            live_source_max_urls=_int("LIVE_SOURCE_MAX_URLS", 5, 1),
             max_history=_int("MAX_HISTORY", 16, 2),
             max_output_tokens=_int("MAX_OUTPUT_TOKENS", 768, 128),
             max_input_chars=_int("MAX_INPUT_CHARS", 6000, 100),

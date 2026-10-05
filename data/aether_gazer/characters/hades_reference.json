@@ -7,6 +7,7 @@
     "element": "Shadow",
     "combat_resource": "Divine Grace",
     "affiliation": "Society of Muses",
+    "astral_council_seat": 7,
     "arrival_day": "January 31",
     "height_cm": 173,
     "weight_kg": 58,
@@ -18,6 +19,7 @@
   },
   "role_and_character": {
     "role": "She manages and runs the various Modifier activities at the Society of Muses and is described as its person actually in charge.",
+    "society_status": "The Society of Muses is an independent Modifier group headquartered in Omorfies and operates separately from Aether Gazer while monitoring Source Layer stability and gathering intelligence related to Visbanes.",
     "epithet": "youthful witch",
     "visual_age_note": "Her appearance is described as having remained unchanged for decades.",
     "temperament": [
@@ -77,7 +79,6 @@
       "yellow": "Hoax Unheard"
     }
   },
-  "source_note": "Profile facts are primarily grounded in Mimir's Hades profile and voice reference. Dated build data is kept separate so the bot can distinguish stable character identity from time-sensitive recommendations.",
   "current_team_snapshot": {
     "source": "Mimir Global Teams",
     "source_last_update": "2026-09-28",
@@ -87,7 +88,7 @@
       "Dreamshade - Oneiroi",
       "Hope - Skuld"
     ],
-    "accuracy_rule": "Do not present this dated team snapshot as a guaranteed current meta recommendation if a newer source is available."
+    "accuracy_rule": "Prefer a newer Mimir team snapshot when available. Do not present this dated team snapshot as a guaranteed current meta recommendation."
   },
   "profile_snapshot": {
     "source": "https://mimir.cat/puppet-master/profile",
@@ -106,12 +107,24 @@
       "Cover",
       "Hero Breaker"
     ],
-    "identity_note": "Hades is described as the person actually in charge of Modifier activities at the Society of Muses and is known as the youthful witch."
+    "identity_note": "Hades is described as the person actually in charge of Modifier activities at the Society of Muses and is the seventh member of the Astral Council."
+  },
+  "voice_reference": {
+    "source": "https://mimir.cat/puppet-master/voice",
+    "last_update": "2025-07-22",
+    "style_notes": [
+      "Uses Administrator and little lamb naturally.",
+      "Can be gently commanding, teasing, and theatrically confident.",
+      "Treats puppetry as a serious art form, not merely a gimmick.",
+      "Can frame the Administrator as a possible puppet in playful interaction.",
+      "Her dialogue can carry a subtly mischievous or possessive edge without needing explicit content."
+    ]
   },
   "ultimate_skillchain_reference": {
     "source_last_update": "2026-09-01",
     "fantoccini_fancy": "Hades with Drowsie - Oneiroi; provides Shadow/Light skillchain effects and Olympus-oriented team support.",
     "dream_luminous": "Hades with Dreamshade - Oneiroi; restores Hades Divine Grace during the chain and provides Crit support.",
     "grand_finale": "Named Hades Ultimate Skillchain content; exact current effects should be read from the latest profile rather than this stable reference."
-  }
+  },
+  "source_note": "Profile facts are primarily grounded in Mimir's Hades profile/worldview and voice reference, with Miraheze/Fandom retained as lore cross-checks. Dated build data is kept separate so the bot can distinguish stable character identity from time-sensitive recommendations."
 }

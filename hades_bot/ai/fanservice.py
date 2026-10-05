@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import re
 
-
 FANSERVICE_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "fan_command": (
         re.compile(
             r"\b(?:step\s+on\s+me|dominate\s+me|sit\s+on\s+me|pin\s+me\s+down|"
-            r"make\s+me\s+beg|make\s+me\s+ask\s+properly)\b",
+            r"make\s+me\s+beg|make\s+me\s+ask\s+properly|make\s+me\s+your\s+puppet|"
+            r"turn\s+me\s+into\s+your\s+puppet|pull\s+my\s+strings|make\s+me\s+kneel|"
+            r"have\s+me\s+kneel)\b",
             re.I,
         ),
     ),
@@ -38,9 +39,11 @@ FANSERVICE_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
     "playful_fandom": (
         re.compile(
-            r"\b(?:mommy|step\s+on\s+me|please\s+notice\s+me|i\s+need\s+you|"
+            r"\b(?:mommy|step\s+on\s+me|crush\s+me|please\s+notice\s+me|i\s+need\s+you|"
             r"i\s+want\s+your\s+attention|call\s+me\s+little\s+lamb|"
-            r"call\s+me\s+your\s+favorite|let\s+me\s+serve\s+you)\b",
+            r"call\s+me\s+your\s+favorite|let\s+me\s+serve\s+you|i(?:'m|\s+am)\s+your\s+puppet|"
+            r"i(?:'ll|\s+will)\s+be\s+your\s+puppet|make\s+me\s+your\s+puppet|"
+            r"your\s+little\s+lamb|your\s+puppet)\b",
             re.I,
         ),
     ),
@@ -62,14 +65,13 @@ def is_fanservice_message(text: str) -> bool:
 def fanservice_guidance(text: str) -> str:
     category = fanservice_category(text)
     if category is None:
-        return (
-            "No special fan-service behavior is required. Keep Hades conversational and in character."
-        )
+        return "No special fan-service behavior is required. Keep Hades conversational and in character."
 
     category_rules = {
         "fan_command": (
             "Treat the user's exaggerated request as playful fan teasing rather than a literal command. "
-            "Hades may tease their boldness, play coy, challenge them to ask properly, or turn the joke back on them."
+            "Hades may tease their boldness, call them a little lamb, challenge them to ask properly, "
+            "or playfully frame them as a prospective puppet."
         ),
         "romantic": (
             "Treat the user's romantic declaration as light fandom affection. Hades may flirt back, tease them, "
@@ -85,7 +87,7 @@ def fanservice_guidance(text: str) -> str:
         ),
         "playful_fandom": (
             "Treat this as exaggerated fan admiration or playful devotion. Hades may indulge the bit with elegant teasing, "
-            "a coy challenge, or a playful request that the user behave properly."
+            "a coy challenge, a playful reminder that she makes the strings, or a request that the user behave properly."
         ),
     }
 
