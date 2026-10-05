@@ -5,7 +5,7 @@ The bot never downloads or re-uploads these images.
 """
 
 HADES_IMAGE_URLS = [
-    "https://files.catbox.moe/kglx3j.jpg",
-    "https://files.catbox.moe/n4l9c5.jpg",
+    "https://i.postimg.cc/904p45v7/le-hades.jpg",
+    "https://i.postimg.cc/k5nvQt0r/le-le-hades.jpg",
     "https://i.imgur.com/xDnN2f7.jpeg",
 ]
