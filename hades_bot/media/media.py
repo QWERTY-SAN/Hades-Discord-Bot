@@ -16,8 +16,8 @@ logger = logging.getLogger("hades-bot.media")
 
 # GIF behavior is intentionally internal. The only user-editable GIF setting is
 # the URL list in hades_bot/media/gifs.py.
-GIF_AUTO_MODE = "every_mention"
-IMAGE_AUTO_MODE = "every_mention"
+AUTO_MEDIA_MODE = "every_mention_random_gif_or_image"
+AUTO_MEDIA_COOLDOWN_SECONDS = 300.0
 GIF_COOLDOWN_SECONDS = 300.0
 IMAGE_COOLDOWN_SECONDS = 300.0
 GIF_RECENT_COUNT = 6
@@ -46,6 +46,7 @@ class HadesMedia:
         self._rng = SystemRandom()
         self._last_gif_sent: dict[str, float] = {}
         self._last_image_sent: dict[str, float] = {}
+        self._last_auto_media_sent: dict[str, float] = {}
         self._gif_channel_touched: dict[str, float] = {}
         self._image_channel_touched: dict[str, float] = {}
         self._recent_gif_urls: dict[str, deque[str]] = defaultdict(
@@ -100,7 +101,7 @@ class HadesMedia:
         """Drop stale GIF/image cooldown and history entries."""
         now = time.monotonic()
         removed = 0
-        for state in (self._last_gif_sent, self._last_image_sent):
+        for state in (self._last_gif_sent, self._last_image_sent, self._last_auto_media_sent):
             stale_users = [
                 key for key, stamp in state.items()
                 if now - stamp >= MEDIA_STATE_TTL_SECONDS
@@ -158,21 +159,69 @@ class HadesMedia:
                 return entry
         return candidates[0] if candidates else None
 
-    def should_auto_send_gif(self, message: discord.Message, trigger: str) -> bool:
+    def should_auto_send_media(self, message: discord.Message, trigger: str) -> bool:
+        """Return whether one automatic media message may be sent.
+
+        GIFs and images remain separate libraries, but the automatic trigger
+        uses one shared cooldown so a single Hades response can never send
+        both kinds of media.
+        """
         if trigger != "mention":
+            return False
+        if not self.entries and not self.image_entries:
             return False
         now = time.monotonic()
         key = self._cooldown_key(message)
-        last_sent = self._last_gif_sent.get(key)
-        return last_sent is None or now - last_sent >= GIF_COOLDOWN_SECONDS
+        last_sent = self._last_auto_media_sent.get(key)
+        return last_sent is None or now - last_sent >= AUTO_MEDIA_COOLDOWN_SECONDS
+
+    async def send_auto_media(
+        self,
+        destination: discord.abc.Messageable,
+        message: discord.Message,
+    ) -> bool:
+        """Send exactly one randomly selected automatic media item.
+
+        The GIF and image URL libraries stay completely separate. Only the
+        automatic trigger chooses randomly between the two media types.
+        Manual ``h!gif`` and ``h!image`` commands are unaffected.
+        """
+        choices: list[str] = []
+        if self.entries:
+            choices.append("gif")
+        if self.image_entries:
+            choices.append("image")
+        if not choices:
+            return False
+
+        selected = self._rng.choice(choices)
+        if selected == "gif":
+            sent = await self.send_gif(destination, message)
+        else:
+            sent = await self.send_image(destination, message)
+
+        if sent:
+            self._last_auto_media_sent[self._cooldown_key(message)] = time.monotonic()
+            logger.info("Sent one automatic Hades %s", selected)
+        return sent
+
+    def should_auto_send_gif(self, message: discord.Message, trigger: str) -> bool:
+        """Compatibility helper for older callers.
+
+        Automatic mention handling now uses the shared random-media path.
+        """
+        if trigger != "mention" or not self.entries:
+            return False
+        return self.should_auto_send_media(message, trigger)
 
     def should_auto_send_image(self, message: discord.Message, trigger: str) -> bool:
-        if trigger != "mention":
+        """Compatibility helper for older callers.
+
+        Automatic mention handling now uses the shared random-media path.
+        """
+        if trigger != "mention" or not self.image_entries:
             return False
-        now = time.monotonic()
-        key = self._cooldown_key(message)
-        last_sent = self._last_image_sent.get(key)
-        return last_sent is None or now - last_sent >= IMAGE_COOLDOWN_SECONDS
+        return self.should_auto_send_media(message, trigger)
 
     async def send_auto_gif(self, destination: discord.abc.Messageable, message: discord.Message) -> bool:
         return await self.send_gif(destination, message)

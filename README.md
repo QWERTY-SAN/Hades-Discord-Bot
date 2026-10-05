@@ -252,4 +252,4 @@ This package consolidates the latest Hades persona, strict scope, dynamic refusa
 
 ### Automatic media
 
-When Hades is mentioned, GIFs and images are handled as separate automatic media systems. Each has its own 5-minute per-user/channel cooldown, so a mention can send one GIF and one image independently. The manual `h!gif` and `h!image` commands remain separate as well.
+When Hades is mentioned, the bot randomly chooses **one** automatic media type: a GIF **or** an image. It never sends both from the same automatic trigger. The GIF and image libraries remain separate, and the automatic media trigger uses one 5-minute per-user/channel cooldown. The manual `h!gif` and `h!image` commands remain separate as well.

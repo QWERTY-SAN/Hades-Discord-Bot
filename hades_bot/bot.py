@@ -107,10 +107,8 @@ class HadesBot(commands.Bot):
                 mention_author=False,
                 allowed_mentions=ALLOWED_MENTIONS,
             )
-            if self.media.should_auto_send_gif(message, trigger):
-                await self.media.send_auto_gif(message.channel, message)
-            if self.media.should_auto_send_image(message, trigger):
-                await self.media.send_auto_image(message.channel, message)
+            if self.media.should_auto_send_media(message, trigger):
+                await self.media.send_auto_media(message.channel, message)
             return
 
         # Hades has a deliberately narrow conversation scope. This is enforced
@@ -169,10 +167,8 @@ class HadesBot(commands.Bot):
                 return
             reply = sanitize_model_output(reply)
             await self.send_chunks(message, reply)
-            if self.media.should_auto_send_gif(message, trigger):
-                await self.media.send_auto_gif(message.channel, message)
-            if self.media.should_auto_send_image(message, trigger):
-                await self.media.send_auto_image(message.channel, message)
+            if self.media.should_auto_send_media(message, trigger):
+                await self.media.send_auto_media(message.channel, message)
         except AIServiceError as exc:
             await self.cooldowns.release(key)
             await message.reply(
@@ -441,8 +437,7 @@ async def status_command(ctx: commands.Context) -> None:
             f"Memory: `{count}` active conversations\n"
             f"Requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\n"
             f"Total AI requests: `{bot.hades_chat.total_requests}`\n"
-            f"Auto GIFs: `every_mention`\n"
-            f"Auto images: `every_mention`\n"
+            f"Auto media: `every_mention` — random GIF or image\n"
             f"GIFs: `{bot.media.configured_count}` external URLs\n"
             f"Images: `{bot.media.image_configured_count}` external URLs\n"
             f"Emojis: `{'enabled' if SETTINGS.emojis_enabled else 'disabled'}`\n"
