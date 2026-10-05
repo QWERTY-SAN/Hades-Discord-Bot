@@ -68,9 +68,6 @@ GENERAL_FACTUAL_QUESTION = re.compile(
     re.I,
 )
 
-# Ordinary conversation is intentionally broad, but is still bounded by the
-# hard off-topic filters above. These patterns cover greetings, feelings,
-# preferences, day-to-day chat, playful banter, and conversational requests.
 SOCIAL_PATTERNS = (
     re.compile(r"^(?:hi|hello|hey|hiya|yo|sup|good\s+(?:morning|afternoon|evening|night))[!. ]*$", re.I),
     re.compile(
@@ -92,7 +89,24 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:i|i'm|im|i've|ive|my|today\s+i|tonight\s+i|this\s+is|that\s+was)\b.{0,500}$", re.I | re.S),
 )
 
-FLIRTY_FAN_PATTERNS = ()
+# Personal-life prompts intentionally stay broad enough to feel like natural chat.
+# They are allowed before GENERAL_FACTUAL_QUESTION would otherwise block them.
+PERSONAL_LIFE_PATTERNS = (
+    re.compile(
+        r"^(?:what\s+should\s+i\s+do|what\s+else\s+(?:can|should)\s+i\s+do|"
+        r"what\s+can\s+i\s+do|what\s+could\s+i\s+do)"
+        r"(?:\s+(?:today|tonight|right\s+now|this\s+morning|this\s+afternoon|this\s+evening|"
+        r"tomorrow|this\s+weekend|with\s+my\s+day|with\s+my\s+time|for\s+fun|when\s+i'?m\s+bored))?[?.! ]*$", re.I),
+    re.compile(
+        r"^(?:what\s+do\s+you\s+suggest\s+i\s+do|how\s+should\s+i\s+spend\s+(?:my\s+time|my\s+day|my\s+evening|my\s+night)|"
+        r"give\s+me\s+(?:something|an\s+idea)\s+to\s+do|give\s+me\s+an?\s+idea|"
+        r"pick\s+something\s+for\s+me|choose\s+something\s+for\s+me|surprise\s+me(?:\s+with\s+something)?|"
+        r"what\s+should\s+we\s+do|what\s+can\s+we\s+do|"
+        r"help\s+me\s+decide\s+(?:what\s+to\s+do|what\s+i\s+should\s+do)|"
+        r"i\s+(?:don't|do\s+not)\s+know\s+what\s+to\s+do|i\s+have\s+nothing\s+to\s+do)[?.! ]*$", re.I),
+    re.compile(r"^(?:what\s+else|anything\s+else|anything\s+else\s+to\s+do)\??$", re.I),
+    re.compile(r"^should\s+i\s+.+\s+or\s+.+$", re.I | re.S),
+)
 
 SUBJECTIVE_QUESTION = re.compile(
     r"^(?:what\s+do\s+you\s+(?:think|like|prefer|want|feel)|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|"
@@ -149,6 +163,11 @@ def is_social_message(text: str) -> bool:
     return any(pattern.search(normalized) for pattern in SOCIAL_PATTERNS)
 
 
+def is_personal_life_request(text: str) -> bool:
+    normalized = _normalize(text)
+    return any(pattern.search(normalized) for pattern in PERSONAL_LIFE_PATTERNS)
+
+
 def is_subjective_question(text: str) -> bool:
     normalized = _normalize(text)
     return bool(SUBJECTIVE_QUESTION.search(normalized))
@@ -164,7 +183,7 @@ def is_hades_scope_allowed(text: str) -> bool:
         return False
     if any(_contains_term(normalized, term) for term in HADES_TERMS):
         return True
-    if is_social_message(normalized) or is_subjective_question(normalized):
+    if is_social_message(normalized) or is_personal_life_request(normalized) or is_subjective_question(normalized):
         return True
     return False
 
@@ -175,6 +194,8 @@ def scope_block_reason(text: str) -> str:
         return category
     if is_specialist_request(text):
         return "programming or specialist work"
+    if is_personal_life_request(text):
+        return ""
     if GENERAL_FACTUAL_QUESTION.search(_normalize(text)):
         return "unrelated factual information"
     return "an unrelated topic"
