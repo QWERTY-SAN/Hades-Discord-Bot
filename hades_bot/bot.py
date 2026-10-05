@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands, tasks
 
 from .ai.chat import HadesChat
+from . import __version__
 from .config import SETTINGS
 from .ai.gemini_client import AIServiceError, GeminiService
 from .core.memory import ConversationMemory
@@ -315,6 +316,79 @@ async def ping_command(ctx: commands.Context) -> None:
     )
 
 
+@bot.command(name="about")
+async def about_command(ctx: commands.Context) -> None:
+    await ctx.reply(
+        "**🌙 Hades — Aether Gazer AI**\n"
+        "A character-focused Discord bot portraying Hades from *Aether Gazer*.\n\n"
+        f"Version: `{__version__}`\n"
+        f"Model: `{SETTINGS.gemini_model}`\n"
+        f"Prefix: `{SETTINGS.bot_prefix}`\n"
+        "Scope: `Aether Gazer / Hades-focused conversation`\n"
+        "Memory: `per-user/per-channel, in-memory`\n\n"
+        "She is meant to feel like Hades herself—not a generic assistant. 🎭",
+        mention_author=False,
+        allowed_mentions=ALLOWED_MENTIONS,
+    )
+
+
+@bot.command(name="version")
+async def version_command(ctx: commands.Context) -> None:
+    await ctx.reply(
+        f"**Hades Bot**\nVersion: `{__version__}`\n"
+        f"discord.py: `{discord.__version__}`\n"
+        f"Gemini model: `{SETTINGS.gemini_model}`",
+        mention_author=False,
+        allowed_mentions=ALLOWED_MENTIONS,
+    )
+
+
+@bot.command(name="privacy")
+async def privacy_command(ctx: commands.Context) -> None:
+    await ctx.reply(
+        "**🔒 Privacy**\n"
+        "• Conversation memory is kept in the bot process and is not written to a local database.\n"
+        f"• Memory expires after `{SETTINGS.memory_ttl_seconds // 3600}` hour(s), or you can clear it with `{SETTINGS.bot_prefix}reset`.\n"
+        "• Discord messages used for AI replies are sent to the configured Google Gemini API for generation.\n"
+        "• The bot does not display or expose your Discord token or Gemini API key through commands.\n"
+        "• Avoid sending passwords, API keys, payment details, or other secrets in chat. 🔐",
+        mention_author=False,
+        allowed_mentions=ALLOWED_MENTIONS,
+    )
+
+
+@bot.command(name="diagnose")
+async def diagnose_command(ctx: commands.Context) -> None:
+    memory_count = await bot.hades_chat.memory.conversation_count()
+    ready = bot.is_ready()
+    latency_ms = round(bot.latency * 1000) if bot.latency < float("inf") else "unavailable"
+    key_configured = bool(SETTINGS.gemini_api_key)
+    token_configured = bool(SETTINGS.discord_token)
+
+    checks = [
+        ("Discord connection", "OK" if ready else "NOT READY"),
+        ("Gemini API key", "configured" if key_configured else "MISSING"),
+        ("Discord token", "configured" if token_configured else "MISSING"),
+        ("Gemini model", SETTINGS.gemini_model or "MISSING"),
+        ("Conversation module", "loaded"),
+        ("Hades scope", "enforced"),
+        ("Memory", f"{memory_count} active"),
+        ("AI requests", f"{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests} active"),
+        ("Latency", f"{latency_ms}ms"),
+    ]
+
+    lines = ["**🩺 Hades Diagnostics**"]
+    lines.extend(f"{name}: `{value}`" for name, value in checks)
+    lines.append(f"Version: `{__version__}`")
+    lines.append("No Gemini test request was sent.")
+
+    await ctx.reply(
+        "\n".join(lines),
+        mention_author=False,
+        allowed_mentions=ALLOWED_MENTIONS,
+    )
+
+
 @bot.command(name="status")
 async def status_command(ctx: commands.Context) -> None:
     if ctx.guild and not (
@@ -355,7 +429,11 @@ async def help_command(ctx: commands.Context) -> None:
         f"`{p}memory` — Show conversation memory\n"
         f"`{p}gif` / `{p}hadesgif` — Send a Hades GIF\n"
         f"`{p}ping` — Check Discord latency\n"
-        f"`{p}status` — Show bot status (staff)\n\n"
+        f"`{p}about` — About Hades and this bot\n"
+        f"`{p}version` — Show bot/software versions\n"
+        f"`{p}privacy` — Show memory and data-handling info\n"
+        f"`{p}status` — Show bot status (staff)\n"
+        f"`{p}diagnose` — Check bot configuration/runtime health\n\n"
         "You can also mention Hades, DM her, or reply directly to one of her messages.",
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,

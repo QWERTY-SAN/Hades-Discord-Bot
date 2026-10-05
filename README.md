@@ -32,6 +32,14 @@ The bot now includes a local, source-aware reference layer for:
 
 Gameplay totals, banner advice, tier lists and balance recommendations remain version-sensitive. The knowledge layer tells Hades to treat those as dated unless fresh source data is available.
 
+### Normal conversation improvements
+Normal conversation is treated as a first-class use case while keeping the bot's Aether Gazer scope intact.
+- Common short replies such as "thanks", "same", "fair enough", "you too", "really?", and "no way" are recognized as conversation instead of unrelated questions.
+- Everyday personal statements such as being tired, getting home, waking up, missing someone, or having nothing to do can continue the conversation naturally.
+- Simple personal-choice prompts such as "what should I do tonight?" are allowed without turning Hades into a general-purpose assistant.
+- Casual turns no longer receive a large lore-retrieval block unless the current message actually calls for Aether Gazer knowledge.
+- Hades is instructed to react to the user's actual message, avoid automatic lectures/advice, keep simple replies short, and avoid ending every message with a question.
+
 ### Scope
 The bot is intentionally narrow.
 
@@ -172,11 +180,7 @@ Enable Discord **Message Content Intent** for prefix commands.
 
 ### Tests
 
-The repository contains lightweight smoke tests for scope enforcement, the source-grounded Hades reference layer, release structure, and production configuration. GitHub Actions runs these checks on pushes and pull requests targeting `main`.
-
-### Production diagnostics
-
-Use `h!about` to see the running build version, branch, commit, runtime, and Gemini model. Use `h!privacy` to explain temporary conversation memory and the absence of a conversation database. Staff can use `h!diagnose` for a production readiness summary. Render exposes the deployed commit through `RENDER_GIT_COMMIT`, which the bot reports as a short SHA.
+The repository contains lightweight smoke tests for scope enforcement and the source-grounded Hades reference layer.
 
 ## Endgame knowledge
 
@@ -232,4 +236,4 @@ Hades-Discord-Bot/
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Release
-This package consolidates the latest Hades persona, strict scope, dynamic refusals, fan-service, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, and external GIF embedding.
+This package consolidates the latest Hades persona, strict scope, dynamic refusals, fan-service, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.

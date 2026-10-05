@@ -6,6 +6,7 @@ Hades-Discord-Bot/
 │   ├── bot.py
 │   ├── config.py
 │   ├── core/
+│   │   ├── conversation.py
 │   │   ├── memory.py
 │   │   ├── scope.py
 │   │   └── utils.py
