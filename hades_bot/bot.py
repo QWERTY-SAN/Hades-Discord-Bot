@@ -14,6 +14,7 @@ from .media.media import HadesMedia
 from .core.scope import contains_forbidden_topic, is_hades_scope_allowed, scope_block_reason
 from .core.utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
 from .web import update_discord_state
+from .version import APP_NAME, APP_VERSION, branch as build_branch, runtime as build_runtime, short_commit
 
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
@@ -108,7 +109,30 @@ class HadesBot(commands.Bot):
                 await self.media.send_gif(message.channel, message)
             return
 
-        # Reject oversized requests before any model call, including generated refusals.
+        # Hades has a deliberately narrow conversation scope. This is enforced
+        # regardless of the environment toggle so an old Render setting cannot
+        # accidentally turn her into a general-purpose chatbot.
+        if not is_hades_scope_allowed(content):
+            try:
+                refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
+            except AIServiceError as exc:
+                logger.warning("Scope refusal generation failed: %s", exc)
+                await message.reply(
+                    exc.user_message,
+                    mention_author=False,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                )
+                return
+            except RuntimeError:
+                await message.reply(
+                    self._rng.choice(SCOPE_FALLBACKS),
+                    mention_author=False,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                )
+                return
+            await self.send_chunks(message, refusal)
+            return
+
         if len(content) > SETTINGS.max_input_chars:
             await message.reply(
                 f"That's quite a manuscript, little lamb. Keep it under `{SETTINGS.max_input_chars:,}` characters.",
@@ -117,8 +141,6 @@ class HadesBot(commands.Bot):
             )
             return
 
-        # Acquire cooldown before *any* Gemini-backed path. Otherwise blocked-topic
-        # refusals could repeatedly call Gemini without respecting USER_COOLDOWN.
         key = self.conversation_key(message)
         remaining = await self.cooldowns.try_acquire(key)
         if remaining > 0:
@@ -130,46 +152,17 @@ class HadesBot(commands.Bot):
             return
 
         try:
-            if not is_hades_scope_allowed(content):
-                try:
-                    async with message.channel.typing():
-                        refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
-                except AIServiceError as exc:
-                    await self.cooldowns.release(key)
-                    logger.warning("Scope refusal generation failed: %s", exc)
-                    await message.reply(
-                        exc.user_message,
-                        mention_author=False,
-                        allowed_mentions=ALLOWED_MENTIONS,
-                    )
-                    return
-                except RuntimeError:
-                    await self.cooldowns.release(key)
-                    await message.reply(
-                        "The response queue is full. Try again in a moment.",
-                        mention_author=False,
-                        allowed_mentions=ALLOWED_MENTIONS,
-                    )
-                    return
-
-                await self.send_chunks(message, refusal)
-                return
-
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
-
             if contains_forbidden_topic(reply):
                 logger.warning("Blocked forbidden-topic model output for %s", key)
                 try:
                     refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
                 except (AIServiceError, RuntimeError):
                     refusal = self._rng.choice(SCOPE_FALLBACKS)
-                # Match the documented behavior: a response rejected by the output
-                # guard does not consume the user's cooldown.
                 await self.cooldowns.release(key)
                 await self.send_chunks(message, refusal)
                 return
-
             reply = sanitize_model_output(reply)
             await self.send_chunks(message, reply)
             if self.media.should_auto_send(message, trigger):
@@ -314,6 +307,64 @@ async def gif_command(ctx: commands.Context) -> None:
         )
 
 
+@bot.command(name="about", aliases=["version", "info"])
+async def about_command(ctx: commands.Context) -> None:
+    await ctx.reply(
+        "**🌙 Hades — Production Info**\n"
+        f"Version: `{APP_VERSION}`\n"
+        f"Runtime: `{build_runtime()}`\n"
+        f"Branch: `{build_branch()}`\n"
+        f"Commit: `{short_commit()}`\n"
+        f"Model: `{SETTINGS.gemini_model}`\n"
+        f"Guilds: `{len(bot.guilds)}`",
+        mention_author=False,
+        allowed_mentions=ALLOWED_MENTIONS,
+    )
+
+
+@bot.command(name="privacy")
+async def privacy_command(ctx: commands.Context) -> None:
+    hours = max(1, round(SETTINGS.memory_ttl_seconds / 3600))
+    await ctx.reply(
+        "**🌙 Your Privacy**\n"
+        f"• Conversation memory is temporary and expires after about `{hours}` hour(s) of inactivity.\n"
+        "• Memory is kept in RAM for the running bot process; there is no conversation database in this project.\n"
+        f"• `{SETTINGS.bot_prefix}reset` immediately clears your current conversation memory.\n"
+        "• API credentials are read from environment variables and are not shown by the bot.",
+        mention_author=False,
+        allowed_mentions=ALLOWED_MENTIONS,
+    )
+
+
+@bot.command(name="diagnose", aliases=["diag"])
+async def diagnose_command(ctx: commands.Context) -> None:
+    if ctx.guild and not (
+        ctx.author.guild_permissions.manage_guild or ctx.author.guild_permissions.administrator
+    ):
+        await ctx.reply(
+            "That diagnostic panel is for those managing the stage. 🎭",
+            mention_author=False,
+            allowed_mentions=ALLOWED_MENTIONS,
+        )
+        return
+
+    memory_count = await bot.hades_chat.memory.conversation_count()
+    discord_ok = bot.is_ready()
+    gemini_configured = bool(SETTINGS.gemini_api_key)
+    report = (
+        "**🌙 Hades Production Diagnostics**\n"
+        f"{'✅' if discord_ok else '❌'} Discord gateway: `{'ready' if discord_ok else 'not ready'}`\n"
+        f"{'✅' if gemini_configured else '❌'} Gemini configuration: `{'configured' if gemini_configured else 'missing'}`\n"
+        f"✅ Health server: `/{'health'}`\n"
+        f"✅ Memory store: `{memory_count}` active conversations\n"
+        f"✅ Request queue: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\n"
+        f"✅ GIF library: `{bot.media.configured_count}` URLs\n"
+        f"✅ Build: `{APP_VERSION}` / `{short_commit()}`\n"
+        f"\nOverall: `{'READY' if discord_ok and gemini_configured else 'CHECK CONFIGURATION'}`"
+    )
+    await ctx.reply(report, mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+
+
 @bot.command(name="ping")
 async def ping_command(ctx: commands.Context) -> None:
     await ctx.reply(
@@ -325,17 +376,9 @@ async def ping_command(ctx: commands.Context) -> None:
 
 @bot.command(name="status")
 async def status_command(ctx: commands.Context) -> None:
-    is_owner = await bot.is_owner(ctx.author)
-    is_guild_staff = bool(
-        ctx.guild
-        and (
-            ctx.author.guild_permissions.manage_guild
-            or ctx.author.guild_permissions.administrator
-        )
-    )
-    # DM users do not have guild permissions, so only the bot owner can view
-    # aggregate deployment and conversation statistics in DMs.
-    if not (is_owner or is_guild_staff):
+    if ctx.guild and not (
+        ctx.author.guild_permissions.manage_guild or ctx.author.guild_permissions.administrator
+    ):
         await ctx.reply(
             "That information is for those managing the stage. 🎭",
             mention_author=False,
@@ -371,7 +414,10 @@ async def help_command(ctx: commands.Context) -> None:
         f"`{p}memory` — Show conversation memory\n"
         f"`{p}gif` / `{p}hadesgif` — Send a Hades GIF\n"
         f"`{p}ping` — Check Discord latency\n"
-        f"`{p}status` — Show bot status (owner or authorized guild staff)\n\n"
+        f"`{p}about` / `{p}version` — Show build information\n"
+        f"`{p}privacy` — Explain temporary memory and data handling\n"
+        f"`{p}status` — Show bot status (staff)\n"
+        f"`{p}diagnose` — Run production diagnostics (staff)\n\n"
         "You can also mention Hades, DM her, or reply directly to one of her messages.",
         mention_author=False,
         allowed_mentions=ALLOWED_MENTIONS,

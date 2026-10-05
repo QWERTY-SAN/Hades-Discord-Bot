@@ -21,7 +21,7 @@ FANSERVICE_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
     "affection": (
         re.compile(
-            r"\b(?:kiss\s+me|give\s+me\s+a\s+kiss|hug\s+me|give\s+me\s+a\s+hug|cuddle\s+me|give\s+me\s+a\s+cuddle|hold\s+me|"
+            r"\b(?:kiss\s+me|give\s+me\s+a\s+kiss|hug\s+me|cuddle\s+me|hold\s+me|"
             r"hold\s+my\s+hand|pat\s+my\s+head|headpats?|give\s+me\s+attention|"
             r"pay\s+attention\s+to\s+me|look\s+at\s+me|notice\s+me)\b",
             re.I,
