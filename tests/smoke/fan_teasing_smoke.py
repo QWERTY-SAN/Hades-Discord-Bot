@@ -16,6 +16,8 @@ def test_fan_teasing_scope() -> None:
         "I have a crush on you",
         "I need you, Hades",
         "call me little lamb",
+        "How abt somewhere else very private away from prying eyes",
+        "It's either do it or not, but I ain't backing down to someone who's like a fine looking wine",
     )
     blocked = (
         "Hades, what is Formula One?",
@@ -34,3 +36,5 @@ def test_fanservice_categories() -> None:
     assert fanservice_category("kiss me") == "affection"
     assert fanservice_category("you're gorgeous") == "admiration"
     assert fanservice_category("call me little lamb") == "playful_fandom"
+    assert fanservice_category("How abt somewhere else very private away from prying eyes") == "flirtation"
+    assert fanservice_category("It's either do it or not, but I ain't backing down to someone who's like a fine looking wine") == "flirtation"
