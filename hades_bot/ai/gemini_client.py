@@ -4,6 +4,7 @@ import asyncio
 import logging
 import random
 import re
+from typing import Iterable
 
 from google import genai
 from google.genai import errors, types
@@ -30,9 +31,14 @@ def _add_natural_emoji(text: str) -> str:
 
 
 class AIServiceError(RuntimeError):
-    def __init__(self, user_message: str = "The strings are tangled. Try again in a moment.") -> None:
+    def __init__(
+        self,
+        user_message: str = "The strings are tangled. Try again in a moment.",
+        status_code: int | None = None,
+    ) -> None:
         super().__init__(user_message)
         self.user_message = user_message
+        self.status_code = status_code
 
 
 class GeminiService:
