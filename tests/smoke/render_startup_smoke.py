@@ -10,7 +10,7 @@ from hades_bot.config import SETTINGS, validate_settings  # noqa: E402
 from hades_bot.web import start_web_server  # noqa: E402
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 render = (ROOT / "render.yaml").read_text(encoding="utf-8")
 
 assert callable(main.run)
