@@ -12,7 +12,7 @@ assert '@bot.command(name="diagnose"' in bot
 assert "RENDER_GIT_COMMIT" in (ROOT / "hades_bot" / "version.py").read_text(encoding="utf-8")
 
 render = (ROOT / "render.yaml").read_text(encoding="utf-8")
-assert "autoDeployTrigger: commit" in render
+assert "autoDeployTrigger: checksPass" in render
 assert "branch: main" in render
 assert "healthCheckPath: /health" in render
 
