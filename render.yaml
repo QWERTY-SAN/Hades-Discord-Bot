@@ -22,6 +22,10 @@ services:
         value: "true"
       - key: EMOJIS_ENABLED
         value: "true"
+      - key: LIVE_SOURCE_REFRESH
+        value: "true"
+      - key: LIVE_SOURCE_MAX_URLS
+        value: "3"
       - key: MAX_HISTORY
         value: "16"
       - key: MAX_OUTPUT_TOKENS
