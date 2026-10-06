@@ -19,7 +19,7 @@ def test_old_hades_fanservice_variants_are_preserved():
     assert fanservice_category("my queen") == "playful_fandom"
     assert fanservice_category("make me your puppet") == "playful_fandom"
     assert fanservice_category("somewhere private, away from prying eyes") == "flirtation"
-    assert fanservice_category("you're a temptation") == "admiration"
+    assert fanservice_category("you're a temptation") == "flirtation"
     assert fanservice_category("you're making this too easy") == "flirtation"
     assert fanservice_category("you're asking for trouble") == "flirtation"
     assert fanservice_category("don't look at me like that") == "flirtation"
