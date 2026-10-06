@@ -1,7 +1,7 @@
 import logging
 
 from hades_bot.bot import run
-from hades_bot.config import validate
+from hades_bot.config import SETTINGS, validate_settings
 from hades_bot.web import start_web_server
 
 logging.basicConfig(
@@ -11,6 +11,6 @@ logging.basicConfig(
 
 
 if __name__ == "__main__":
-    validate()
-    start_web_server()
+    validate_settings()
+    start_web_server(SETTINGS.web_host, SETTINGS.web_port)
     run()
