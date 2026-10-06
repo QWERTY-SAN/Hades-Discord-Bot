@@ -71,6 +71,10 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you\s+are\s+unfair|you're\s+unfair|how\s+are\s+you\s+this\s+pretty|"
             r"you\s+caught\s+my\s+eye|you\s+drew\s+my\s+attention|you\s+have\s+my\s+attention|"
             r"(?:you(?:\'re|\s+are)|ur)\s+(?:the\s+one\s+who\s+)?(?:drew|caught)\s+my\s+attention(?:\s+to\s+(?:you|u))?|"
+            r"you\s+keep\s+(?:catching|getting)\s+my\s+attention|you\s+keep\s+catching\s+my\s+eye|"
+            r"you\s+have\s+me\s+(?:looking|staring)|you\s+had\s+me\s+(?:looking|staring)|"
+            r"i\s+(?:was|am)\s+drawn\s+to\s+you|i\s+keep\s+(?:looking|staring)\s+at\s+you|"
+            r"i\s+(?:noticed|noticed\s+you)\s+(?:first|right\s+away)|hard\s+not\s+to\s+(?:look|stare)\s+at\s+you|"
             r"hard\s+to\s+look\s+away|can't\s+look\s+away|cannot\s+look\s+away|"
             r"i\s+can't\s+stop\s+looking|i\s+can't\s+look\s+away)\b",
             re.I,
