@@ -56,6 +56,7 @@ STORYTELLING_PATTERNS = (
 )
 
 SOCIAL_PATTERNS = (
+    re.compile(r"^(?:there\s+you\s+are|glad\s+(?:you'?re|you\s+are)\s+here|i\s+(?:wanted|want)\s+to\s+(?:see|talk\s+to|hear\s+from)\s+you|i(?:'ve|\s+have)\s+been\s+(?:thinking\s+about|looking\s+for)\s+you)[!. ]*$", re.I),
     re.compile(r"^(?:you'?re|you\s+are)\s+(?:funny|hilarious|sweet|kind|nice|charming|amusing|interesting|adorable|lovely|something\s+else)\b.{0,250}$", re.I | re.S),
     re.compile(r"^(?:hi|hello|hey|hiya|yo|sup|morning|evening|night|good\s+(?:morning|afternoon|evening|night)|welcome\s+back|good\s+to\s+see\s+you|nice\s+to\s+see\s+you|long\s+time\s+no\s+see)[!. ]*$", re.I),
     re.compile(r"^(?:thanks?|thank\s+you|thx|ty|you'?re\s+welcome|no\s+worries|my\s+bad|sorry|good\s+luck|same|same\s+here|me\s+too|me\s+neither|you\s+too|exactly|true|fair|fair\s+enough|makes\s+sense|that\s+makes\s+sense|for\s+real|fr|ngl|tbh|right|no\s+way|really\??|seriously\??|of\s+course|sure|okay|ok|alright|fine|yep|yes|yeah|yup|nope|nah|maybe|perhaps)[!. ]*$", re.I),
@@ -81,7 +82,6 @@ SHORT_FOLLOWUPS = frozenset({
     "your turn", "your turn?", "what then", "what then?", "prove it", "prove it?",
     "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
-    "and then", "and then?", "tell me more", "continue", "continue?",
 })
 
 
