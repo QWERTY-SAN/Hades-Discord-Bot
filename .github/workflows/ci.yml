@@ -31,11 +31,17 @@ jobs:
           DISCORD_TOKEN: ci-test-token
           GEMINI_API_KEY: ci-test-key
         run: |
+          python tests/smoke/commands_smoke.py
+          python tests/smoke/conversation_mode_smoke.py
           python tests/smoke/current_build_smoke.py
           python tests/smoke/fan_teasing_smoke.py
+          python tests/smoke/gold_release_smoke.py
           python tests/smoke/improvement_smoke.py
           python tests/smoke/knowledge_smoke.py
+          python tests/smoke/media_smoke.py
+          python tests/smoke/normal_conversation_smoke.py
+          python tests/smoke/render_startup_smoke.py
           python tests/smoke/scope_smoke.py
           python tests/smoke/static_smoke.py
           python tests/smoke/structure_smoke.py
-          python tests/smoke/render_startup_smoke.py
+          python -m pytest -q tests/smoke/test_*.py
