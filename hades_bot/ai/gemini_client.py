@@ -13,6 +13,7 @@ from ..config import SETTINGS
 from ..core.conversation import conversation_mode, conversation_signals
 from ..core.scope import is_personal_life_request, is_social_message, is_subjective_question
 from ..knowledge.lore import build_aether_context
+from ..knowledge.live_sources import build_live_source_instruction
 from .fanservice import fanservice_category, fanservice_guidance
 from .persona import HADES_SYSTEM_PROMPT
 
@@ -77,7 +78,11 @@ class GeminiService:
         return [item for item in replies[-limit:] if item]
 
     @staticmethod
-    def _build_prompt_context(history: list[dict[str, str]], user_message: str) -> str:
+    def _build_prompt_context(
+        history: list[dict[str, str]],
+        user_message: str,
+        live_source_instruction: str | None = None,
+    ) -> str:
         mode = conversation_mode(user_message)
         signals = ", ".join(conversation_signals(user_message))
         category = fanservice_category(user_message)
@@ -117,11 +122,27 @@ class GeminiService:
             f"RECENT CONVERSATION:\n{conversation_text or '(none)'}\n\n"
             f"CURRENT MESSAGE FROM ADMINISTRATOR:\n{user_message}\n\n"
             f"{lore_context}\n"
+            f"{live_source_instruction + chr(10) if live_source_instruction else ''}"
             f"{repetition}"
         )
 
-    async def generate(self, history: list[dict[str, str]], user_message: str) -> str:
-        prompt_context = self._build_prompt_context(history, user_message)
+    async def generate(
+        self,
+        history: list[dict[str, str]],
+        user_message: str,
+        *,
+        allow_live_sources: bool = True,
+    ) -> str:
+        live_source_instruction = (
+            build_live_source_instruction(user_message)
+            if allow_live_sources
+            else None
+        )
+        prompt_context = self._build_prompt_context(
+            history,
+            user_message,
+            live_source_instruction,
+        )
         mode = conversation_mode(user_message)
         social_mode = (
             is_social_message(user_message)
@@ -170,9 +191,9 @@ class GeminiService:
             "Mintha and Leuce remain part of Hades's characterization.\n"
             "Do not invent secret shared history or relationships.\n"
             f"Emoji guidance: {'0-2 tasteful Hades-style emojis when natural' if SETTINGS.emojis_enabled else 'no emojis'}.\n"
-            f"Scope guidance: Hades is not a general-purpose assistant; forbidden subjects are application-filtered.\n"
-            f"{repetition_guidance}\n{context_note}\n\n"
-            f"CURRENT MESSAGE FROM ADMINISTRATOR:\n{user_message}"
+            "Scope guidance: Hades is not a general-purpose assistant; forbidden subjects are application-filtered.\n"
+            "When fresh URL source context is available, prefer it for current claims and keep stable canon separate from dated recommendations.\n"
+            f"{repetition_guidance}\n{context_note}"
         )
         contents: list[types.Content] = []
         for item in history[-8:]:
@@ -180,13 +201,18 @@ class GeminiService:
             content = item.get("content", "").strip()
             if content:
                 contents.append(types.Content(role=role, parts=[types.Part.from_text(text=content)]))
-        contents.append(types.Content(role="user", parts=[types.Part.from_text(text=prompt_context + "\n\n" + system_text)]))
+        contents.append(types.Content(role="user", parts=[types.Part.from_text(text=prompt_context)]))
+
+        tools = None
+        if live_source_instruction and SETTINGS.live_source_refresh:
+            tools = [types.Tool(url_context=types.UrlContext())]
 
         config = types.GenerateContentConfig(
             system_instruction=system_text,
             max_output_tokens=SETTINGS.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            tools=tools,
         )
         try:
             response = await self.client.aio.models.generate_content(
@@ -194,6 +220,51 @@ class GeminiService:
                 contents=contents,
                 config=config,
             )
+        except errors.ClientError as exc:
+            status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
+            if live_source_instruction and status == 400:
+                logger.warning("URL Context request was rejected; retrying without live-source tooling.")
+                fallback_prompt = self._build_prompt_context(history, user_message, None)
+                fallback_contents: list[types.Content] = []
+                for item in history[-8:]:
+                    role = "model" if item.get("role") in {"assistant", "model"} else "user"
+                    content = item.get("content", "").strip()
+                    if content:
+                        fallback_contents.append(
+                            types.Content(
+                                role=role,
+                                parts=[types.Part.from_text(text=content)],
+                            )
+                        )
+                fallback_contents.append(
+                    types.Content(
+                        role="user",
+                        parts=[types.Part.from_text(text=fallback_prompt)],
+                    )
+                )
+                fallback_config = types.GenerateContentConfig(
+                    system_instruction=system_text,
+                    max_output_tokens=SETTINGS.max_output_tokens,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_level=SETTINGS.gemini_thinking_level
+                    ),
+                    automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                        disable=True
+                    ),
+                )
+                try:
+                    response = await self.client.aio.models.generate_content(
+                        model=SETTINGS.gemini_model,
+                        contents=fallback_contents,
+                        config=fallback_config,
+                    )
+                except Exception as fallback_exc:
+                    logger.exception("Gemini fallback request failed")
+                    raise AIServiceError(
+                        "Gemini could not complete that request. Try again shortly."
+                    ) from fallback_exc
+            else:
+                raise
         except errors.ClientError as exc:
             status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
             if status == 429:
