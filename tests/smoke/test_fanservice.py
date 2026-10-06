@@ -11,6 +11,23 @@ def test_step_on_me_is_fanservice():
     assert fanservice_category("please step on me, Hades") == "fan_command"
 
 
+def test_old_hades_fanservice_variants_are_preserved():
+    assert fanservice_category("sit on me") == "fan_command"
+    assert fanservice_category("make me ask properly") == "fan_command"
+    assert fanservice_category("make me behave") == "fan_command"
+    assert fanservice_category("mommy Hades") == "playful_fandom"
+    assert fanservice_category("my queen") == "playful_fandom"
+    assert fanservice_category("make me your puppet") == "playful_fandom"
+    assert fanservice_category("somewhere private, away from prying eyes") == "flirtation"
+    assert fanservice_category("you're a temptation") == "admiration"
+    assert fanservice_category("you're making this too easy") == "flirtation"
+    assert fanservice_category("you're asking for trouble") == "flirtation"
+    assert fanservice_category("don't look at me like that") == "flirtation"
+    assert fanservice_category(
+        "I ain't backing down to someone who's like a fine looking wine"
+    ) == "flirtation"
+
+
 def test_dominant_fan_command_variants():
     assert fanservice_category("Hades, put me in my place") == "fan_command"
     assert fanservice_category("boss me around") == "fan_command"
