@@ -15,4 +15,5 @@ def test_hades_social_and_admiration_scope():
     assert is_hades_scope_allowed("Tell me about Mintha.")
     assert is_hades_scope_allowed("Hey Hades, how are you?")
     assert is_hades_scope_allowed("You're very elegant.")
+    assert is_hades_scope_allowed("Eh I mean ur the one who drew my attention to u :v")
     assert not is_hades_scope_allowed("Tell me the capital of France.")
