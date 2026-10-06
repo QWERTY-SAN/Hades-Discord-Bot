@@ -21,3 +21,16 @@ def test_elegance_maternal_question_is_fanservice():
     from hades_bot.ai.fanservice import fanservice_category
     text = "Tell me, where did this elegance and maternal traits come from?"
     assert fanservice_category(text) == "admiration"
+
+
+def test_richer_conversation_signals():
+    assert "achievement" in conversation_signals("I finally did it!")
+    assert "needs_comfort" in conversation_signals("I had a rough day, comfort me.")
+    assert "question" in conversation_signals("What do you think?")
+    assert "high_energy" in conversation_signals("No way!!")
+
+
+def test_more_short_followups_are_contextual():
+    assert is_short_followup("wait what")
+    assert is_short_followup("okay then?")
+    assert is_short_followup("go ahead")

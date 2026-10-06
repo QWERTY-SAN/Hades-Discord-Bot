@@ -42,8 +42,9 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"i(?:'m|\s+am)\s+(?:in\s+love|down\s+bad|smitten|head\s+over\s+heels)\s+"
             r"(?:for|with)\s+you|i\s+am\s+obsessed\s+with\s+you|"
             r"you(?:'re|\s+are)\s+(?:my\s+wife|the\s+one\s+for\s+me)|"
-            r"my\s+wife|my\s+beloved|i(?:'d|\s+would)\s+marry\s+you|"
-            r"i(?:'d|\s+would)\s+date\s+you|you\s+have\s+my\s+heart)\b",
+            r"my\s+wife|my\s+beloved|one\s+for\s+me|my\s+favorite\s+person|"
+            r"i(?:'d|\s+would)\s+marry\s+you|i(?:'d|\s+would)\s+date\s+you|"
+            r"you\s+have\s+my\s+heart)\b",
             re.I,
         ),
     ),
@@ -67,6 +68,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you\s+look\s+(?:gorgeous|beautiful|pretty|stunning|hot|cute|elegant|amazing|unfair)|"
             r"you\s+(?:look|are)\s+like\s+a\s+(?:dream|temptation|snack)|"
             r"wife\s+material|my\s+gorgeous\s+woman|my\s+favorite\s+woman|"
+            r"you\s+are\s+unfair|you're\s+unfair|how\s+are\s+you\s+this\s+pretty|"
             r"you\s+caught\s+my\s+eye|you\s+drew\s+my\s+attention|you\s+have\s+my\s+attention|"
             r"hard\s+to\s+look\s+away|can't\s+look\s+away|cannot\s+look\s+away|"
             r"i\s+can't\s+stop\s+looking|i\s+can't\s+look\s+away)\b",
@@ -126,6 +128,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"\b(?:stop\s+making\s+me\s+blush|you(?:'re|\s+are)\s+making\s+me\s+blush|"
             r"you\s+make\s+me\s+blush|i(?:'m|\s+am)\s+blushing|i(?:'m|\s+am)\s+folding|"
             r"i(?:'m|\s+am)\s+weak\s+for\s+you|i\s+can't\s+handle\s+you|"
+            r"i\s+cannot\s+think\s+straight|you'?ve\s+got\s+me|i(?:'m|\s+am)\s+speechless|"
             r"i\s+cannot\s+handle\s+you|you\s+make\s+me\s+nervous)\b",
             re.I,
         ),
@@ -174,6 +177,8 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you\s+sure\s+you\s+can\s+handle\s+me|can\s+you\s+handle\s+me|"
             r"don't\s+look\s+at\s+me\s+like\s+that|stop\s+looking\s+at\s+me\s+like\s+that|"
             r"you're\s+making\s+this\s+too\s+easy|you'?re\s+asking\s+for\s+trouble|"
+            r"you'?re\s+trouble|you\s+are\s+trouble|what\s+are\s+you\s+doing\s+to\s+me|"
+            r"what\s+have\s+you\s+done\s+to\s+me|is\s+this\s+a\s+trap|"
             r"such\s+a\s+tease|quit\s+teasing\s+me|are\s+you\s+flirting\s+with\s+me|"
             r"are\s+you\s+trying\s+to\s+flirt|hear\s+me\s+out)\b",
             re.I,
@@ -199,6 +204,21 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
 }
 
 FANSERVICE_PATTERNS = PATTERNS
+
+_CATEGORY_PRIORITY = (
+    "fan_command",
+    "playful_dominance",
+    "romantic",
+    "affection",
+    "admiration",
+    "praise",
+    "playful_fandom",
+    "puppet_fantasy",
+    "flustered",
+    "flirtation",
+    "attention_seek",
+    "teasing_challenge",
+)
 
 _CATEGORY_GUIDANCE = {
     "fan_command": (
@@ -241,7 +261,7 @@ _CATEGORY_GUIDANCE = {
     ),
     "flustered": (
         "The Administrator is admitting Hades got a reaction from them. Hades may enjoy having caught them off guard, "
-        "allow a small crack in her composure, or tease them for revealing it."
+        "allow a small crack in her composure, tease them for revealing it, or calmly point out that they seem rather affected."
     ),
     "flirtation": (
         "The user is being subtly flirtatious, suggestive, or confidently romantic without necessarily stating it directly. "
@@ -264,8 +284,8 @@ def fanservice_categories(text: str) -> tuple[str, ...]:
     normalized = text or ""
     return tuple(
         category
-        for category, patterns in PATTERNS.items()
-        if any(pattern.search(normalized) for pattern in patterns)
+        for category in _CATEGORY_PRIORITY
+        if any(pattern.search(normalized) for pattern in PATTERNS[category])
     )
 
 

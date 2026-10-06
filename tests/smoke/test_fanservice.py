@@ -71,3 +71,12 @@ def test_guidance_is_not_a_response_template():
 
 def test_normal_game_question_is_not_fanservice():
     assert not is_fanservice_message("What team works well with Hades?")
+
+
+def test_expanded_classic_and_indirect_cues():
+    assert fanservice_category("you're the one for me") == "romantic"
+    assert fanservice_category("one for me") == "romantic"
+    assert fanservice_category("you're trouble") == "flirtation"
+    assert fanservice_category("what are you doing to me?") == "flirtation"
+    assert fanservice_category("you've got me speechless") == "flustered"
+    assert fanservice_category("how are you this pretty?") == "admiration"

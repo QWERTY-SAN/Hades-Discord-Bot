@@ -59,3 +59,9 @@ Fan-service remains fictional, playful, and non-explicit. It does not provide gr
 The bot also does not use fan-service to encourage dependency, isolation, loyalty tests, coercion, or a literal real-world relationship.
 
 Fan-service does not override Hades's unrelated-topic scope filter.
+
+## Expanded cue coverage
+
+The detector also understands less direct fandom language such as romantic "one for me" declarations, "you're trouble" style flirtation, "what are you doing to me?", and flustered admissions such as being left speechless. These cues are still treated as intent signals rather than reply templates.
+
+Conversation-level signals also distinguish ordinary questions, energetic reactions, achievement/good-news moments, and explicit requests for comfort so the generator can choose a more appropriate emotional response before adding Hades flavor.

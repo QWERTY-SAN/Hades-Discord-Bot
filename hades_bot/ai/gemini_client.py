@@ -12,6 +12,7 @@ from google.genai import errors, types
 from ..config import SETTINGS
 from ..core.conversation import conversation_mode, conversation_signals
 from ..core.scope import is_personal_life_request, is_social_message, is_subjective_question
+from ..core.utils import sanitize_model_output
 from ..knowledge.lore import build_aether_context
 from ..knowledge.live_sources import build_live_source_instruction
 from .fanservice import fanservice_guidance
@@ -292,10 +293,10 @@ class GeminiService:
         except Exception as exc:
             logger.exception("Unexpected Gemini error")
             raise AIServiceError("Something went wrong with the AI service.") from exc
-        text = (response.text or "").strip()
+        text = sanitize_model_output(response.text or "")
         if not text:
             raise AIServiceError("Gemini returned an empty response. Try again.")
         return _add_natural_emoji(text) if SETTINGS.emojis_enabled else text
 
     async def close(self) -> None:
-        return None
+        await self.client.aio.aclose()
