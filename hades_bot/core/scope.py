@@ -4,6 +4,7 @@ import re
 import unicodedata
 
 from ..ai.fanservice import fanservice_category
+from ..config import SETTINGS
 from ..knowledge.lore import SCOPE_TERMS
 
 HADES_TERMS = {
@@ -88,16 +89,38 @@ def has_aether_context(text: str) -> bool:
     return any(_contains_term(normalized, term) for term in meaningful)
 
 
-def forbidden_topic_category(text: str) -> str | None:
+TECHNICAL_CONTEXT_WORDS = frozenset({
+    "server", "database", "driver", "cpu", "gpu", "ram", "pc", "computer", "network", "software",
+    "hardware", "system", "ai", "algorithm",
+})
+HARD_TECHNICAL_WORDS = re.compile(
+    r"\b(?:python|javascript|typescript|java|c\+\+|c#|rust|golang|ruby|php|sql|regex|html|css|"
+    r"programming|discord\.py|coding|debugging|program|script|source\s+code)\b",
+    re.I,
+)
+
+
+def forbidden_topic_category(text: str, *, context: str = "") -> str | None:
     normalized = _normalize(text)
+    surrounding = _normalize(" ".join(part for part in (context, text) if part))
     if not normalized:
         return None
+
     for category, pattern in HARD_OFF_TOPIC_PATTERNS:
-        if pattern.search(normalized):
-            # Aether-specific uses of terms like "server", "music", or "computer" should not
-            # be silently overridden by the hard technology gate unless the request is actually technical.
-            return category
-    aether_context = has_aether_context(normalized)
+        if not pattern.search(normalized):
+            continue
+
+        if category == "programming or technology":
+            if HARD_TECHNICAL_WORDS.search(normalized) or is_specialist_request(normalized):
+                return category
+            # Generic words such as "server" or "AI" can legitimately describe Mimir
+            # or Aether Gazer infrastructure when an Aether context is present.
+            if has_aether_context(surrounding):
+                continue
+
+        return category
+
+    aether_context = has_aether_context(surrounding)
     if not aether_context:
         for category, pattern in CONTEXTUAL_OFF_TOPIC_PATTERNS:
             if pattern.search(normalized):
@@ -105,8 +128,8 @@ def forbidden_topic_category(text: str) -> str | None:
     return None
 
 
-def contains_forbidden_topic(text: str) -> bool:
-    return forbidden_topic_category(text) is not None
+def contains_forbidden_topic(text: str, *, context: str = "") -> bool:
+    return forbidden_topic_category(text, context=context) is not None
 
 
 def is_specialist_request(text: str) -> bool:
@@ -141,10 +164,16 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
     normalized = _normalize(text)
     if not normalized:
         return False
-    if forbidden_topic_category(normalized) is not None:
+
+    # The strict flag controls the narrow-topic gate. Even when disabled, explicit
+    # specialist requests remain blocked so the bot does not silently become a
+    # general-purpose coding assistant.
+    if SETTINGS.strict_aether_topic and forbidden_topic_category(normalized) is not None:
         return False
     if is_specialist_request(normalized):
         return False
+    if not SETTINGS.strict_aether_topic:
+        return True
     # This is the deliberate context bridge: generic follow-ups are allowed only
     # after a real Hades conversation already exists for this user/channel.
     if has_history and is_short_followup(normalized):
