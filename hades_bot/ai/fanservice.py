@@ -70,6 +70,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"wife\s+material|my\s+gorgeous\s+woman|my\s+favorite\s+woman|"
             r"you\s+are\s+unfair|you're\s+unfair|how\s+are\s+you\s+this\s+pretty|"
             r"you\s+caught\s+my\s+eye|you\s+drew\s+my\s+attention|you\s+have\s+my\s+attention|"
+            r"(?:you(?:\'re|\s+are)|ur)\s+(?:the\s+one\s+who\s+)?(?:drew|caught)\s+my\s+attention(?:\s+to\s+(?:you|u))?|"
             r"hard\s+to\s+look\s+away|can't\s+look\s+away|cannot\s+look\s+away|"
             r"i\s+can't\s+stop\s+looking|i\s+can't\s+look\s+away)\b",
             re.I,
