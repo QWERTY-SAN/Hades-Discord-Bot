@@ -1,0 +1,56 @@
+import unittest
+
+from hades_bot.ai.fanservice import (
+    fanservice_categories,
+    fanservice_category,
+    fanservice_guidance,
+    is_fanservice_message,
+)
+from hades_bot.ai.persona import HADES_SYSTEM_PROMPT
+
+
+class FanserviceDetectionTests(unittest.TestCase):
+    def test_step_on_me_variants_are_detected_as_playful_fan_command(self):
+        for message in (
+            "Can you step on me?",
+            "step on me",
+            "step on me please",
+            "I wish you'd put me in my place",
+        ):
+            with self.subTest(message=message):
+                self.assertEqual(fanservice_category(message), "fan_command")
+
+    def test_affection_request_is_detected(self):
+        self.assertEqual(fanservice_category("Can I have a hug?"), "affection")
+        self.assertTrue(is_fanservice_message("I could use a hug right now"))
+
+    def test_indirect_fluster_is_detected(self):
+        self.assertIn("flustered", fanservice_categories("Stop making me blush."))
+        self.assertIn("flustered", fanservice_categories("I'm folding, honestly."))
+
+    def test_fanservice_guidance_is_not_a_predefined_reply(self):
+        guidance = fanservice_guidance("Can you step on me?")
+        self.assertIn("fresh response", guidance)
+        self.assertIn("not a response template", guidance)
+        self.assertNotIn("Sure! Here's", guidance)
+
+    def test_unrelated_casual_chat_does_not_activate_fanservice(self):
+        self.assertEqual(fanservice_categories("I got home late today."), ())
+        self.assertFalse(is_fanservice_message("Fair enough, that makes sense."))
+
+
+class PersonaContinuityTests(unittest.TestCase):
+    def test_prompt_requires_contextual_followups_and_variety(self):
+        self.assertIn("actual recent dialogue", HADES_SYSTEM_PROMPT)
+        self.assertIn("NO CANNED REPLIES", HADES_SYSTEM_PROMPT)
+        self.assertIn("Never choose from a fixed list of replies", HADES_SYSTEM_PROMPT)
+
+    def test_prompt_preserves_hades_identity_and_scope(self):
+        self.assertIn("You are Hades from Aether Gazer", HADES_SYSTEM_PROMPT)
+        self.assertIn("F1/Formula One", HADES_SYSTEM_PROMPT)
+        self.assertIn("Administrator", HADES_SYSTEM_PROMPT)
+        self.assertIn("little lamb", HADES_SYSTEM_PROMPT)
+
+
+if __name__ == "__main__":
+    unittest.main()
