@@ -55,29 +55,42 @@ class HadesMedia:
         stamp = store.get(key, 0.0)
         return (time.monotonic() - stamp) >= cooldown
 
+    @staticmethod
+    def _fresh_options(urls: tuple[str, ...], recent: deque[str]) -> list[str]:
+        if not urls:
+            return []
+        recent_set = set(recent)
+        return [url for url in urls if url not in recent_set] or list(urls)
+
     def should_auto_send_media(self, message: discord.Message, trigger: str) -> bool:
         if trigger != "mention" or not self.gifs and not self.images:
             return False
-        return self._cooldown_ready(self._last_auto, self._key(message), AUTO_MEDIA_COOLDOWN_SECONDS, force=False)
+        return self._cooldown_ready(
+            self._last_auto,
+            self._key(message),
+            AUTO_MEDIA_COOLDOWN_SECONDS,
+            force=False,
+        )
 
     def choose_auto_media_embed(self, message: discord.Message) -> discord.Embed | None:
         key = self._key(message)
-        choices: list[tuple[str, str]] = []
-        choices.extend(("gif", url) for url in self.gifs)
-        choices.extend(("image", url) for url in self.images)
+        gif_options = self._fresh_options(self.gifs, self._recent_gif[key])
+        image_options = self._fresh_options(self.images, self._recent_image[key])
+        choices: list[tuple[str, str]] = [
+            *(("gif", url) for url in gif_options),
+            *(("image", url) for url in image_options),
+        ]
         if not choices:
             return None
+
         kind, url = self.rng.choice(choices)
         self._last_auto[key] = time.monotonic()
         embed = discord.Embed()
+        embed.set_image(url=url)
         if kind == "gif":
-            embed.set_image(url=url)
-            recent = self._recent_gif[key]
-            recent.append(url)
+            self._recent_gif[key].append(url)
         else:
-            embed.set_image(url=url)
-            recent = self._recent_image[key]
-            recent.append(url)
+            self._recent_image[key].append(url)
         return embed
 
     async def send_gif(self, channel, message: discord.Message, *, force: bool = False) -> bool:
@@ -87,7 +100,7 @@ class HadesMedia:
         if not self._cooldown_ready(self._last_gif, key, GIF_COOLDOWN_SECONDS, force=force):
             return False
         recent = self._recent_gif[key]
-        options = [url for url in self.gifs if url not in recent] or list(self.gifs)
+        options = self._fresh_options(self.gifs, recent)
         url = self.rng.choice(options)
         recent.append(url)
         self._last_gif[key] = time.monotonic()
@@ -101,7 +114,7 @@ class HadesMedia:
         if not self._cooldown_ready(self._last_image, key, IMAGE_COOLDOWN_SECONDS, force=force):
             return False
         recent = self._recent_image[key]
-        options = [url for url in self.images if url not in recent] or list(self.images)
+        options = self._fresh_options(self.images, recent)
         url = self.rng.choice(options)
         recent.append(url)
         self._last_image[key] = time.monotonic()
