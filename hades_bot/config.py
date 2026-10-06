@@ -17,6 +17,8 @@ class Settings:
     bot_prefix: str = "h!"
     strict_aether_topic: bool = True
     emojis_enabled: bool = True
+    live_source_refresh: bool = True
+    live_source_max_urls: int = 3
     max_history: int = 16
     max_output_tokens: int = 768
     max_input_chars: int = 6000
@@ -44,29 +46,35 @@ def _bool(name: str, default: bool) -> bool:
 def _int(name: str, default: int) -> int:
     try:
         return int(os.getenv(name, str(default)))
-    except ValueError:
+    except (TypeError, ValueError):
         return default
 
 
 def _float(name: str, default: float) -> float:
     try:
         return float(os.getenv(name, str(default)))
-    except ValueError:
+    except (TypeError, ValueError):
         return default
 
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 
+_configured_history = max(4, _int("MAX_HISTORY", 16))
+if _configured_history % 2:
+    _configured_history += 1
+
 SETTINGS = Settings(
     discord_token=DISCORD_TOKEN,
     gemini_api_key=GEMINI_API_KEY,
-    gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip(),
-    gemini_thinking_level=os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip(),
+    gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip() or "gemini-3.5-flash-lite",
+    gemini_thinking_level=os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().casefold() or "minimal",
     bot_prefix=os.getenv("BOT_PREFIX", "h!").strip() or "h!",
     strict_aether_topic=_bool("STRICT_AETHER_TOPIC", True),
     emojis_enabled=_bool("EMOJIS_ENABLED", True),
-    max_history=max(4, _int("MAX_HISTORY", 16)),
+    live_source_refresh=_bool("LIVE_SOURCE_REFRESH", True),
+    live_source_max_urls=min(5, max(1, _int("LIVE_SOURCE_MAX_URLS", 3))),
+    max_history=_configured_history,
     max_output_tokens=max(128, _int("MAX_OUTPUT_TOKENS", 768)),
     max_input_chars=max(1000, _int("MAX_INPUT_CHARS", 6000)),
     knowledge_context_max_chars=max(2000, _int("KNOWLEDGE_CONTEXT_MAX_CHARS", 9000)),
@@ -79,7 +87,7 @@ SETTINGS = Settings(
     max_conversations=max(10, _int("MAX_CONVERSATIONS", 500)),
     memory_prune_interval=max(30.0, _float("MEMORY_PRUNE_INTERVAL", 180.0)),
     cooldown_prune_interval=max(30.0, _float("COOLDOWN_PRUNE_INTERVAL", 300.0)),
-    web_host=os.getenv("WEB_HOST", "0.0.0.0"),
+    web_host=os.getenv("WEB_HOST", "0.0.0.0").strip() or "0.0.0.0",
     web_port=max(1, _int("PORT", _int("WEB_PORT", 10000))),
 )
 
@@ -89,3 +97,7 @@ def validate_settings() -> None:
         raise RuntimeError("Missing DISCORD_TOKEN environment variable.")
     if not SETTINGS.gemini_api_key:
         raise RuntimeError("Missing GEMINI_API_KEY environment variable.")
+    if SETTINGS.gemini_thinking_level not in {"minimal", "low", "medium", "high"}:
+        raise RuntimeError(
+            "GEMINI_THINKING_LEVEL must be one of: minimal, low, medium, high."
+        )
