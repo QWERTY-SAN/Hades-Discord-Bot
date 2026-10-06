@@ -140,7 +140,7 @@ class HadesBot(commands.Bot):
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
-            if contains_forbidden_topic(reply):
+            if contains_forbidden_topic(reply, context=content):
                 logger.warning("Blocked forbidden-topic model output for %s", key)
                 await self.cooldowns.release(key)
                 refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
