@@ -116,6 +116,13 @@ class HadesMedia:
                 if now - stamp >= STATE_TTL_SECONDS:
                     store.pop(key, None)
                     removed += 1
+
+        live_keys = set(self._last_auto) | set(self._last_gif) | set(self._last_image)
+        for store in (self._recent_gif, self._recent_image):
+            for key in list(store):
+                if key not in live_keys:
+                    store.pop(key, None)
+                    removed += 1
         return removed
 
     async def close(self) -> None:
