@@ -320,3 +320,7 @@ async def help_command(ctx: commands.Context) -> None:
         "You can also mention me or reply to one of my messages."
     )
     await ctx.reply(embed=info_embed("🌙 Hades — Aether Gazer AI", text), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+
+
+def run() -> None:
+    bot.run(SETTINGS.discord_token)
