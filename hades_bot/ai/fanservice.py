@@ -202,11 +202,14 @@ def is_fanservice_message(text: str) -> bool:
 
 def fanservice_guidance(category_or_text: str | None) -> str:
     raw = category_or_text or ""
-    categories = fanservice_categories(raw) if raw not in PATTERNS else (raw,)
+    is_category = raw in PATTERNS
+    categories = (raw,) if is_category else fanservice_categories(raw)
     if not categories:
         return "No special fan-service behavior is required. Keep Hades natural, attentive, and proportionate."
 
-    intensity = fanservice_intensity(raw if raw not in PATTERNS else "")
+    intensity = fanservice_intensity(raw) if not is_category else (
+        "bold" if raw in _BOLD_CATEGORIES else "flirty" if raw in _FLIRTY_CATEGORIES else "warm"
+    )
     intensity_guidance = {
         "warm": "Tone target: warm and lightly playful. Do not manufacture romantic tension.",
         "playful": "Tone target: mischievous and responsive. A small tease is enough.",
@@ -219,7 +222,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
     return (
         f"Detected fan-service categories: {', '.join(categories)}. {intensity_guidance} "
         + " ".join(sections)
-        + " Generate a fresh response for the exact message; do not copy a stock line, template, or fixed response list. "
-        "Use the user's wording and recent dialogue to determine what kind of tease actually fits. "
-        "Do not automatically intensify every turn: repeated fan-service can stay playful, become more confident, or ease back naturally."
+        + " Generate a fresh response for the exact message; this is not a response template. Do not copy a stock line or fixed response list. "
+        + "Use the user's wording and recent dialogue to determine what kind of tease actually fits. "
+        + "Do not automatically intensify every turn: repeated fan-service can stay playful, become more confident, or ease back naturally."
     )
