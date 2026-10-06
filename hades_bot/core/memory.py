@@ -83,6 +83,18 @@ class ConversationMemory:
             conversation.touched_at = time.monotonic()
             yield MemorySession(conversation)
 
+    async def snapshot(self, key: str, limit: int | None = None) -> list[dict[str, str]]:
+        async with self._index_lock:
+            conversation = self._conversations.get(key)
+            if conversation is None or self._expired(conversation, time.monotonic()):
+                return []
+        async with conversation.lock:
+            history = [
+                {"role": turn.role, "content": turn.text}
+                for turn in conversation.turns
+            ]
+            return history[-limit:] if limit is not None else history
+
     async def reset(self, key: str) -> None:
         async with self._index_lock:
             self._conversations.pop(key, None)
