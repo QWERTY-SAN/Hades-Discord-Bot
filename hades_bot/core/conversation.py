@@ -23,6 +23,8 @@ SHORT_FOLLOWUPS = frozenset({
     "same.", "fair enough", "fair enough.", "no way", "no way!", "tell me more", "continue",
     "continue?", "what do you mean", "what do you mean?", "how come", "how come?", "your turn",
     "your turn?", "really then", "prove it", "prove it?", "what then", "what then?",
+    "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
+    "for real", "for real?", "okay then", "okay then?", "go ahead",
 })
 CORRECTION_PREFIXES = re.compile(r"^(?:no[, ]|nah[, ]|wait[, ]|not exactly[, ]|that's not what i meant[, ]|i meant[, ]|actually[, ]|correction[, ]|wrong[, ])", re.I)
 TURN_BACK_PATTERNS = (
@@ -71,6 +73,14 @@ def conversation_signals(text: str) -> list[str]:
         signals.append("turn_back")
     if any(pattern.search(normalized) for pattern in TOPIC_PIVOT_PATTERNS):
         signals.append("topic_pivot")
+    if re.search(r"\b(?:finally|i did it|we did it|got it|got them|got her|got him|pulled|won|cleared|finished|completed)\b", normalized, re.I):
+        signals.append("achievement")
+    if re.search(r"\b(?:rough day|bad day|i feel awful|i feel like crap|i need comfort|comfort me|reassure me|i'm overwhelmed|i am overwhelmed)\b", normalized, re.I):
+        signals.append("needs_comfort")
+    if re.search(r"[?？！]\s*$", normalized):
+        signals.append("question")
+    if re.search(r"!!+$|\b(?:lmao|lol|haha|hehe)\b", normalized, re.I):
+        signals.append("high_energy")
     if re.search(r"\b(?:thanks|thank you|ty|thx)\b", normalized, re.I):
         signals.append("gratitude")
     if re.search(r"\b(?:sorry|my bad|apologies)\b", normalized, re.I):
