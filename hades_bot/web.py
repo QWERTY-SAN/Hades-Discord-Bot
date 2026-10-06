@@ -1,60 +1,52 @@
+from __future__ import annotations
+
+import asyncio
+import threading
+from typing import Any
+
 from aiohttp import web
 
-from .config import SETTINGS
-
-_state = {"discord_ready": False, "discord_user": None, "guild_count": 0}
-
-
-def update_discord_state(*, ready: bool, user: str | None = None, guild_count: int = 0) -> None:
-    _state.update({"discord_ready": ready, "discord_user": user, "guild_count": guild_count})
+_state: dict[str, Any] = {
+    "ready": False,
+    "user": None,
+    "guild_count": 0,
+}
 
 
-async def index(request: web.Request) -> web.Response:
-    return web.json_response(
-        {
-            "service": "Hades Discord AI Bot",
-            "status": "online" if _state["discord_ready"] else "starting",
-            **_state,
-        }
-    )
+def update_discord_state(**values: Any) -> None:
+    _state.update(values)
 
 
-async def health(request: web.Request) -> web.Response:
+async def _index(request: web.Request) -> web.Response:
     return web.json_response({"service": "hades-discord-bot", "status": "ok", **_state})
 
 
-async def ready(request: web.Request) -> web.Response:
-    ready_state = _state["discord_ready"]
-    return web.json_response(
-        {
-            "service": "hades-discord-bot",
-            "status": "ready" if ready_state else "not-ready",
-            **_state,
-        },
-        status=200 if ready_state else 503,
-    )
+async def _health(request: web.Request) -> web.Response:
+    return web.json_response({"status": "ok", **_state})
 
 
-def start_web_server() -> None:
-    import asyncio
-    import threading
+async def _ready(request: web.Request) -> web.Response:
+    status = 200 if _state.get("ready") else 503
+    return web.json_response({"ready": bool(_state.get("ready"))}, status=status)
 
+
+async def _run_app(host: str, port: int) -> None:
+    app = web.Application()
+    app.router.add_get("/", _index)
+    app.router.add_get("/health", _health)
+    app.router.add_get("/ready", _ready)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, host, port)
+    await site.start()
+    while True:
+        await asyncio.sleep(3600)
+
+
+def start_web_server(host: str, port: int) -> threading.Thread:
     def runner() -> None:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        asyncio.run(_run_app(host, port))
 
-        async def start() -> web.AppRunner:
-            app = web.Application()
-            app.router.add_get("/", index)
-            app.router.add_get("/health", health)
-            app.router.add_get("/ready", ready)
-            runner_obj = web.AppRunner(app)
-            await runner_obj.setup()
-            site = web.TCPSite(runner_obj, "0.0.0.0", SETTINGS.port)
-            await site.start()
-            return runner_obj
-
-        loop.run_until_complete(start())
-        loop.run_forever()
-
-    threading.Thread(target=runner, name="health-server", daemon=True).start()
+    thread = threading.Thread(target=runner, name="hades-web", daemon=True)
+    thread.start()
+    return thread

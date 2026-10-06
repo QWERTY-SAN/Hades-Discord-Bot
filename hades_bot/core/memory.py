@@ -39,7 +39,6 @@ class ConversationMemory:
             if self._expired(conversation, now) and key != exclude_key and not conversation.lock.locked():
                 self._conversations.pop(key, None)
                 removed += 1
-
         while len(self._conversations) > self.max_conversations:
             removable = next(
                 (
@@ -68,6 +67,15 @@ class ConversationMemory:
                 self._conversations.move_to_end(key)
             return conversation
 
+    async def has_history(self, key: str) -> bool:
+        async with self._index_lock:
+            now = time.monotonic()
+            self._prune_locked(now)
+            conversation = self._conversations.get(key)
+            if conversation is None or self._expired(conversation, now):
+                return False
+            return bool(conversation.turns)
+
     @asynccontextmanager
     async def session(self, key: str) -> AsyncIterator["MemorySession"]:
         conversation = await self._get_or_create(key)
@@ -89,10 +97,14 @@ class ConversationMemory:
 
     async def conversation_count(self) -> int:
         async with self._index_lock:
+            self._prune_locked(time.monotonic())
             return len(self._conversations)
 
     async def message_count(self, key: str) -> int:
-        conversation = await self._get_or_create(key)
+        async with self._index_lock:
+            conversation = self._conversations.get(key)
+            if conversation is None or self._expired(conversation, time.monotonic()):
+                return 0
         async with conversation.lock:
             return len(conversation.turns)
 
@@ -103,9 +115,12 @@ class MemorySession:
 
     @property
     def history(self) -> list[dict[str, str]]:
-        return [{"role": turn.role, "content": turn.text} for turn in self._conversation.turns]
+        return [
+            {"role": turn.role, "content": turn.text}
+            for turn in self._conversation.turns
+        ]
 
     def commit(self, user_text: str, assistant_text: str) -> None:
         self._conversation.turns.append(MessageTurn("user", user_text))
-        self._conversation.turns.append(MessageTurn("assistant", assistant_text))
+        self._conversation.turns.append(MessageTurn("model", assistant_text))
         self._conversation.touched_at = time.monotonic()

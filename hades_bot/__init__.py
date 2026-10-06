@@ -1,3 +1,1 @@
-"""Hades Discord AI Bot."""
-
-__version__ = "2026.10.06"
+__version__ = "1.1.0-conversation"

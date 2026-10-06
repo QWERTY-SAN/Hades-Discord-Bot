@@ -1,63 +1,34 @@
-import asyncio
+from __future__ import annotations
+
 import re
 import time
+from dataclasses import dataclass
 
-from ..config import DISCORD_MESSAGE_LIMIT
+from ..config import SETTINGS
 
 
-class CooldownManager:
-    def __init__(self, cooldown_seconds: float) -> None:
-        self.cooldown_seconds = cooldown_seconds
-        self._last_request: dict[str, float] = {}
-        self._lock = asyncio.Lock()
-
-    async def try_acquire(self, key: str) -> float:
-        if self.cooldown_seconds <= 0:
-            return 0.0
-        now = time.monotonic()
-        async with self._lock:
-            previous = self._last_request.get(key, 0.0)
-            remaining = self.cooldown_seconds - (now - previous)
-            if remaining > 0:
-                return remaining
-            self._last_request[key] = now
-            return 0.0
-
-    async def release(self, key: str) -> None:
-        async with self._lock:
-            self._last_request.pop(key, None)
-
-    async def prune(self, older_than_seconds: float = 3600.0) -> int:
-        cutoff = time.monotonic() - older_than_seconds
-        async with self._lock:
-            stale = [key for key, timestamp in self._last_request.items() if timestamp < cutoff]
-            for key in stale:
-                self._last_request.pop(key, None)
-            return len(stale)
+DISCORD_MESSAGE_LIMIT = 2000
 
 
 def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
     text = text.strip()
     if not text:
-        return ["…"]
+        return [""]
     if len(text) <= limit:
         return [text]
 
     chunks: list[str] = []
     remaining = text
     while len(remaining) > limit:
-        split_at = remaining.rfind("\n\n", 0, limit + 1)
-        if split_at < 1:
-            split_at = remaining.rfind("\n", 0, limit + 1)
-        if split_at < 1:
+        split_at = remaining.rfind("\n", 0, limit + 1)
+        if split_at < max(1, limit // 2):
             split_at = remaining.rfind(" ", 0, limit + 1)
-        if split_at < 1:
+        if split_at <= 0:
             split_at = limit
         chunk = remaining[:split_at].rstrip()
         if chunk:
             chunks.append(chunk)
         remaining = remaining[split_at:].lstrip()
-
     if remaining:
         chunks.append(remaining)
     return chunks
@@ -65,16 +36,48 @@ def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
 
 def strip_bot_mentions(content: str, bot_id: int) -> str:
     if not bot_id:
-        return content
-    return re.sub(rf"<@!?{bot_id}>", "", content).strip()
+        return content.strip()
+    content = content.replace(f"<@{bot_id}>", "")
+    content = content.replace(f"<@!{bot_id}>", "")
+    return content.strip()
 
 
 def sanitize_model_output(text: str) -> str:
-    text = re.sub(r"<@!?\d+>", "@user", text)
-    text = re.sub(r"@(everyone|here)", lambda m: "@\u200b" + m.group(1), text, flags=re.I)
+    text = text.replace("\x00", "").strip()
+    text = re.sub(r"^(?:Hades\s*:\s*)+", "", text, flags=re.I)
+    text = re.sub(r"\bAs an AI(?: language model)?[,:]", "", text, flags=re.I)
+    text = re.sub(r"\n{4,}", "\n\n", text)
     return text.strip()
 
 
-def clean_model_output(text: str) -> str:
-    text = text.replace("\x00", "").strip()
-    return sanitize_model_output(text)
+@dataclass(slots=True)
+class _Cooldown:
+    touched_at: float
+
+
+class CooldownManager:
+    def __init__(self, cooldown_seconds: float) -> None:
+        self.cooldown_seconds = max(0.0, cooldown_seconds)
+        self._last: dict[str, _Cooldown] = {}
+
+    async def try_acquire(self, key: str) -> float:
+        now = time.monotonic()
+        previous = self._last.get(key)
+        if previous is not None:
+            remaining = self.cooldown_seconds - (now - previous.touched_at)
+            if remaining > 0:
+                return remaining
+        self._last[key] = _Cooldown(now)
+        return 0.0
+
+    async def release(self, key: str) -> None:
+        self._last.pop(key, None)
+
+    async def prune(self, ttl_seconds: float = 3600.0) -> int:
+        now = time.monotonic()
+        removed = 0
+        for key, state in list(self._last.items()):
+            if now - state.touched_at > ttl_seconds:
+                self._last.pop(key, None)
+                removed += 1
+        return removed

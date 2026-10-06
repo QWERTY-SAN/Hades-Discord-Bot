@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import logging
+import random
 import time
 from collections import defaultdict, deque
-from dataclasses import dataclass
-from random import SystemRandom
 from urllib.parse import urlparse
 
 import discord
@@ -12,322 +10,113 @@ import discord
 from .gifs import HADES_GIF_URLS
 from .images import HADES_IMAGE_URLS
 
-logger = logging.getLogger("hades-bot.media")
-
-# GIF behavior is intentionally internal. The only user-editable GIF setting is
-# the URL list in hades_bot/media/gifs.py.
-AUTO_MEDIA_MODE = "every_mention_random_gif_or_image"
 AUTO_MEDIA_COOLDOWN_SECONDS = 300.0
 GIF_COOLDOWN_SECONDS = 300.0
 IMAGE_COOLDOWN_SECONDS = 300.0
-GIF_RECENT_COUNT = 6
-IMAGE_RECENT_COUNT = 4
-MEDIA_STATE_TTL_SECONDS = 7200.0
-MAX_TRACKED_CHANNELS = 1000
-
-
-@dataclass(frozen=True, slots=True)
-class GifEntry:
-    url: str
-
-
-@dataclass(frozen=True, slots=True)
-class ImageEntry:
-    url: str
+RECENT_COUNT = 6
+STATE_TTL_SECONDS = 7200.0
 
 
 class HadesMedia:
-    """Handles GIFs and images as separate external-media systems.
-
-    The bot never downloads or re-uploads these assets.
-    """
-
     def __init__(self) -> None:
-        self._rng = SystemRandom()
-        self._last_gif_sent: dict[str, float] = {}
-        self._last_image_sent: dict[str, float] = {}
-        self._last_auto_media_sent: dict[str, float] = {}
-        self._gif_channel_touched: dict[str, float] = {}
-        self._image_channel_touched: dict[str, float] = {}
-        self._recent_gif_urls: dict[str, deque[str]] = defaultdict(
-            lambda: deque(maxlen=GIF_RECENT_COUNT)
-        )
-        self._recent_image_urls: dict[str, deque[str]] = defaultdict(
-            lambda: deque(maxlen=IMAGE_RECENT_COUNT)
-        )
-        self.entries = self._parse_entries(tuple(HADES_GIF_URLS), GifEntry)
-        self.image_entries = self._parse_entries(tuple(HADES_IMAGE_URLS), ImageEntry)
+        self.rng = random.SystemRandom()
+        self.gifs = tuple(self._valid_urls(HADES_GIF_URLS))
+        self.images = tuple(self._valid_urls(HADES_IMAGE_URLS))
+        self._last_auto: dict[str, float] = {}
+        self._last_gif: dict[str, float] = {}
+        self._last_image: dict[str, float] = {}
+        self._recent_gif: dict[str, deque[str]] = defaultdict(lambda: deque(maxlen=RECENT_COUNT))
+        self._recent_image: dict[str, deque[str]] = defaultdict(lambda: deque(maxlen=RECENT_COUNT))
 
     @staticmethod
-    def _parse_entries(urls: tuple[str, ...], entry_type):
-        entries = []
-        seen: set[str] = set()
-        for raw in urls:
-            for part in raw.replace("\n", ",").split(","):
-                item = part.strip()
-                if not item:
-                    continue
-                parsed = urlparse(item)
-                if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-                    logger.warning("Ignoring invalid Hades media URL: %s", item)
-                    continue
-                if item in seen:
-                    continue
-                seen.add(item)
-                entries.append(entry_type(item))
-        return tuple(entries)
+    def _valid_urls(urls: list[str]) -> list[str]:
+        output: list[str] = []
+        for url in urls:
+            parsed = urlparse(url)
+            if parsed.scheme in {"http", "https"} and parsed.netloc:
+                output.append(url)
+        return output
 
     @property
     def configured_count(self) -> int:
-        return len(self.entries)
+        return len(self.gifs)
 
     @property
     def image_configured_count(self) -> int:
-        return len(self.image_entries)
+        return len(self.images)
 
-    async def close(self) -> None:
-        # No network session exists: GIFs are never downloaded.
-        return None
-
-    def _cooldown_key(self, message: discord.Message) -> str:
-        guild = message.guild.id if message.guild else "dm"
-        return f"{guild}:{message.channel.id}:{message.author.id}"
-
-    def _history_key(self, message: discord.Message) -> str:
+    def _key(self, message: discord.Message) -> str:
         guild = message.guild.id if message.guild else "dm"
         return f"{guild}:{message.channel.id}"
 
+    def _cooldown_ready(self, store: dict[str, float], key: str, cooldown: float, *, force: bool) -> bool:
+        if force:
+            return True
+        stamp = store.get(key, 0.0)
+        return (time.monotonic() - stamp) >= cooldown
+
+    def should_auto_send_media(self, message: discord.Message, trigger: str) -> bool:
+        if trigger != "mention" or not self.gifs and not self.images:
+            return False
+        return self._cooldown_ready(self._last_auto, self._key(message), AUTO_MEDIA_COOLDOWN_SECONDS, force=False)
+
+    def choose_auto_media_embed(self, message: discord.Message) -> discord.Embed | None:
+        key = self._key(message)
+        choices: list[tuple[str, str]] = []
+        choices.extend(("gif", url) for url in self.gifs)
+        choices.extend(("image", url) for url in self.images)
+        if not choices:
+            return None
+        kind, url = self.rng.choice(choices)
+        self._last_auto[key] = time.monotonic()
+        embed = discord.Embed()
+        if kind == "gif":
+            embed.set_image(url=url)
+            recent = self._recent_gif[key]
+            recent.append(url)
+        else:
+            embed.set_image(url=url)
+            recent = self._recent_image[key]
+            recent.append(url)
+        return embed
+
+    async def send_gif(self, channel, message: discord.Message, *, force: bool = False) -> bool:
+        if not self.gifs:
+            return False
+        key = self._key(message)
+        if not self._cooldown_ready(self._last_gif, key, GIF_COOLDOWN_SECONDS, force=force):
+            return False
+        recent = self._recent_gif[key]
+        options = [url for url in self.gifs if url not in recent] or list(self.gifs)
+        url = self.rng.choice(options)
+        recent.append(url)
+        self._last_gif[key] = time.monotonic()
+        await channel.send(embed=discord.Embed().set_image(url=url))
+        return True
+
+    async def send_image(self, channel, message: discord.Message, *, force: bool = False) -> bool:
+        if not self.images:
+            return False
+        key = self._key(message)
+        if not self._cooldown_ready(self._last_image, key, IMAGE_COOLDOWN_SECONDS, force=force):
+            return False
+        recent = self._recent_image[key]
+        options = [url for url in self.images if url not in recent] or list(self.images)
+        url = self.rng.choice(options)
+        recent.append(url)
+        self._last_image[key] = time.monotonic()
+        await channel.send(embed=discord.Embed().set_image(url=url))
+        return True
+
     async def prune(self) -> int:
-        """Drop stale GIF/image cooldown and history entries."""
         now = time.monotonic()
         removed = 0
-        for state in (self._last_gif_sent, self._last_image_sent, self._last_auto_media_sent):
-            stale_users = [
-                key for key, stamp in state.items()
-                if now - stamp >= MEDIA_STATE_TTL_SECONDS
-            ]
-            for key in stale_users:
-                state.pop(key, None)
-                removed += 1
-        if len(self._recent_gif_urls) > MAX_TRACKED_CHANNELS:
-            active_by_channel = {
-                key: self._gif_channel_touched.get(key, 0.0)
-                for key in self._recent_gif_urls
-            }
-            keep = set(
-                sorted(
-                    active_by_channel,
-                    key=active_by_channel.get,
-                    reverse=True,
-                )[:MAX_TRACKED_CHANNELS]
-            )
-            for key in list(self._recent_gif_urls):
-                if key not in keep:
-                    self._recent_gif_urls.pop(key, None)
-                    self._gif_channel_touched.pop(key, None)
-                    removed += 1
-        if len(self._recent_image_urls) > MAX_TRACKED_CHANNELS:
-            active_by_channel = {
-                key: self._image_channel_touched.get(key, 0.0)
-                for key in self._recent_image_urls
-            }
-            keep = set(
-                sorted(active_by_channel, key=active_by_channel.get, reverse=True)[:MAX_TRACKED_CHANNELS]
-            )
-            for key in list(self._recent_image_urls):
-                if key not in keep:
-                    self._recent_image_urls.pop(key, None)
-                    self._image_channel_touched.pop(key, None)
+        for store in (self._last_auto, self._last_gif, self._last_image):
+            for key, stamp in list(store.items()):
+                if now - stamp >= STATE_TTL_SECONDS:
+                    store.pop(key, None)
                     removed += 1
         return removed
 
-    def _choose_gif(self, message: discord.Message, force: bool) -> GifEntry | None:
-        candidates = list(self.entries)
-        self._rng.shuffle(candidates)
-        recent = self._recent_gif_urls[self._history_key(message)]
-        for entry in candidates:
-            if force or entry.url not in recent:
-                return entry
-        return candidates[0] if candidates else None
-
-    def _choose_image(self, message: discord.Message, force: bool) -> ImageEntry | None:
-        candidates = list(self.image_entries)
-        self._rng.shuffle(candidates)
-        recent = self._recent_image_urls[self._history_key(message)]
-        for entry in candidates:
-            if force or entry.url not in recent:
-                return entry
-        return candidates[0] if candidates else None
-
-    def should_auto_send_media(self, message: discord.Message, trigger: str) -> bool:
-        """Return whether one automatic media message may be sent.
-
-        GIFs and images remain separate libraries, but the automatic trigger
-        uses one shared cooldown so a single Hades response can never send
-        both kinds of media.
-        """
-        if trigger != "mention":
-            return False
-        if not self.entries and not self.image_entries:
-            return False
-        now = time.monotonic()
-        key = self._cooldown_key(message)
-        last_sent = self._last_auto_media_sent.get(key)
-        return last_sent is None or now - last_sent >= AUTO_MEDIA_COOLDOWN_SECONDS
-
-    def choose_auto_media_embed(
-        self,
-        message: discord.Message,
-    ) -> discord.Embed | None:
-        """Choose exactly one random GIF/image and return it as an embed.
-
-        The embed is attached to Hades' normal reply message; no separate
-        media message is sent. The GIF/image libraries remain independent.
-        """
-        choices: list[str] = []
-        if self.entries:
-            choices.append("gif")
-        if self.image_entries:
-            choices.append("image")
-        if not choices:
-            return None
-
-        selected = self._rng.choice(choices)
-        history_key = self._history_key(message)
-        sent_at = time.monotonic()
-
-        if selected == "gif":
-            entry = self._choose_gif(message, force=False)
-            if entry is None:
-                return None
-            self._recent_gif_urls[history_key].append(entry.url)
-            self._gif_channel_touched[history_key] = sent_at
-            embed = discord.Embed()
-            embed.set_image(url=entry.url)
-        else:
-            entry = self._choose_image(message, force=False)
-            if entry is None:
-                return None
-            self._recent_image_urls[history_key].append(entry.url)
-            self._image_channel_touched[history_key] = sent_at
-            embed = discord.Embed()
-            embed.set_image(url=entry.url)
-
-        self._last_auto_media_sent[self._cooldown_key(message)] = sent_at
-        logger.info("Attached one automatic Hades %s to response embed", selected)
-        return embed
-
-    async def send_auto_media(
-        self,
-        destination: discord.abc.Messageable,
-        message: discord.Message,
-    ) -> bool:
-        """Compatibility helper: send the random media as its own embed.
-
-        Normal Hades replies should use ``choose_auto_media_embed`` so the
-        media is attached to the same response message.
-        """
-        embed = self.choose_auto_media_embed(message)
-        if embed is None:
-            return False
-        try:
-            await destination.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
-        except discord.HTTPException as exc:
-            logger.warning("Discord rejected automatic Hades media embed: %s", exc)
-            return False
-        return True
-
-    def should_auto_send_gif(self, message: discord.Message, trigger: str) -> bool:
-        """Compatibility helper for older callers.
-
-        Automatic mention handling now uses the shared random-media path.
-        """
-        if trigger != "mention" or not self.entries:
-            return False
-        return self.should_auto_send_media(message, trigger)
-
-    def should_auto_send_image(self, message: discord.Message, trigger: str) -> bool:
-        """Compatibility helper for older callers.
-
-        Automatic mention handling now uses the shared random-media path.
-        """
-        if trigger != "mention" or not self.image_entries:
-            return False
-        return self.should_auto_send_media(message, trigger)
-
-    async def send_auto_gif(self, destination: discord.abc.Messageable, message: discord.Message) -> bool:
-        return await self.send_gif(destination, message)
-
-    async def send_auto_image(self, destination: discord.abc.Messageable, message: discord.Message) -> bool:
-        if not self.image_entries:
-            return False
-        return await self.send_image(destination, message)
-
-    async def send_gif(
-        self,
-        destination: discord.abc.Messageable,
-        message: discord.Message,
-        *,
-        force: bool = False,
-    ) -> bool:
-        if not self.entries:
-            return False
-
-        entry = self._choose_gif(message, force)
-        if entry is None:
-            return False
-
-        # Embed the ORIGINAL URL. Discord may proxy it internally for display,
-        # but the bot never creates an attachment or a Discord CDN upload.
-        embed = discord.Embed()
-        embed.set_image(url=entry.url)
-        try:
-            await destination.send(
-                embed=embed,
-                allowed_mentions=discord.AllowedMentions.none(),
-            )
-        except discord.HTTPException as exc:
-            logger.warning("Discord rejected external Hades GIF %s: %s", entry.url, exc)
-            return False
-
-        history_key = self._history_key(message)
-        sent_at = time.monotonic()
-        self._recent_gif_urls[history_key].append(entry.url)
-        self._gif_channel_touched[history_key] = sent_at
-        self._last_gif_sent[self._cooldown_key(message)] = sent_at
-        logger.info("Sent Hades GIF embed")
-        return True
-
-
-    async def send_image(
-        self,
-        destination: discord.abc.Messageable,
-        message: discord.Message,
-        *,
-        force: bool = False,
-    ) -> bool:
-        if not self.image_entries:
-            return False
-
-        entry = self._choose_image(message, force)
-        if entry is None:
-            return False
-
-        embed = discord.Embed()
-        embed.set_image(url=entry.url)
-        try:
-            await destination.send(
-                embed=embed,
-                allowed_mentions=discord.AllowedMentions.none(),
-            )
-        except discord.HTTPException as exc:
-            logger.warning("Discord rejected Hades image %s: %s", entry.url, exc)
-            return False
-
-        history_key = self._history_key(message)
-        sent_at = time.monotonic()
-        self._recent_image_urls[history_key].append(entry.url)
-        self._image_channel_touched[history_key] = sent_at
-        self._last_image_sent[self._cooldown_key(message)] = sent_at
-        logger.info("Sent Hades image")
-        return True
+    async def close(self) -> None:
+        return None
