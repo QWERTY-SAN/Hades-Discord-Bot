@@ -14,7 +14,7 @@ from ..core.conversation import conversation_mode, conversation_signals
 from ..core.scope import is_personal_life_request, is_social_message, is_subjective_question
 from ..knowledge.lore import build_aether_context
 from ..knowledge.live_sources import build_live_source_instruction
-from .fanservice import fanservice_category, fanservice_guidance
+from .fanservice import fanservice_guidance
 from .persona import HADES_SYSTEM_PROMPT
 
 
@@ -22,6 +22,7 @@ logger = logging.getLogger("hades-bot.gemini")
 
 _HADES_EMOJIS = ("🌙", "🎭", "🪡", "🕯️", "✨", "😏", "🖤", "🎀")
 _EMOJI_RE = re.compile(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]")
+
 
 def _add_natural_emoji(text: str) -> str:
     if not text or "```" in text or _EMOJI_RE.search(text) or len(text) > 700:
@@ -85,8 +86,7 @@ class GeminiService:
     ) -> str:
         mode = conversation_mode(user_message)
         signals = ", ".join(conversation_signals(user_message))
-        category = fanservice_category(user_message)
-        guidance = fanservice_guidance(category)
+        guidance = fanservice_guidance(user_message)
         conversation_text = GeminiService._speaker_labeled(history)
         lore_context = build_aether_context(user_message, conversation_text)
 
@@ -103,7 +103,7 @@ class GeminiService:
             "banter": "Trade the user's energy. A short witty response is better than an essay.",
             "emotional": "Acknowledge what the Administrator feels before offering advice or interpretation.",
             "storytelling": "React to the story and details the Administrator shared. Do not automatically moralize.",
-            "flirtation": "Allow light flirtation when context supports it; teasing and poised attention are preferred to explicitness.",
+            "flirtation": "Recognize the specific fan-service cue, answer that cue first, and calibrate the amount of teasing to the user's wording. Do not force a flirt escalation.",
             "personal_question": "Answer Hades's own preference or viewpoint when asked. Do not dodge with another question.",
             "advice": "Give useful advice in Hades's voice. Do not become a clinical therapist or customer-service agent.",
             "general": "Answer the actual request naturally. Use context before lore.",
@@ -116,6 +116,7 @@ class GeminiService:
             f"MODE GUIDANCE: {mode_guidance}\n"
             "CONVERSATIONAL PRIORITY: The newest message is a turn in an ongoing dialogue. Use speaker labels and recent context to resolve pronouns, short follow-ups, corrections, callbacks, and topic pivots.\n"
             "DO NOT FORCE A QUESTION: A response may simply react, tease, answer, or continue the thought.\n"
+            "FAN-SERVICE CALIBRATION: The same trigger may appear repeatedly. Do not answer repeated prompts with the same structure; vary between teasing, confident acknowledgement, a small challenge, warmth, or a softer reaction as the conversation warrants.\n"
             "ADDRESSING: Use Administrator or little lamb selectively; do not repeat either mechanically.\n"
             "CHARACTER CONTINUITY: Keep Mintha, Leuce, the Society of Muses, and Hades's established identity coherent.\n"
             "NO FABRICATED HISTORY: Do not claim prior meetings, promises, relationships, or secret memories that were not established.\n"
@@ -162,7 +163,7 @@ class GeminiService:
             )
 
         mode_guidance = {
-            "flirtation": "Recognize indirect compliments and attention. A poised tease or playful counter-challenge is better than acting oblivious. Keep it non-explicit.",
+            "flirtation": "Recognize the actual fan-service cue and respond to it directly. A poised tease, specific acknowledgement, or playful counter-challenge is better than acting oblivious. Keep it non-explicit and proportionate.",
             "emotional": "Acknowledge the Administrator's feeling first. Do not immediately turn it into a checklist.",
             "storytelling": "React to the story and details. Show curiosity; do not analyze unless asked.",
             "banter": "Match the playful energy and keep the reply proportionate.",
@@ -183,7 +184,7 @@ class GeminiService:
             f"{HADES_SYSTEM_PROMPT}\n\n"
             f"Conversation mode: {mode}.\n"
             f"Conversation signals: {', '.join(conversation_signals(user_message))}.\n"
-            f"Fan-service guidance: {fanservice_guidance(fanservice_category(user_message))}\n"
+            f"Fan-service guidance: {fanservice_guidance(user_message)}\n"
             f"Mode guidance: {mode_guidance}\n"
             "React before explaining. Keep the reply proportionate. Do not force a question at the end.\n"
             "Use recent dialogue to resolve pronouns, callbacks, short follow-ups, corrections, turn-backs, and topic pivots.\n"
