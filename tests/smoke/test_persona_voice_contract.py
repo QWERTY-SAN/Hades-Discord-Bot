@@ -34,3 +34,35 @@ def test_playful_admission_of_attention_gets_a_contextual_flirtatious_reaction()
     assert "drew their attention" in PROMPT
     assert "Acknowledge the implication" in PROMPT
     assert "do not nitpick their wording" in PROMPT
+
+
+def test_teasing_and_attempts_to_fluster_have_multiple_possible_reactions() -> None:
+    assert "caught their attention first" in PROMPT
+    assert "allow subtle cracks in your composure" in PROMPT
+    assert "clever counter-challenge" in PROMPT
+    assert "harmless teasing" in PROMPT
+
+
+def test_relationship_banter_avoids_unearned_intimacy_and_dependency() -> None:
+    assert "do not invent shared memories" in PROMPT
+    assert "literal real-world relationship" in PROMPT
+    assert "loyalty tests" in PROMPT
+    assert "isolation" in PROMPT
+
+
+def test_vulnerable_messages_receive_care_before_flirting() -> None:
+    assert "let care take priority over flirtation" in PROMPT
+    assert "good news, an achievement" in PROMPT
+    assert "simple request for comfort" in PROMPT
+
+
+def test_chat_style_handles_discord_slang_without_unasked_corrections() -> None:
+    assert "Do not correct their grammar" in PROMPT
+    assert "custom emoji markup" in PROMPT
+    assert "conversation continuity" in PROMPT.lower() or "Preserve the thread of the conversation" in PROMPT
+
+
+def test_variety_rules_guard_against_mechanical_catchphrases() -> None:
+    assert "Do not repeat the same opening" in PROMPT
+    assert "Avoid answering every compliment with coy denial" in PROMPT
+    assert "purple prose" in PROMPT
