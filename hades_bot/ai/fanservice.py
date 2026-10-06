@@ -101,15 +101,6 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
     ),
-    "attention_seek": (
-        re.compile(
-            r"\b(?:give\s+me\s+attention|give\s+me\s+your\s+attention|pay\s+attention\s+to\s+me|"
-            r"look\s+at\s+me|notice\s+me|don't\s+ignore\s+me|please\s+notice\s+me|"
-            r"i\s+need\s+your\s+attention|i\s+want\s+your\s+attention|pick\s+me|choose\s+me|"
-            r"talk\s+to\s+me|look\s+my\s+way|stay\s+with\s+me)\b",
-            re.I,
-        ),
-    ),
     "playful_fandom": (
         re.compile(
             r"\b(?:mommy|my\s+queen|goddess|adopt\s+me|own\s+me|"
@@ -185,6 +176,15 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you're\s+making\s+this\s+too\s+easy|you'?re\s+asking\s+for\s+trouble|"
             r"such\s+a\s+tease|quit\s+teasing\s+me|are\s+you\s+flirting\s+with\s+me|"
             r"are\s+you\s+trying\s+to\s+flirt|hear\s+me\s+out)\b",
+            re.I,
+        ),
+    ),
+    "attention_seek": (
+        re.compile(
+            r"\b(?:give\s+me\s+attention|give\s+me\s+your\s+attention|pay\s+attention\s+to\s+me|"
+            r"look\s+at\s+me|notice\s+me|don't\s+ignore\s+me|please\s+notice\s+me|"
+            r"i\s+need\s+your\s+attention|i\s+want\s+your\s+attention|pick\s+me|choose\s+me|"
+            r"talk\s+to\s+me|look\s+my\s+way|stay\s+with\s+me)\b",
             re.I,
         ),
     ),
@@ -314,7 +314,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         + " ".join(section for section in sections if section)
         + " Recognize what the Administrator actually said before escalating the joke. "
         + "Generate a fresh response for this exact message; this is not a response template. "
-        + "Do not select from a fixed list or repeat a stock line. Vary the wording and match the recent conversation. "
+        + "Do not select from a fixed response list or repeat a stock line. Vary the wording and match the recent conversation. "
         + "Do not automatically intensify every turn; the old Hades style can tease, play coy, accept praise, challenge the user, "
         + "or become warm depending on the moment."
     )
