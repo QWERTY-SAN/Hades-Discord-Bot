@@ -45,6 +45,16 @@ GENERAL_FACTUAL_QUESTION = re.compile(
     r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define|is|are|can|could|do|does|did|should|would|will|have|has|may|might)\b",
     re.I,
 )
+STORYTELLING_PATTERNS = (
+    re.compile(
+        r"^(?:so\s+today|today\s+i|earlier\s+i|yesterday\s+i|last\s+night\s+i|"
+        r"guess\s+what|you\s+won't\s+believe|you\s+know\s+what\s+happened|"
+        r"i\s+just\s+(?:got|came|saw|watched|met|bought|found|heard|did|finished|"
+        r"received|started|ended))\b.{0,700}$",
+        re.I | re.S,
+    ),
+)
+
 SOCIAL_PATTERNS = (
     re.compile(r"^(?:hi|hello|hey|hiya|yo|sup|morning|evening|night|good\s+(?:morning|afternoon|evening|night)|welcome\s+back|good\s+to\s+see\s+you|nice\s+to\s+see\s+you|long\s+time\s+no\s+see)[!. ]*$", re.I),
     re.compile(r"^(?:thanks?|thank\s+you|thx|ty|you'?re\s+welcome|no\s+worries|my\s+bad|sorry|good\s+luck|same|same\s+here|me\s+too|me\s+neither|you\s+too|exactly|true|fair|fair\s+enough|makes\s+sense|that\s+makes\s+sense|for\s+real|fr|ngl|tbh|right|no\s+way|really\??|seriously\??|of\s+course|sure|okay|ok|alright|fine|yep|yes|yeah|yup|nope|nah|maybe|perhaps)[!. ]*$", re.I),
@@ -147,6 +157,8 @@ def is_social_message(text: str) -> bool:
     if fanservice_category(normalized) is not None:
         return True
     if is_personal_life_request(normalized):
+        return True
+    if any(pattern.search(normalized) for pattern in STORYTELLING_PATTERNS):
         return True
     return any(pattern.search(normalized) for pattern in SOCIAL_PATTERNS)
 
