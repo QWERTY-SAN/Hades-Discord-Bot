@@ -23,7 +23,7 @@ class Conversation:
 
 class ConversationMemory:
     def __init__(self, max_history: int, ttl_seconds: int, max_conversations: int) -> None:
-        self.max_history = max_history
+        self.max_history = max(4, max_history if max_history % 2 == 0 else max_history + 1)
         self.ttl_seconds = ttl_seconds
         self.max_conversations = max_conversations
         self._conversations: OrderedDict[str, Conversation] = OrderedDict()
