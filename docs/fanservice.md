@@ -65,3 +65,13 @@ Fan-service does not override Hades's unrelated-topic scope filter.
 The detector also understands less direct fandom language such as romantic "one for me" declarations, "you're trouble" style flirtation, "what are you doing to me?", and flustered admissions such as being left speechless. These cues are still treated as intent signals rather than reply templates.
 
 Conversation-level signals also distinguish ordinary questions, energetic reactions, achievement/good-news moments, and explicit requests for comfort so the generator can choose a more appropriate emotional response before adding Hades flavor.
+
+## Informal and indirect attention cues
+
+Natural Discord wording is intentionally accepted, including shorthand and typos such as "ur", "u", missing punctuation, and casual phrasing. Attention/admiration cues include:
+
+- "the one who drew my attention", "you caught my eye", and "you keep catching my eye"
+- "you've got me looking", "I was drawn to you", and "I can't look away"
+- similar wording that clearly describes Hades catching the Administrator's attention
+
+These are treated as social subtext when the surrounding message supports it. A clearly Hades-directed personal remark does not need an Aether Gazer keyword just to remain in scope; the strict filter still blocks unrelated specialist topics, sports, other games, politics, finance, and similar categories.
