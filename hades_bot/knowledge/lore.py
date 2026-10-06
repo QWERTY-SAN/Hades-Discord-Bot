@@ -110,6 +110,28 @@ def build_aether_context(user_text: str, conversation_text: str = "", max_chars:
             value = GAME_KNOWLEDGE.get(key)
             if value is not None:
                 lines.append(f"Reference — {key}: {value}")
+
+    # Some expanded references live under nested knowledge sections rather than
+    # at the top level. Keep these explicit so named-term queries receive the
+    # actual stored reference instead of only the broad lore anchor.
+    resources = GAME_KNOWLEDGE.get("currencies_and_resources", {})
+    systems = GAME_KNOWLEDGE.get("game_systems", {})
+    people = GAME_KNOWLEDGE.get("organizations_and_people", {})
+    if any(_contains(normalized, term) for term in ("shifted star", "shifted stars")):
+        shifted = resources.get("shifted_star")
+        routine = GAME_KNOWLEDGE.get("shifted_star_routine")
+        if shifted is not None:
+            lines.append(f"Reference — shifted_star: {shifted}")
+        if routine is not None:
+            lines.append(f"Reference — shifted_star_routine: {routine}")
+    if _contains(normalized, "swigs") and resources.get("swigs") is not None:
+        lines.append(f"Reference — swigs: {resources['swigs']}")
+    if _contains(normalized, "zero time") and systems.get("zero_time") is not None:
+        lines.append(f"Reference — zero_time: {systems['zero_time']}")
+    if _contains(normalized, "heimdall") and people.get("heimdall") is not None:
+        lines.append(f"Reference — heimdall: {people['heimdall']}")
+    if _contains(normalized, "gengchen") and people.get("gengchen") is not None:
+        lines.append(f"Reference — gengchen: {people['gengchen']}")
     if not selected:
         lines.append("No detailed lore anchor matched. Stay in character without inventing detailed canon.")
 
