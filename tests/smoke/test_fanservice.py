@@ -80,3 +80,4 @@ def test_expanded_classic_and_indirect_cues():
     assert fanservice_category("what are you doing to me?") == "flirtation"
     assert fanservice_category("you've got me speechless") == "flustered"
     assert fanservice_category("how are you this pretty?") == "admiration"
+    assert fanservice_category("Eh I mean ur the one who drew my attention to u :v") == "admiration"
