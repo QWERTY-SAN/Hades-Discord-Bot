@@ -96,7 +96,7 @@ HADES_GIF_URLS = [
 ]
 ```
 
-GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content. Image URLs are handled separately in `hades_bot/media/images.py`. Automatic media is attached to Hades' normal response embed rather than sent as a second message.
+GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content. Image URLs are handled separately in `hades_bot/media/images.py`. Automatic media is attached to Hades' normal response embed rather than sent as a second message. Media state is pruned periodically so long-running Render instances do not accumulate stale per-channel entries.
 
 ### Endgame, events, and service lifecycle knowledge
 The local knowledge layer also covers:
@@ -147,6 +147,8 @@ GEMINI_THINKING_LEVEL=minimal
 BOT_PREFIX=h!
 STRICT_AETHER_TOPIC=true
 EMOJIS_ENABLED=true
+LIVE_SOURCE_REFRESH=true
+LIVE_SOURCE_MAX_URLS=3
 MAX_HISTORY=16
 MEMORY_TTL_SECONDS=21600
 MAX_CONVERSATIONS=500
@@ -162,6 +164,8 @@ COOLDOWN_PRUNE_INTERVAL=3600
 ```
 
 ### Render
+
+The Blueprint uses Render's After CI Checks Pass deployment mode (`checksPass`), so a commit is deployed only after the GitHub Actions checks succeed. Render retains an existing service's auto-deploy setting until the Blueprint is synced, so sync the Blueprint once after changing `render.yaml`.
 
 Build command:
 
@@ -191,7 +195,7 @@ Enable Discord **Message Content Intent** for prefix commands.
 
 ### Tests
 
-The repository contains lightweight smoke tests for scope enforcement and the source-grounded Hades reference layer.
+CI runs the complete smoke suite plus pytest-style regression tests for conversation behavior, fan-service detection, memory, persona contracts, scope boundaries, compilation, media, and Render startup configuration.
 
 ## Endgame knowledge
 
