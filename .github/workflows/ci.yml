@@ -38,3 +38,4 @@ jobs:
           python tests/smoke/scope_smoke.py
           python tests/smoke/static_smoke.py
           python tests/smoke/structure_smoke.py
+          python tests/smoke/render_startup_smoke.py
