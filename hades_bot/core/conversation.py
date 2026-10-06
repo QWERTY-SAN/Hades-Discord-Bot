@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from ..ai.fanservice import fanservice_category
+from ..ai.fanservice import fanservice_categories, fanservice_intensity
 from .scope import is_personal_life_request, is_social_message, is_subjective_question
 
 EMOTIONAL_PATTERNS = (
@@ -34,7 +34,7 @@ TOPIC_PIVOT_PATTERNS = (
 
 
 def conversation_mode(text: str) -> str:
-    if fanservice_category(text) is not None:
+    if fanservice_categories(text):
         return "flirtation"
     if is_personal_life_request(text):
         return "advice"
@@ -59,6 +59,10 @@ def is_short_followup(text: str) -> bool:
 def conversation_signals(text: str) -> list[str]:
     normalized = re.sub(r"\s+", " ", text.strip())
     signals: list[str] = []
+    categories = fanservice_categories(normalized)
+    if categories:
+        signals.append("fanservice:" + ",".join(categories[:4]))
+        signals.append("fanservice_intensity:" + fanservice_intensity(normalized))
     if is_short_followup(normalized):
         signals.append("continuation")
     if CORRECTION_PREFIXES.search(normalized):
