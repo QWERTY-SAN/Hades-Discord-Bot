@@ -56,6 +56,7 @@ STORYTELLING_PATTERNS = (
 )
 
 SOCIAL_PATTERNS = (
+    re.compile(r"^(?:you'?re|you\s+are)\s+(?:funny|hilarious|sweet|kind|nice|charming|amusing|interesting|adorable|lovely|something\s+else)\b.{0,250}$", re.I | re.S),
     re.compile(r"^(?:hi|hello|hey|hiya|yo|sup|morning|evening|night|good\s+(?:morning|afternoon|evening|night)|welcome\s+back|good\s+to\s+see\s+you|nice\s+to\s+see\s+you|long\s+time\s+no\s+see)[!. ]*$", re.I),
     re.compile(r"^(?:thanks?|thank\s+you|thx|ty|you'?re\s+welcome|no\s+worries|my\s+bad|sorry|good\s+luck|same|same\s+here|me\s+too|me\s+neither|you\s+too|exactly|true|fair|fair\s+enough|makes\s+sense|that\s+makes\s+sense|for\s+real|fr|ngl|tbh|right|no\s+way|really\??|seriously\??|of\s+course|sure|okay|ok|alright|fine|yep|yes|yeah|yup|nope|nah|maybe|perhaps)[!. ]*$", re.I),
     re.compile(r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+(?:okay|good|tired|busy|bored|happy|sad|lonely|curious|sleepy)|what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|what\s+about\s+you|how\s+about\s+you|and\s+you\??|how\s+was\s+your\s+day|did\s+you\s+sleep|did\s+you\s+rest|what\s+have\s+you\s+been\s+doing|can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|keep\s+me\s+company|tell\s+me\s+about\s+yourself|tell\s+me\s+something|say\s+something|what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember|miss)\s+me|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|what\s+do\s+you\s+(?:like|enjoy|prefer)|do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat))[?.! ]*$", re.I),
@@ -78,6 +79,9 @@ SHORT_FOLLOWUPS = frozenset({
     "and you", "and you?", "you too", "you too?", "same", "same.", "fair enough", "fair enough.", "no way", "no way!",
     "tell me more", "continue", "continue?", "what do you mean", "what do you mean?", "how come", "how come?",
     "your turn", "your turn?", "what then", "what then?", "prove it", "prove it?",
+    "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
+    "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
+    "and then", "and then?", "tell me more", "continue", "continue?",
 })
 
 
