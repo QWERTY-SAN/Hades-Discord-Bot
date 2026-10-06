@@ -81,3 +81,7 @@ def test_expanded_classic_and_indirect_cues():
     assert fanservice_category("you've got me speechless") == "flustered"
     assert fanservice_category("how are you this pretty?") == "admiration"
     assert fanservice_category("Eh I mean ur the one who drew my attention to u :v") == "admiration"
+    assert fanservice_category("you keep catching my eye") == "admiration"
+    assert fanservice_category("you've got me looking at you") == "admiration"
+    assert fanservice_category("I was drawn to you") == "admiration"
+    assert fanservice_category("I can't look away from you") == "admiration"
