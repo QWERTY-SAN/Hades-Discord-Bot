@@ -22,6 +22,6 @@ assert list(inspect.signature(start_web_server).parameters) == ["host", "port"]
 assert "buildCommand: pip install -r requirements.txt" in render
 assert "startCommand: python main.py" in render
 assert "healthCheckPath: /health" in render
-assert "autoDeployTrigger: commit" in render
+assert "autoDeployTrigger: checksPass" in render
 
 print("Render startup smoke checks passed")
