@@ -263,17 +263,26 @@ class GeminiService:
                     raise AIServiceError(
                         "Gemini could not complete that request. Try again shortly."
                     ) from fallback_exc
+            elif status == 429:
+                raise AIServiceError(
+                    "Gemini is rate-limiting the bot. Try again shortly.",
+                    status if isinstance(status, int) else None,
+                ) from exc
+            elif status in (401, 403):
+                raise AIServiceError(
+                    "The Gemini API key is not working right now.",
+                    status if isinstance(status, int) else None,
+                ) from exc
+            elif status == 404:
+                raise AIServiceError(
+                    "That Gemini model is not available right now.",
+                    status if isinstance(status, int) else None,
+                ) from exc
             else:
-                raise
-        except errors.ClientError as exc:
-            status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
-            if status == 429:
-                raise AIServiceError("Gemini is rate-limiting the bot. Try again shortly.", status if isinstance(status, int) else None) from exc
-            if status in (401, 403):
-                raise AIServiceError("The Gemini API key is not working right now.", status) from exc
-            if status == 404:
-                raise AIServiceError("That Gemini model is not available right now.", status) from exc
-            raise AIServiceError("Gemini rejected the request. Try again shortly.", status if isinstance(status, int) else None) from exc
+                raise AIServiceError(
+                    "Gemini rejected the request. Try again shortly.",
+                    status if isinstance(status, int) else None,
+                ) from exc
         except errors.ServerError as exc:
             logger.warning("Gemini server error: %s", exc)
             raise AIServiceError("Gemini is having trouble right now. Try again shortly.") from exc
