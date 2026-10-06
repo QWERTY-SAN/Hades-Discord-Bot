@@ -19,7 +19,7 @@ HADES_TERMS = {
     "causality survey", "ancient shadow", "crisis analysis", "meow", "m.e.o.w.", "opponent intel",
     "risk level", "sigil enchant", "sigil enchants", "transcendence", "transcend", "ultimate skillchain",
     "gacha", "f2p", "free-to-play", "free to play", "low spender", "dolphin", "whale", "spender", "spending",
-    "battle sweep", "flaneuring", "music dossier", "heart link", "access key synergy",
+    "battle sweep", "flaneuring", "music dossier", "heart link", "access key synergy", "heimdall",
 }
 HADES_TERMS.update(SCOPE_TERMS)
 
