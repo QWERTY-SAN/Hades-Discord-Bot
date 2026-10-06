@@ -20,5 +20,8 @@ def test_hades_social_and_admiration_scope():
     assert is_hades_scope_allowed("you're hilarious")
     assert is_hades_scope_allowed("huh?", has_history=True)
     assert is_hades_scope_allowed("wait what", has_history=True)
+    assert is_hades_scope_allowed("go ahead", has_history=True)
+    assert is_hades_scope_allowed("I wanted to see you")
+    assert is_hades_scope_allowed("I've been thinking about you")
     assert not is_hades_scope_allowed("huh?", has_history=False)
     assert not is_hades_scope_allowed("Tell me the capital of France.")
