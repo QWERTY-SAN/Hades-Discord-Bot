@@ -12,6 +12,11 @@ def test_memory_history_and_reset():
             session.commit("Hello", "Greetings.")
         assert await memory.has_history(key)
         assert await memory.message_count(key) == 2
+        snapshot = await memory.snapshot(key)
+        assert snapshot == [
+            {"role": "user", "content": "Hello"},
+            {"role": "model", "content": "Greetings."},
+        ]
         await memory.reset(key)
         assert not await memory.has_history(key)
 
