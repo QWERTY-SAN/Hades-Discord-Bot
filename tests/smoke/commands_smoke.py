@@ -23,12 +23,11 @@ print("command smoke test: ok")
 assert 'embed=info_embed(' in BOT
 
 IMAGES = (ROOT / "hades_bot" / "media" / "images.py").read_text(encoding="utf-8")
-assert 'https://i.imgur.com/uNBcXQg.jpeg' in IMAGES
-assert 'https://i.imgur.com/gQN3GNb.jpeg' in IMAGES
-assert IMAGES.count('"https://i.imgur.com/') >= 2
+assert "HADES_IMAGE_URLS" in IMAGES
+assert IMAGES.count("https://") >= 2
 
 MEDIA = (ROOT / "hades_bot" / "media" / "media.py").read_text(encoding="utf-8")
-assert 'async def send_auto_gif(' in MEDIA
-assert 'async def send_auto_image(' in MEDIA
-assert 'should_auto_send_gif' in MEDIA
-assert 'should_auto_send_image' in MEDIA
+assert "def should_auto_send_media" in MEDIA
+assert "def choose_auto_media_embed" in MEDIA
+assert "async def send_gif" in MEDIA
+assert "async def send_image" in MEDIA
