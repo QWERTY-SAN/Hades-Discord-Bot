@@ -16,3 +16,9 @@ def test_persona_has_deeper_conversation_behavior():
     assert "good news deserves genuine congratulations" in HADES_SYSTEM_PROMPT
     assert "let warmth and reassurance take priority over teasing" in HADES_SYSTEM_PROMPT
     assert "actual preference, opinion" in HADES_SYSTEM_PROMPT
+
+
+def test_persona_handles_informal_social_subtext():
+    assert "Read casual Discord language charitably" in HADES_SYSTEM_PROMPT
+    assert "you drew my attention" in HADES_SYSTEM_PROMPT
+    assert "A clearly Hades-directed social remark should remain conversational and in character" in HADES_SYSTEM_PROMPT
