@@ -70,7 +70,7 @@ class HadesBot(commands.Bot):
 
     def conversation_key(self, message: discord.Message) -> str:
         if isinstance(message.channel, (discord.DMChannel, discord.GroupChannel)):
-            return f"dm:{message.author.id}"
+            return f"dm:{message.channel.id}:user:{message.author.id}"
         guild_id = message.guild.id if message.guild else "no-guild"
         return f"guild:{guild_id}:channel:{message.channel.id}:user:{message.author.id}"
 
@@ -140,7 +140,13 @@ class HadesBot(commands.Bot):
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
-            if contains_forbidden_topic(reply, context=content):
+            history_context = await self.hades_chat.memory.snapshot(key, limit=8)
+            context_text = "\n".join(
+                item.get("content", "")
+                for item in history_context
+                if item.get("content")
+            )
+            if contains_forbidden_topic(reply, context=f"{context_text}\n{content}"):
                 logger.warning("Blocked forbidden-topic model output for %s", key)
                 await self.cooldowns.release(key)
                 refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
@@ -170,6 +176,14 @@ class HadesBot(commands.Bot):
 
     async def on_disconnect(self) -> None:
         update_discord_state(ready=False)
+
+    async def on_resumed(self) -> None:
+        update_discord_state(
+            ready=True,
+            user=str(self.user) if self.user else None,
+            guild_count=len(self.guilds),
+        )
+        logger.info("Discord session resumed")
 
     @tasks.loop(seconds=SETTINGS.memory_prune_interval)
     async def maintenance_loop(self) -> None:
@@ -203,7 +217,7 @@ class HadesBot(commands.Bot):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.reply(f"Use `{SETTINGS.bot_prefix}hades <message>` to talk to me.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
             return
-        logger.exception("Command error: %s", error)
+        logger.error("Command error: %s", error)
         await ctx.reply("Something went wrong behind the curtain. Try again shortly.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
