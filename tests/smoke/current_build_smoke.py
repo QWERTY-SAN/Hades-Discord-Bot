@@ -14,6 +14,6 @@ assert 'Puppet Master - Hades' in hades['current_team_snapshot']['team']
 
 media = (ROOT / 'hades_bot' / 'media' / 'media.py').read_text()
 assert 'content=entry.url' not in media
-assert 'set_image(url=entry.url)' in media
+assert 'set_image(url=url)' in media
 
 print('current build smoke checks passed')
