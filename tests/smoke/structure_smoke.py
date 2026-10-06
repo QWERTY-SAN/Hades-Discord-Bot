@@ -17,6 +17,6 @@ assert not missing, missing
 
 text = (ROOT / "hades_bot" / "media" / "media.py").read_text(encoding="utf-8")
 assert "content=entry.url" not in text
-assert "embed.set_image(url=entry.url)" in text
+assert "embed.set_image(url=url)" in text
 
 print("Structure smoke checks passed")
