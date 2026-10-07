@@ -9,10 +9,10 @@ from discord.ext import commands, tasks
 
 from . import __version__
 from .ai.chat import HadesChat
-from .ai.gemini_client import AIServiceError, GeminiService
+from .ai.gemini_client import AIServiceError, GeminiService, UnsafeModelOutputError
 from .config import SETTINGS
 from .core.memory import ConversationMemory
-from .core.scope import contains_forbidden_topic, is_hades_scope_allowed, scope_block_reason
+from .core.scope import is_hades_scope_allowed, scope_block_reason
 from .core.utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
 from .media.media import HadesMedia
 from .web import update_discord_state
@@ -140,24 +140,18 @@ class HadesBot(commands.Bot):
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
-            history_context = await self.hades_chat.memory.snapshot(key, limit=8)
-            context_text = "\n".join(
-                item.get("content", "")
-                for item in history_context
-                if item.get("content")
-            )
-            if contains_forbidden_topic(reply, context=f"{context_text}\n{content}"):
-                logger.warning("Blocked forbidden-topic model output for %s", key)
-                await self.cooldowns.release(key)
-                refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
-                await self.send_chunks(message, refusal)
-                return
             reply = sanitize_model_output(reply)
             if not reply:
                 await self.cooldowns.release(key)
                 await message.reply("Tsk. You have my attention. Try that again.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
                 return
             await self.send_chunks(message, reply, attach_auto_media=(trigger == "mention"))
+        except UnsafeModelOutputError:
+            logger.warning("Blocked forbidden-topic model output for %s", key)
+            await self.cooldowns.release(key)
+            refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
+            await self.send_chunks(message, refusal)
+            return
         except AIServiceError as exc:
             await self.cooldowns.release(key)
             await message.reply(exc.user_message, mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
@@ -268,7 +262,9 @@ async def gif_command(ctx: commands.Context) -> None:
 
 @bot.command(name="ping")
 async def ping_command(ctx: commands.Context) -> None:
-    await ctx.reply(f"The connection is functioning. ⚡ `{round(bot.latency * 1000)}ms`.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+    latency = bot.latency
+    latency_text = "unavailable" if latency == float("inf") else f"{round(latency * 1000)}ms"
+    await ctx.reply(f"The connection is functioning. ⚡ `{latency_text}`.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
 @bot.command(name="about")
@@ -288,6 +284,9 @@ async def privacy_command(ctx: commands.Context) -> None:
 
 @bot.command(name="diagnose")
 async def diagnose_command(ctx: commands.Context) -> None:
+    if ctx.guild and not (ctx.author.guild_permissions.manage_guild or ctx.author.guild_permissions.administrator):
+        await ctx.reply("That information is for those managing the stage. 🎭", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+        return
     memory_count = await bot.hades_chat.memory.conversation_count()
     ready = bot.is_ready()
     latency_ms = round(bot.latency * 1000) if bot.latency < float("inf") else "unavailable"
