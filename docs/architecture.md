@@ -39,7 +39,7 @@ Hades-Discord-Bot/
 5. Local Aether Gazer context is selected from the stored knowledge snapshot.
 6. Current/live questions can attach Gemini URL Context to a small set of relevant Mimir or official source URLs.
 7. Gemini generates the response using the Hades persona contract, recent dialogue, fan-service category, and conversation mode.
-8. The generated reply is sanitized and checked again for forbidden-topic leakage using the recent conversation context.
+8. The generated reply is sanitized and checked for forbidden-topic leakage before it is committed to memory.
 9. Discord output is split at the 2,000-character limit and optional GIF/image media is attached to the first message.
 10. Memory and cooldown/media state are pruned periodically.
 
@@ -71,7 +71,8 @@ The bot never claims that the local snapshot is live.
 Automatic media:
 - chooses either one GIF or one image per automatic trigger
 - attaches the selected media to the same response embed
-- uses a per-channel/user cooldown
+- uses a per-user/per-channel cooldown
+- selects GIF vs image type evenly when both are configured
 - keeps recent-media history to reduce repetition
 - periodically prunes stale state
 
