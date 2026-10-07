@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from .gemini_client import GeminiService
+from .gemini_client import GeminiService, UnsafeModelOutputError
 from ..config import SETTINGS
 from ..core.memory import ConversationMemory
 
@@ -35,6 +35,9 @@ class HadesChat:
             async with self.memory.session(key) as session:
                 history = session.history
                 reply = await self.gemini.generate(history, user_message)
+                from .scope_validator import validate_generated_reply
+
+                validate_generated_reply(reply, history, user_message)
                 session.commit(user_message, reply)
                 return reply
         finally:
