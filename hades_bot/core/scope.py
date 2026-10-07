@@ -85,6 +85,7 @@ SHORT_FOLLOWUPS = frozenset({
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
     "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
     "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
+})
 
 
 CONTEXTUAL_FOLLOWUPS = frozenset({
