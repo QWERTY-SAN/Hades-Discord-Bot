@@ -335,8 +335,11 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         token in normalized
         for token in ("gorgeous", "beautiful", "pretty", "stunning", "hot", "breathtaking", "caught my eye", "drew my attention")
     )
+    soft_categories = {"affection", "attention_seek", "playful_fandom", "praise"}
     if strong_primary or direct_admiration:
         confidence = "high"
+    elif categories and set(categories).issubset(soft_categories):
+        confidence = "low"
     elif len(categories) >= 2:
         confidence = "medium"
     else:
