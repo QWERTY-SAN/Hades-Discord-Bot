@@ -14,7 +14,7 @@ STORY_PATTERNS = (
     re.compile(r"^(?:so today|today i|earlier i|yesterday i|last night i|guess what|you won't believe|you know what happened|i just (?:got|came|saw|watched|met|bought|found|heard|did|finished|received|started|ended)|i have to tell you|i need to tell you)\b", re.I),
 )
 BANTER_PATTERNS = (
-    re.compile(r"^(?:lol|lmao|haha|hehe|rofl|bruh|oof|welp|yikes|wow|damn|nice|cool|cute|seriously\??|really\??|no way|you're funny|that's (?:wild|crazy|funny|rough|cute|sweet|interesting|weird))\b", re.I),
+    re.compile(r"^(?:lol|lmao|haha|hehe|rofl|bruh|oof|welp|yikes|wow|damn|nice|cool|cute|ayoo+|seriously\??|really\??|no way|you're funny|that's (?:wild|crazy|funny|rough|cute|sweet|interesting|weird))\b", re.I),
     re.compile(r"\b(?:look at you|there you go|oh really|is that so)\??$", re.I),
     re.compile(r"^(?:(?:woof|arf|awoo|meow|mew|nya|rawr)(?:[\s.!?]*(?:woof|arf|awoo|meow|mew|nya|rawr)){0,5})[\s.!?]*$", re.I),
 )
