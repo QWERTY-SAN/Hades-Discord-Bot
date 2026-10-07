@@ -35,9 +35,15 @@ class HadesChat:
             async with self.memory.session(key) as session:
                 history = session.history
                 reply = await self.gemini.generate(history, user_message)
-                from .scope_validator import validate_generated_reply
+                from ..core.scope import contains_forbidden_topic
 
-                validate_generated_reply(reply, history, user_message)
+                context_text = "\n".join(
+                    item.get("content", "")
+                    for item in history
+                    if item.get("content")
+                )
+                if contains_forbidden_topic(reply, context=f"{context_text}\n{user_message}"):
+                    raise UnsafeModelOutputError
                 session.commit(user_message, reply)
                 return reply
         finally:
