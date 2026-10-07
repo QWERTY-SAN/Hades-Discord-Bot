@@ -15,6 +15,12 @@ The detector recognizes the older build's characteristic cues, including:
 
 These cues are retained alongside newer categories for praise, attention-seeking, flustered reactions, playful dominance, and teasing challenges.
 
+## Classification confidence
+
+The detector exposes a primary category, secondary categories, intensity, and confidence. Strong cues such as direct fan commands, explicit romantic language, and clear fluster/admission wording receive high confidence. Soft attention/fandom wording can remain low confidence so it does not automatically turn the whole conversation into flirtation.
+
+Broad phrases such as "hear me out", "talk to me", "I need you", and "you've got me" are intentionally not enough by themselves.
+
 ## Multiple signals
 
 A message can match several categories at once. For example:
@@ -64,7 +70,7 @@ Fan-service does not override Hades's unrelated-topic scope filter.
 
 The detector also understands less direct fandom language such as romantic "one for me" declarations, "you're trouble" style flirtation, "what are you doing to me?", and flustered admissions such as being left speechless. These cues are still treated as intent signals rather than reply templates.
 
-Conversation-level signals also distinguish ordinary questions, energetic reactions, achievement/good-news moments, and explicit requests for comfort so the generator can choose a more appropriate emotional response before adding Hades flavor.
+Conversation-level signals also distinguish ordinary questions, energetic reactions, achievement/good-news moments, and explicit requests for comfort. Emotional intent takes precedence over affectionate fan-service cues, so a message such as "I had a rough day, hug me" remains supportive rather than being routed into flirtation.
 
 ## Informal and indirect attention cues
 

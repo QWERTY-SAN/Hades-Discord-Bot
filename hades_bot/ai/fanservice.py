@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 
 # The detector deliberately keeps the older Hades fan-service vocabulary while
@@ -117,7 +118,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "playful_fandom": (
         re.compile(
             r"\b(?:mommy|my\s+queen|goddess|adopt\s+me|own\s+me|"
-            r"please\s+notice\s+me|i\s+need\s+you|i\s+want\s+your\s+attention|"
+            r"please\s+notice\s+me|i\s+want\s+your\s+attention|"
             r"call\s+me\s+little\s+lamb|your\s+little\s+lamb|i(?:'m|\s+am)\s+your\s+little\s+lamb|"
             r"call\s+me\s+your\s+favorite|your\s+favorite\s+little\s+lamb|"
             r"let\s+me\s+serve\s+you|make\s+me\s+your\s+puppet|"
@@ -138,9 +139,9 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(
             r"\b(?:stop\s+making\s+me\s+blush|you(?:'re|\s+are)\s+making\s+me\s+blush|"
             r"you\s+make\s+me\s+blush|i(?:'m|\s+am)\s+blushing|i(?:'m|\s+am)\s+folding|"
-            r"i(?:'m|\s+am)\s+weak\s+for\s+you|i\s+can't\s+handle\s+you|"
-            r"i\s+cannot\s+think\s+straight|you'?ve\s+got\s+me|i(?:'m|\s+am)\s+speechless|"
-            r"i\s+cannot\s+handle\s+you|you\s+make\s+me\s+nervous)\b",
+            r"i(?:'m|\s+am)\s+weak\s+for\s+you|"
+            r"i\s+cannot\s+think\s+straight|you'?ve\s+got\s+me\s+speechless|i(?:'m|\s+am)\s+speechless|"
+            r"you\s+make\s+me\s+nervous)\b",
             re.I,
         ),
     ),
@@ -191,7 +192,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you'?re\s+trouble|you\s+are\s+trouble|what\s+are\s+you\s+doing\s+to\s+me|"
             r"what\s+have\s+you\s+done\s+to\s+me|is\s+this\s+a\s+trap|"
             r"such\s+a\s+tease|quit\s+teasing\s+me|are\s+you\s+flirting\s+with\s+me|"
-            r"are\s+you\s+trying\s+to\s+flirt|hear\s+me\s+out)\b",
+            r"are\s+you\s+trying\s+to\s+flirt)\b",
             re.I,
         ),
     ),
@@ -200,7 +201,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"\b(?:give\s+me\s+attention|give\s+me\s+your\s+attention|pay\s+attention\s+to\s+me|"
             r"look\s+at\s+me|notice\s+me|don't\s+ignore\s+me|please\s+notice\s+me|"
             r"i\s+need\s+your\s+attention|i\s+want\s+your\s+attention|pick\s+me|choose\s+me|"
-            r"talk\s+to\s+me|look\s+my\s+way|stay\s+with\s+me)\b",
+            r"look\s+my\s+way)\b",
             re.I,
         ),
     ),
@@ -215,6 +216,15 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
 }
 
 FANSERVICE_PATTERNS = PATTERNS
+
+
+@dataclass(frozen=True, slots=True)
+class FanserviceAnalysis:
+    primary_category: str | None
+    secondary_categories: tuple[str, ...]
+    intensity: str
+    confidence: str
+
 
 _CATEGORY_PRIORITY = (
     "fan_command",
@@ -288,7 +298,7 @@ _CATEGORY_GUIDANCE = {
 
 _WARM_CATEGORIES = frozenset({"affection", "admiration", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
-_FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered"})
+_FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
 
 def fanservice_categories(text: str) -> tuple[str, ...]:
@@ -303,6 +313,48 @@ def fanservice_categories(text: str) -> tuple[str, ...]:
 def fanservice_category(text: str) -> str | None:
     categories = fanservice_categories(text)
     return categories[0] if categories else None
+
+
+def analyze_fanservice(text: str) -> FanserviceAnalysis:
+    categories = fanservice_categories(text)
+    if not categories:
+        return FanserviceAnalysis(None, (), "none", "none")
+
+    intensity = fanservice_intensity(text)
+    normalized = text.strip().casefold()
+    strong_primary = categories[0] in {
+        "fan_command",
+        "playful_dominance",
+        "romantic",
+        "puppet_fantasy",
+        "flirtation",
+        "flustered",
+        "teasing_challenge",
+    }
+    direct_admiration = categories[0] == "admiration" and any(
+        token in normalized
+        for token in ("gorgeous", "beautiful", "pretty", "stunning", "hot", "breathtaking", "caught my eye", "drew my attention")
+    )
+    soft_categories = {"affection", "attention_seek", "playful_fandom", "praise"}
+    if strong_primary or direct_admiration:
+        confidence = "high"
+    elif categories and set(categories).issubset(soft_categories):
+        confidence = "low"
+    elif len(categories) >= 2:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    return FanserviceAnalysis(
+        primary_category=categories[0],
+        secondary_categories=tuple(categories[1:]),
+        intensity=intensity,
+        confidence=confidence,
+    )
+
+
+def fanservice_confidence(text: str) -> str:
+    return analyze_fanservice(text).confidence
 
 
 def fanservice_intensity(text: str) -> str:
@@ -329,6 +381,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
     if not categories:
         return "No special fan-service behavior is required. Keep Hades conversational and in character."
 
+    analysis = analyze_fanservice(raw) if not is_category else FanserviceAnalysis(raw, (), "bold" if raw in _BOLD_CATEGORIES else "flirty" if raw in _FLIRTY_CATEGORIES else "warm", "high")
     intensity = fanservice_intensity(raw) if not is_category else (
         "bold" if raw in _BOLD_CATEGORIES else "flirty" if raw in _FLIRTY_CATEGORIES else "warm"
     )

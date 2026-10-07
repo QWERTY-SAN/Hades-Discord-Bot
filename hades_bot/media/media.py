@@ -76,14 +76,17 @@ class HadesMedia:
         key = self._key(message)
         gif_options = self._fresh_options(self.gifs, self._recent_gif[key])
         image_options = self._fresh_options(self.images, self._recent_image[key])
-        choices: list[tuple[str, str]] = [
-            *(("gif", url) for url in gif_options),
-            *(("image", url) for url in image_options),
-        ]
-        if not choices:
+        if not gif_options and not image_options:
             return None
 
-        kind, url = self.rng.choice(choices)
+        if gif_options and image_options:
+            kind = self.rng.choice(("gif", "image"))
+            options = gif_options if kind == "gif" else image_options
+            url = self.rng.choice(options)
+        elif gif_options:
+            kind, url = "gif", self.rng.choice(gif_options)
+        else:
+            kind, url = "image", self.rng.choice(image_options)
         self._last_auto[key] = time.monotonic()
         embed = discord.Embed()
         embed.set_image(url=url)

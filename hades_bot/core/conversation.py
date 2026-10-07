@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from ..ai.fanservice import fanservice_categories, fanservice_intensity
+from ..ai.fanservice import analyze_fanservice, fanservice_categories, fanservice_intensity
 from .scope import is_personal_life_request, is_reaction_message, is_social_message, is_subjective_question
 
 EMOTIONAL_PATTERNS = (
@@ -46,8 +46,23 @@ TOPIC_PIVOT_PATTERNS = (
 
 
 def conversation_mode(text: str) -> str:
-    if fanservice_categories(text):
+    # Emotional intent takes precedence over affection/fan-service cues.
+    if any(pattern.search(text) for pattern in EMOTIONAL_PATTERNS):
+        return "emotional"
+
+    analysis = analyze_fanservice(text)
+    if analysis.confidence != "low" and analysis.primary_category in {
+        "fan_command",
+        "playful_dominance",
+        "romantic",
+        "admiration",
+        "puppet_fantasy",
+        "flustered",
+        "flirtation",
+        "teasing_challenge",
+    }:
         return "flirtation"
+
     if is_short_followup(text):
         return "continuation"
     if CORRECTION_PREFIXES.search(text):
@@ -56,8 +71,6 @@ def conversation_mode(text: str) -> str:
         return "advice"
     if is_subjective_question(text):
         return "personal_question"
-    if any(pattern.search(text) for pattern in EMOTIONAL_PATTERNS):
-        return "emotional"
     if any(pattern.search(text) for pattern in STORY_PATTERNS):
         return "storytelling"
     if is_reaction_message(text):
@@ -67,7 +80,6 @@ def conversation_mode(text: str) -> str:
     if is_social_message(text):
         return "casual"
     return "general"
-
 
 def is_short_followup(text: str) -> bool:
     normalized = unicodedata.normalize("NFKC", text or "").casefold()

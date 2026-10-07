@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from .gemini_client import GeminiService
+from .gemini_client import GeminiService, UnsafeModelOutputError
 from ..config import SETTINGS
 from ..core.memory import ConversationMemory
+from ..core.scope import contains_forbidden_topic
 
 logger = logging.getLogger("hades-bot")
 
@@ -35,6 +36,13 @@ class HadesChat:
             async with self.memory.session(key) as session:
                 history = session.history
                 reply = await self.gemini.generate(history, user_message)
+                context_text = "\n".join(
+                    item.get("content", "")
+                    for item in history
+                    if item.get("content")
+                )
+                if contains_forbidden_topic(reply, context=f"{context_text}\n{user_message}"):
+                    raise UnsafeModelOutputError
                 session.commit(user_message, reply)
                 return reply
         finally:
