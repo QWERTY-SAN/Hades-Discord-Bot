@@ -163,6 +163,8 @@ def is_social_message(text: str) -> bool:
     normalized = _normalize(text)
     if fanservice_category(normalized) is not None:
         return True
+    if is_short_followup(normalized):
+        return True
     if is_personal_life_request(normalized):
         return True
     if any(pattern.search(normalized) for pattern in STORYTELLING_PATTERNS):

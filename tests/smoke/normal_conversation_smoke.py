@@ -26,6 +26,8 @@ def test_common_small_talk_is_allowed() -> None:
         "that's wild",
         "Mind if I have a small allegiance here?",
         "What do u mean?",
+        "wdym?",
+        "what u mean?",
     ]
 
     for message in allowed:
