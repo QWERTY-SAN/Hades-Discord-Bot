@@ -83,7 +83,14 @@ class HadesMedia:
         if not choices:
             return None
 
-        kind, url = self.rng.choice(choices)
+        if gif_options and image_options:
+            kind = self.rng.choice(("gif", "image"))
+            options = gif_options if kind == "gif" else image_options
+            url = self.rng.choice(options)
+        elif gif_options:
+            kind, url = "gif", self.rng.choice(gif_options)
+        else:
+            kind, url = "image", self.rng.choice(image_options)
         self._last_auto[key] = time.monotonic()
         embed = discord.Embed()
         embed.set_image(url=url)
