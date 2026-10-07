@@ -14,6 +14,9 @@ class FakeGemini:
     async def generate(self, history, user_message):
         return self.reply
 
+    async def close(self):
+        return None
+
 
 def test_canonical_hades_reference_is_loaded():
     assert HADES_REFERENCE["current_team_snapshot"]["source"] == "Mimir Global Teams"
