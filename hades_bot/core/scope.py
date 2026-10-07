@@ -193,6 +193,12 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
         return False
     if is_specialist_request(normalized):
         return False
+    # Short conversational follow-ups only make sense when there is an active
+    # Hades conversation to attach them to. They remain socially classified so
+    # the normal-conversation layer can recognize them, but scope must reject
+    # them when no history exists.
+    if is_short_followup(normalized) and not has_history:
+        return False
     if not SETTINGS.strict_aether_topic:
         return True
     # This is the deliberate context bridge: generic follow-ups are allowed only
