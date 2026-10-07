@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 
 # The detector deliberately keeps the older Hades fan-service vocabulary while
@@ -216,6 +217,15 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
 
 FANSERVICE_PATTERNS = PATTERNS
 
+
+@dataclass(frozen=True, slots=True)
+class FanserviceAnalysis:
+    primary_category: str | None
+    secondary_categories: tuple[str, ...]
+    intensity: str
+    confidence: str
+
+
 _CATEGORY_PRIORITY = (
     "fan_command",
     "playful_dominance",
@@ -288,7 +298,7 @@ _CATEGORY_GUIDANCE = {
 
 _WARM_CATEGORIES = frozenset({"affection", "admiration", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
-_FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered"})
+_FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
 
 def fanservice_categories(text: str) -> tuple[str, ...]:
@@ -303,6 +313,45 @@ def fanservice_categories(text: str) -> tuple[str, ...]:
 def fanservice_category(text: str) -> str | None:
     categories = fanservice_categories(text)
     return categories[0] if categories else None
+
+
+def analyze_fanservice(text: str) -> FanserviceAnalysis:
+    categories = fanservice_categories(text)
+    if not categories:
+        return FanserviceAnalysis(None, (), "none", "none")
+
+    intensity = fanservice_intensity(text)
+    normalized = text.strip().casefold()
+    strong_primary = categories[0] in {
+        "fan_command",
+        "playful_dominance",
+        "romantic",
+        "puppet_fantasy",
+        "flirtation",
+        "flustered",
+        "teasing_challenge",
+    }
+    direct_admiration = categories[0] == "admiration" and any(
+        token in normalized
+        for token in ("gorgeous", "beautiful", "pretty", "stunning", "hot", "breathtaking", "caught my eye", "drew my attention")
+    )
+    if strong_primary or direct_admiration:
+        confidence = "high"
+    elif len(categories) >= 2:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    return FanserviceAnalysis(
+        primary_category=categories[0],
+        secondary_categories=tuple(categories[1:]),
+        intensity=intensity,
+        confidence=confidence,
+    )
+
+
+def fanservice_confidence(text: str) -> str:
+    return analyze_fanservice(text).confidence
 
 
 def fanservice_intensity(text: str) -> str:
@@ -329,6 +378,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
     if not categories:
         return "No special fan-service behavior is required. Keep Hades conversational and in character."
 
+    analysis = analyze_fanservice(raw) if not is_category else FanserviceAnalysis(raw, (), "bold" if raw in _BOLD_CATEGORIES else "flirty" if raw in _FLIRTY_CATEGORIES else "warm", "high")
     intensity = fanservice_intensity(raw) if not is_category else (
         "bold" if raw in _BOLD_CATEGORIES else "flirty" if raw in _FLIRTY_CATEGORIES else "warm"
     )
@@ -344,6 +394,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         f"Fan-service mode: {', '.join(categories)}. {intensity_guidance} "
         + " ".join(section for section in sections if section)
         + " Recognize what the Administrator actually said before escalating the joke. "
+        + "Generate a fresh response for this exact message; this is not a response template. "
         + "Generate a fresh response for this exact message; this is not a response template. "
         + "Do not select from a fixed response list or repeat a stock line. Vary the wording and match the recent conversation. "
         + "Choose one dominant reaction style for the turn: direct acknowledgement, teasing, mockery, restrained flirtation, warmth, or challenge. "
