@@ -37,8 +37,8 @@ CONTEXTUAL_OFF_TOPIC_PATTERNS = (
 )
 CORRECTION_PATTERN = re.compile(
     r"^(?:no[,! ]+|nah[,! ]+|wait[,! ]+|actually[,! ]+|correction[,! ]+|wrong[,! ]+|"
-    r"nots+(?:exactly|quite)[,! ]+|that'ss+nots+whats+is+meant[,.! ]*|"
-    r"is+meant[,.! ]+).{1,700}$",
+    r"not\s+(?:exactly|quite)[,! ]+|that's\s+not\s+what\s+i\s+meant[,.! ]*|"
+    r"i\s+meant[,.! ]+).{1,700}$",
     re.I | re.S,
 )
 
