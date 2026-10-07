@@ -20,6 +20,9 @@ def test_fan_teasing_scope() -> None:
         "Hades, give me a hug",
         "Hades, give me attention",
         "Hades, you're stunning",
+        "Eh ur so hot",
+        "ur so hot",
+        "u look pretty",
         "I have a crush on you",
         "I need you, Hades",
         "call me little lamb",
@@ -48,6 +51,9 @@ def test_fanservice_categories() -> None:
     assert fanservice_category("marry me") == "romantic"
     assert fanservice_category("kiss me") == "affection"
     assert fanservice_category("you're gorgeous") == "admiration"
+    assert fanservice_category("Eh ur so hot") == "admiration"
+    assert fanservice_category("ur so hot") == "admiration"
+    assert fanservice_category("u look pretty") == "admiration"
     assert fanservice_category("tell me I'm good") == "praise"
     assert fanservice_category("please notice me") == "attention_seek"
     assert fanservice_category("call me little lamb") == "playful_fandom"
@@ -74,3 +80,4 @@ def test_guidance_is_dynamic_and_not_a_stock_reply() -> None:
     assert "admiration" in guidance
     assert "fresh response" in guidance
     assert "fixed response list" in guidance
+    assert "one dominant reaction style" in guidance
