@@ -395,7 +395,6 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         + " ".join(section for section in sections if section)
         + " Recognize what the Administrator actually said before escalating the joke. "
         + "Generate a fresh response for this exact message; this is not a response template. "
-        + "Generate a fresh response for this exact message; this is not a response template. "
         + "Do not select from a fixed response list or repeat a stock line. Vary the wording and match the recent conversation. "
         + "Choose one dominant reaction style for the turn: direct acknowledgement, teasing, mockery, restrained flirtation, warmth, or challenge. "
         + "For a one-line compliment or fan cue, a compact 1-2 sentence response is often strongest. Do not automatically intensify every turn. "
