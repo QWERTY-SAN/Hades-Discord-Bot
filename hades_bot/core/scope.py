@@ -65,6 +65,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:that's|thats|this\s+is|this\s+was|that\s+is|that\s+was|it(?:'s|\s+is)|it\s+was|sounds\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|looks\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|seems\s+(?:like|good|fun|nice|rough|wild|crazy|interesting))\b.{0,700}$", re.I | re.S),
     re.compile(r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|oof|welp|bruh|based|real|hmm+|oh+|ah+|yikes|whoa+|phew|that's|thats|this\s+is|that\s+was|you'?re\s+funny|you\s+know|oh\s+really|is\s+that\s+so)(?:[!. ]|$).{0,300}$", re.I | re.S),
     re.compile(r"^(?:i|i'm|im|i've|ive|my|mine|today\s+i|tonight\s+i|this\s+is|that\s+was|just|currently|honestly|literally)\b.{0,700}$", re.I | re.S),
+    re.compile(r"^(?:mind\s+if\s+i|can\s+i|may\s+i|is\s+it\s+(?:okay|alright)\s+if\s+i|would\s+you\s+mind\s+if\s+i)\b.{0,300}$", re.I | re.S),
 )
 PERSONAL_LIFE_PATTERNS = (
     re.compile(r"^(?:what\s+should\s+i\s+do|what\s+can\s+i\s+do|what\s+could\s+i\s+do|what\s+else\s+(?:can|should)\s+i\s+do|what\s+should\s+we\s+do|what\s+can\s+we\s+do|what\s+do\s+you\s+suggest\s+i\s+do|how\s+should\s+i\s+spend\s+(?:my\s+time|my\s+day|my\s+evening|my\s+night)|give\s+me\s+(?:something|an\s+idea)\s+to\s+do|give\s+me\s+an?\s+idea|pick\s+something\s+for\s+me|choose\s+something\s+for\s+me|surprise\s+me|help\s+me\s+decide\s+(?:what\s+to\s+do|what\s+i\s+should\s+do)|i\s+(?:don't|do\s+not)\s+know\s+what\s+to\s+do|i\s+have\s+nothing\s+to\s+do|anything\s+else)(?:\s+(?:tonight|today|right\s+now|this\s+(?:morning|afternoon|evening|weekend)|tomorrow|for\s+fun|when\s+i'?m\s+bored))?[?.! ]*$", re.I),
@@ -82,6 +83,8 @@ SHORT_FOLLOWUPS = frozenset({
     "your turn", "your turn?", "what then", "what then?", "prove it", "prove it?",
     "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
+    "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
+    "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
 })
 
 

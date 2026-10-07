@@ -1,5 +1,8 @@
 import unittest
 
+from hades_bot.core.conversation import conversation_continuity_guidance, conversation_mode, is_short_followup
+from hades_bot.core.scope import is_hades_scope_allowed
+
 from hades_bot.ai.fanservice import (
     fanservice_categories,
     fanservice_category,
@@ -33,6 +36,20 @@ class FanserviceDetectionTests(unittest.TestCase):
         self.assertIn("fresh response", guidance)
         self.assertIn("not a response template", guidance)
         self.assertNotIn("Sure! Here's", guidance)
+
+    def test_slang_followup_and_continuity_are_preserved(self):
+        self.assertTrue(is_short_followup("What do u mean?"))
+        self.assertTrue(is_hades_scope_allowed("What do u mean?", has_history=True))
+        self.assertEqual(conversation_mode("What do u mean?"), "continuation")
+        guidance = conversation_continuity_guidance(
+            [
+                {"role": "user", "content": "step on me mommy"},
+                {"role": "model", "content": "You are rather bold today."},
+            ],
+            "What do u mean?",
+        )
+        self.assertIn("CURRENT TURN IS A FOLLOW-UP", guidance)
+        self.assertIn("fan-service thread", guidance)
 
     def test_unrelated_casual_chat_does_not_activate_fanservice(self):
         self.assertEqual(fanservice_categories("I got home late today."), ())

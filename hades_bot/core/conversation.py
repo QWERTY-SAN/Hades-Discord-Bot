@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 
 from ..ai.fanservice import fanservice_categories, fanservice_intensity
 from .scope import is_personal_life_request, is_social_message, is_subjective_question
@@ -24,7 +25,9 @@ SHORT_FOLLOWUPS = frozenset({
     "continue?", "what do you mean", "what do you mean?", "how come", "how come?", "your turn",
     "your turn?", "really then", "prove it", "prove it?", "what then", "what then?",
     "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
-    "for real", "for real?", "okay then", "okay then?", "go ahead",
+    "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
+    "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
+    "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
 })
 CORRECTION_PREFIXES = re.compile(r"^(?:no[, ]|nah[, ]|wait[, ]|not exactly[, ]|that's not what i meant[, ]|i meant[, ]|actually[, ]|correction[, ]|wrong[, ])", re.I)
 TURN_BACK_PATTERNS = (
@@ -38,6 +41,8 @@ TOPIC_PIVOT_PATTERNS = (
 def conversation_mode(text: str) -> str:
     if fanservice_categories(text):
         return "flirtation"
+    if is_short_followup(text):
+        return "continuation"
     if is_personal_life_request(text):
         return "advice"
     if is_subjective_question(text):
@@ -54,8 +59,33 @@ def conversation_mode(text: str) -> str:
 
 
 def is_short_followup(text: str) -> bool:
-    normalized = re.sub(r"\s+", " ", text.strip().casefold())
+    normalized = unicodedata.normalize("NFKC", text or "").casefold()
+    normalized = re.sub(r"[\u200b-\u200d\ufeff]", "", normalized)
+    normalized = re.sub(r"\s+", " ", normalized.strip())
     return normalized in SHORT_FOLLOWUPS
+
+
+def conversation_continuity_guidance(history: list[dict[str, str]], user_message: str) -> str:
+    """Explain how a short follow-up should inherit the active conversational thread."""
+    if not history or not is_short_followup(user_message):
+        return "No special continuity handoff is needed."
+
+    previous_user = next((item.get("content", "").strip() for item in reversed(history) if item.get("role") == "user" and item.get("content")), "")
+    previous_hades = next((item.get("content", "").strip() for item in reversed(history) if item.get("role") in {"assistant", "model"} and item.get("content")), "")
+
+    parts = [
+        "CURRENT TURN IS A FOLLOW-UP: interpret the current short message as part of the immediately preceding exchange, not as a new standalone topic."
+    ]
+    if previous_user:
+        parts.append(f"Previous Administrator message: {previous_user[:500]}")
+        categories = fanservice_categories(previous_user)
+        if categories:
+            parts.append(f"The active social/fan-service thread was: {', '.join(categories)}.")
+    if previous_hades:
+        parts.append(f"Previous Hades reply: {previous_hades[:700]}")
+    if re.match(r"^(?:what do|what did|what u|wdym|wait what|huh)\b", user_message.strip(), re.I):
+        parts.append("CLARIFICATION RULE: explain what Hades meant in the immediately preceding reply before adding any tease. Do not repeat the old line verbatim.")
+    return " ".join(parts)
 
 
 def conversation_signals(text: str) -> list[str]:

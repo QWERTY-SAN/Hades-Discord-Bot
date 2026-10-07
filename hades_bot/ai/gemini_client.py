@@ -10,7 +10,7 @@ from google import genai
 from google.genai import errors, types
 
 from ..config import SETTINGS
-from ..core.conversation import conversation_mode, conversation_signals
+from ..core.conversation import conversation_continuity_guidance, conversation_mode, conversation_signals
 from ..core.scope import is_personal_life_request, is_social_message, is_subjective_question
 from ..core.utils import sanitize_model_output
 from ..knowledge.lore import build_aether_context
@@ -89,6 +89,7 @@ class GeminiService:
         signals = ", ".join(conversation_signals(user_message))
         guidance = fanservice_guidance(user_message)
         conversation_text = GeminiService._speaker_labeled(history)
+        continuity_guidance = conversation_continuity_guidance(history, user_message)
         lore_context = build_aether_context(user_message, conversation_text)
 
         recent_replies = GeminiService._recent_model_replies(history)
@@ -105,6 +106,7 @@ class GeminiService:
             "emotional": "Acknowledge what the Administrator feels before offering advice or interpretation.",
             "storytelling": "React to the story and details the Administrator shared. Do not automatically moralize.",
             "flirtation": "Recognize the specific fan-service cue, answer that cue first, and calibrate the amount of teasing to the user's wording. Do not force a flirt escalation.",
+            "continuation": "Treat this as a direct continuation of the immediately preceding exchange. Explain or react to the previous line specifically instead of starting a fresh topic.",
             "personal_question": "Answer Hades's own preference or viewpoint when asked. Do not dodge with another question.",
             "advice": "Give useful advice in Hades's voice. Do not become a clinical therapist or customer-service agent.",
             "general": "Answer the actual request naturally. Use context before lore.",
@@ -113,9 +115,10 @@ class GeminiService:
         return (
             f"CONVERSATION MODE: {mode}\n"
             f"CONVERSATION SIGNALS: {signals}\n"
+            f"CONTINUITY GUIDANCE: {continuity_guidance}\n"
             f"FAN-SERVICE GUIDANCE: {guidance}\n"
             f"MODE GUIDANCE: {mode_guidance}\n"
-            "CONVERSATIONAL PRIORITY: The newest message is a turn in an ongoing dialogue. Use speaker labels and recent context to resolve pronouns, short follow-ups, corrections, callbacks, and topic pivots.\n"
+            "CONVERSATIONAL PRIORITY: The newest message is a turn in an ongoing dialogue. Use speaker labels and recent context to resolve pronouns, slang follow-ups, short clarifications, corrections, callbacks, and topic pivots.\n"
             "DO NOT FORCE A QUESTION: A response may simply react, tease, answer, or continue the thought.\n"
             "FAN-SERVICE CALIBRATION: The same trigger may appear repeatedly. Do not answer repeated prompts with the same structure; vary between teasing, confident acknowledgement, a small challenge, warmth, or a softer reaction as the conversation warrants.\n"
             "ADDRESSING: Use Administrator or little lamb selectively; do not repeat either mechanically.\n"
@@ -150,6 +153,7 @@ class GeminiService:
             is_social_message(user_message)
             or is_personal_life_request(user_message)
             or is_subjective_question(user_message)
+            or mode == "continuation"
         )
         if social_mode:
             context_note = (
@@ -181,13 +185,16 @@ class GeminiService:
                 "Recent Hades wording to vary away from: " + " | ".join(samples) + "\n"
                 "Avoid repeating a distinctive opening, exact punchline, nickname, or puppet metaphor unless the Administrator continued the same joke.\n"
             )
+        continuity_guidance = conversation_continuity_guidance(history, user_message)
         system_text = (
             f"{HADES_SYSTEM_PROMPT}\n\n"
             f"Conversation mode: {mode}.\n"
             f"Conversation signals: {', '.join(conversation_signals(user_message))}.\n"
+            f"Continuity guidance: {continuity_guidance}\n"
             f"Fan-service guidance: {fanservice_guidance(user_message)}\n"
             f"Mode guidance: {mode_guidance}\n"
             "React before explaining. Keep the reply proportionate. Do not force a question at the end.\n"
+            "For slang clarifications such as 'what do u mean?', 'wdym?', or 'wait what?', explain the immediately preceding Hades line plainly before teasing.\n"
             "Use recent dialogue to resolve pronouns, callbacks, short follow-ups, corrections, turn-backs, and topic pivots.\n"
             "Use Administrator or little lamb selectively, not mechanically.\n"
             "Mintha and Leuce remain part of Hades's characterization.\n"
