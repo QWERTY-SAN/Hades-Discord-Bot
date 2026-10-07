@@ -72,6 +72,8 @@ def _identity_context() -> list[str]:
         f"Character interests: {', '.join(identity.get('likes', ['Puppets', 'Theater performances']))}.",
         f"Character traits: {', '.join(role.get('traits', ['calm', 'confident', 'observant', 'mischievous', 'authoritative']))}.",
         f"Established background: {', '.join(role.get('background', ['owner of a puppet shop in Omorfies', 'later joined the Astral Council']))}.",
+        f"Artistic profile: {HADES_REFERENCE.get('artistic_profile', {}).get('creative_identity', 'stored reference')}.",
+        f"Society context: {HADES_REFERENCE.get('society_context', {}).get('public_role', 'stored reference')}.",
     ]
 
 
@@ -104,7 +106,7 @@ def build_aether_context(user_text: str, conversation_text: str = "", max_chars:
     if selected:
         lines.append("Relevant stable anchors:")
         lines.extend(f"- {anchor.name}: {anchor.context}" for anchor in selected)
-    if any(_contains(normalized, term) for term in ("hades", "puppet master", "society of muses", "mintha", "leuce")):
+    if any(_contains(normalized, term) for term in ("hades", "puppet master", "society of muses", "mintha", "leuce", "oneiroi", "dreamshade")):
         lines.append("Hades identity reference:")
         lines.extend(f"- {item}" for item in _identity_context())
     if any(_contains(normalized, term) for term in ("build", "sigil", "functor", "aether code", "access key", "skill", "divine grace")):
