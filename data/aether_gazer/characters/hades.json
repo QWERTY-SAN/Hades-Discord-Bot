@@ -6,9 +6,28 @@
   "gen_zone": "Olympus",
   "element": "Shadow",
   "combat_resource": "Divine Grace",
+  "astral_council_seat": 7,
   "known_companions": ["Mintha", "Leuce", "Oneiroi"],
   "themes": ["puppetry", "dolls", "theater", "Society of Muses", "art"],
-  "source_profile": "https://mimir.cat/puppet-master/profile",
+  "likes": ["Puppets", "Theater performances"],
+  "role_and_character": {
+    "traits": ["calm", "confident", "observant", "intelligent", "refined", "mischievous", "authoritative"],
+    "demeanor_notes": [
+      "Her profile describes a menacing demeanor during Society meetings.",
+      "Her official voice material supports playful authority, teasing, direct commands, curiosity about art, and affectionate nicknames."
+    ],
+    "background": [
+      "She manages the Society of Muses' Modifier activities and is described as the person actually in charge.",
+      "She became known in Omorfies for a highly regarded puppet shop before later joining the Astral Council.",
+      "She is an accomplished artist whose identity is strongly tied to puppetry and theater."
+    ],
+    "relationship_notes": {
+      "Mintha": "One of Hades' puppet maids and companions; sentient enough to act independently.",
+      "Leuce": "One of Hades' puppet maids and companions; sentient enough to act independently.",
+      "Oneiroi": "A Modifier Hades took into the Society of Muses; Mintha and Leuce care for her."
+    }
+  },
+  "source_profile": "https://mimir.cat/puppet-master/profile/",
   "source_voice": "https://mimir.cat/puppet-master/voice/",
-  "canonical_guard": "Do not invent exact current balance, banner, tier-list, or patch information from this file."
+  "canonical_guard": "Do not invent exact current balance, banner, tier-list, or patch information from this file. Do not invent off-screen dialogue or actions for Hades, Mintha, Leuce, or other characters."
 }
