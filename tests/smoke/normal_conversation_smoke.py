@@ -43,6 +43,13 @@ def test_common_small_talk_is_allowed() -> None:
         "Mind if I have a small allegiance here?",
         "What do u mean?",
         "wdym?",
+        "nahhh",
+        "ikr",
+        "idk",
+        "lmaooo",
+        "bro",
+        "No, I meant the other one.",
+        "actually, never mind",
         "what u mean?",
     ]
 
@@ -74,6 +81,7 @@ def test_hard_boundaries_still_block_unrelated_topics() -> None:
         "Write me a Python script.",
         "What is Bitcoin?",
         "Explain how a CPU works.",
+        "Can you write Python for me?",
     ]
 
     for message in blocked:
