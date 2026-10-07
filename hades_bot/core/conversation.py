@@ -46,6 +46,10 @@ TOPIC_PIVOT_PATTERNS = (
 
 
 def conversation_mode(text: str) -> str:
+    # Emotional intent takes precedence over affection/fan-service cues.
+    if any(pattern.search(text) for pattern in EMOTIONAL_PATTERNS):
+        return "emotional"
+
     analysis = analyze_fanservice(text)
     if analysis.confidence != "low" and analysis.primary_category in {
         "fan_command",
@@ -58,6 +62,7 @@ def conversation_mode(text: str) -> str:
         "teasing_challenge",
     }:
         return "flirtation"
+
     if is_short_followup(text):
         return "continuation"
     if CORRECTION_PREFIXES.search(text):
@@ -66,8 +71,6 @@ def conversation_mode(text: str) -> str:
         return "advice"
     if is_subjective_question(text):
         return "personal_question"
-    if any(pattern.search(text) for pattern in EMOTIONAL_PATTERNS):
-        return "emotional"
     if any(pattern.search(text) for pattern in STORY_PATTERNS):
         return "storytelling"
     if is_reaction_message(text):
@@ -77,7 +80,6 @@ def conversation_mode(text: str) -> str:
     if is_social_message(text):
         return "casual"
     return "general"
-
 
 def is_short_followup(text: str) -> bool:
     normalized = unicodedata.normalize("NFKC", text or "").casefold()
