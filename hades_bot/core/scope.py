@@ -64,7 +64,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:guess\s+what|look\s+at\s+this|listen|you\s+know\s+what|you\s+know|i\s+have\s+something\s+to\s+tell\s+you|want\s+to\s+hear\s+something|let's\s+(?:talk|chat)|let\s+us\s+(?:talk|chat)|make\s+me\s+smile|cheer\s+me\s+up|i'?m\s+(?:bored|tired|sad|happy|lonely|excited|upset|fine|okay|back|home|sleepy)|i\s+(?:just\s+got\s+home|just\s+woke\s+up|just\s+got\s+back|miss|missed|like|love|hate|need|want|feel|think|guess|remember)\b).{0,700}$", re.I | re.S),
     re.compile(r"^(?:that's|thats|this\s+is|this\s+was|that\s+is|that\s+was|it(?:'s|\s+is)|it\s+was|sounds\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|looks\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|seems\s+(?:like|good|fun|nice|rough|wild|crazy|interesting))\b.{0,700}$", re.I | re.S),
     re.compile(r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|oof|welp|bruh|based|real|hmm+|oh+|ah+|yikes|whoa+|phew|that's|thats|this\s+is|that\s+was|you'?re\s+funny|you\s+know|oh\s+really|is\s+that\s+so)(?:[!. ]|$).{0,300}$", re.I | re.S),
-    re.compile(r"^(?:(?:woof|arf|awoo|meow|mew|nya|rawr)(?:[\s.!?]*(?:woof|arf|awoo|meow|mew|nya|rawr)){0,5})[\s.!?]*$", re.I),
+    re.compile(r"^(?:(?:woof|arf|awoo|meow|mew|nya|rawr)(?:[\s.!?]*(?:woof|arf|awoo|meow|mew|nya|rawr)){0,5})[\s.!?]*(?::3|:3c|x3|X3)?[\s.!?]*$", re.I),
     re.compile(r"^(?:i|i'm|im|i've|ive|my|mine|today\s+i|tonight\s+i|this\s+is|that\s+was|just|currently|honestly|literally)\b.{0,700}$", re.I | re.S),
     re.compile(r"^(?:mind\s+if\s+i|can\s+i|may\s+i|is\s+it\s+(?:okay|alright)\s+if\s+i|would\s+you\s+mind\s+if\s+i)\b.{0,300}$", re.I | re.S),
 )
