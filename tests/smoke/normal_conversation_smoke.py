@@ -51,6 +51,14 @@ def test_common_small_talk_is_allowed() -> None:
         "No, I meant the other one.",
         "actually, never mind",
         "what u mean?",
+        "What do u mean?",
+        "Woahhh :Pepeuwu:",
+        "Ayooo:DuduLevi:",
+        "woof woof!",
+        "Mommy 😭",
+        "If I beg for you to embrace me.....will you?",
+        "Mind if I have a small allegiance here?",
+
     ]
 
     for message in allowed:
