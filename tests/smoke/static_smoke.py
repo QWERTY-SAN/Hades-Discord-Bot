@@ -22,6 +22,8 @@ assert SETTINGS.emojis_enabled is True
 assert is_hades_scope_allowed("Tell me about Hades")
 assert is_hades_scope_allowed("How are you?")
 assert is_hades_scope_allowed("I had a rough day.")
+assert is_hades_scope_allowed("💀")
+assert is_hades_scope_allowed("Woahhh :Pepeuwu:")
 assert not is_hades_scope_allowed("Hades, what do you think about F1?")
 assert not is_hades_scope_allowed("Hades, who won the NBA finals?")
 assert not is_hades_scope_allowed("Hades, write me Python code.")
