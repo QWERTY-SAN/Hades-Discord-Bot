@@ -15,7 +15,11 @@ CASES = {
     "It's either do it or not, but I ain't backing down to someone who's like a fine looking wine": "flirtation",
     "Don't tempt me like that.": "flirtation",
     "Is that an invitation?": "flirtation",
-    "Heimdall's shield is ridiculous.": "general",
+    "Heimdall's shield is ridiculous.": "general"
+    "No, I meant the other one.": "correction"
+    "what's this?": "continuation"
+    "what does that mean?": "continuation"
+    "and": "general",
 }
 
 for text, mode in CASES.items():
@@ -24,5 +28,8 @@ for text, mode in CASES.items():
 
 assert fanservice_category("Don't tempt me like that.") == "flirtation"
 assert fanservice_category("Is that an invitation?") == "flirtation"
+assert conversation_mode("what's this?") == "continuation"
+assert conversation_mode("No, I meant the other one.") == "correction"
+assert conversation_mode("and") == "general"
 
 print("conversation_mode_smoke: OK")
