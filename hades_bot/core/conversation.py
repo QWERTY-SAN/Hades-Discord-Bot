@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from ..ai.fanservice import fanservice_categories, fanservice_intensity
+from ..ai.fanservice import analyze_fanservice, fanservice_categories, fanservice_intensity
 from .scope import is_personal_life_request, is_reaction_message, is_social_message, is_subjective_question
 
 EMOTIONAL_PATTERNS = (
@@ -46,7 +46,17 @@ TOPIC_PIVOT_PATTERNS = (
 
 
 def conversation_mode(text: str) -> str:
-    if fanservice_categories(text):
+    analysis = analyze_fanservice(text)
+    if analysis.confidence != "low" and analysis.primary_category in {
+        "fan_command",
+        "playful_dominance",
+        "romantic",
+        "admiration",
+        "puppet_fantasy",
+        "flustered",
+        "flirtation",
+        "teasing_challenge",
+    }:
         return "flirtation"
     if is_short_followup(text):
         return "continuation"
