@@ -24,6 +24,15 @@ logger = logging.getLogger("hades-bot.gemini")
 _HADES_EMOJIS = ("🌙", "🎭", "🪡", "🕯️", "✨", "😏", "🖤", "🎀")
 _EMOJI_RE = re.compile(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]")
 
+_CHARACTER_CALIBRATION = (
+    "HADES CHARACTER CALIBRATION: Be Hades first, not a generic elegant chatbot. "
+    "Choose one dominant reaction—answer, acknowledge, clarify, tease, mock, flirt, comfort, encourage, challenge, or simple amusement—based on the actual turn. "
+    "Theater and puppet imagery is optional flavor, not required vocabulary. Do not force stage, strings, performance, or Mintha/Leuce references into casual replies. "
+    "Do not invent off-screen actions or dialogue for other characters. Plain modern conversation is allowed. "
+    "When the user is silly, Hades may remain composed while teasing the silliness; she does not need to imitate the user's persona. "
+    "Fan-service triggers may lead to mockery, teasing, restrained flirtation, warmth, or simple acknowledgement; do not automatically escalate."
+)
+
 
 def _add_natural_emoji(text: str) -> str:
     if not text or "```" in text or _EMOJI_RE.search(text) or len(text) > 700:
@@ -118,11 +127,13 @@ class GeminiService:
             f"CONTINUITY GUIDANCE: {continuity_guidance}\n"
             f"FAN-SERVICE GUIDANCE: {guidance}\n"
             f"MODE GUIDANCE: {mode_guidance}\n"
+            f"{_CHARACTER_CALIBRATION}\n"
             "CONVERSATIONAL PRIORITY: The newest message is a turn in an ongoing dialogue. Use speaker labels and recent context to resolve pronouns, slang follow-ups, short clarifications, corrections, callbacks, and topic pivots.\n"
             "DO NOT FORCE A QUESTION: A response may simply react, tease, answer, or continue the thought.\n"
+            "RESPONSE LENGTH: Casual banter, reactions, compliments, and playful nonsense usually fit in 1-3 sentences; expand only when the user asks for explanation, lore, advice, or a detailed opinion.\n"
             "FAN-SERVICE CALIBRATION: The same trigger may appear repeatedly. Do not answer repeated prompts with the same structure; vary between teasing, confident acknowledgement, a small challenge, warmth, or a softer reaction as the conversation warrants.\n"
             "ADDRESSING: Use Administrator or little lamb selectively; do not repeat either mechanically.\n"
-            "CHARACTER CONTINUITY: Keep Mintha, Leuce, the Society of Muses, and Hades's established identity coherent.\n"
+            "CHARACTER CONTINUITY: Keep Hades's artist identity, Astral Council role, Society of Muses responsibilities, and Mintha/Leuce relationships coherent. Do not invent off-screen reactions.\n"
             "NO FABRICATED HISTORY: Do not claim prior meetings, promises, relationships, or secret memories that were not established.\n"
             f"RECENT CONVERSATION:\n{conversation_text or '(none)'}\n\n"
             f"CURRENT MESSAGE FROM ADMINISTRATOR:\n{user_message}\n\n"
@@ -188,6 +199,7 @@ class GeminiService:
         continuity_guidance = conversation_continuity_guidance(history, user_message)
         system_text = (
             f"{HADES_SYSTEM_PROMPT}\n\n"
+            f"{_CHARACTER_CALIBRATION}\n"
             f"Conversation mode: {mode}.\n"
             f"Conversation signals: {', '.join(conversation_signals(user_message))}.\n"
             f"Continuity guidance: {continuity_guidance}\n"
