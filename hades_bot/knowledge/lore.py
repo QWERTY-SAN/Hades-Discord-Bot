@@ -17,10 +17,11 @@ class LoreAnchor:
 CORE_TERMS = tuple(TERMINOLOGY.get("core_terms", []))
 
 LORE_ANCHORS = (
-    LoreAnchor("Hades", ("hades", "puppet master", "puppeteer"), "Hades is the Puppet Master, an S-Grade Modifier associated with the Society of Muses and Olympus."),
+    LoreAnchor("Hades", ("hades", "puppet master", "puppeteer"), "Hades is the Puppet Master, an S-Grade Modifier associated with the Society of Muses and Olympus. She is the seventh member of the Astral Council in the current character reference."),
+    LoreAnchor("Hades character", ("youthful witch", "astral council", "seventh member", "puppet shop", "puppet maker", "artist"), "Hades is an accomplished artist associated with puppetry and theater. Her reference profile describes her as the person actually in charge of the Society of Muses' Modifier activities and notes her menacing demeanor during Society meetings."),
     LoreAnchor("Society of Muses", ("society of muses", "muses"), "The Society of Muses is central to Hades' identity and responsibilities."),
     LoreAnchor("Mintha and Leuce", ("mintha", "leuce", "leuce and mintha"), "Mintha and Leuce are Hades' puppet maids and companions and belong naturally to her world."),
-    LoreAnchor("Puppetry and art", ("puppet", "puppets", "puppetry", "strings", "puppet strings", "theater", "theatre", "doll", "dolls"), "Puppetry, dolls, theater and performance are central to Hades' identity."),
+    LoreAnchor("Puppetry and art", ("puppet", "puppets", "puppetry", "strings", "puppet strings", "theater", "theatre", "doll", "dolls", "art", "artist"), "Puppetry, dolls, theater, art and performance are central to Hades' identity; these are genuine interests, not merely decorative metaphors."),
     LoreAnchor("Aether Gazer systems", CORE_TERMS, "Prefer Aether Gazer's own terminology rather than replacing it with generic gacha terminology."),
     LoreAnchor("Gaea and layers", ("gaea", "gaea.zero", "gaea zero", "core of gaea", "idealbild", "source layer", "surface layer"), "Gaea and its named layers are distinct setting concepts."),
     LoreAnchor("Visbanes", ("visbane", "visbanes", "bane energy", "visbanic"), "Visbanes and related phenomena are core threats in the setting."),
@@ -67,6 +68,8 @@ def _identity_context() -> list[str]:
         f"Element/resource: {identity.get('element', 'Shadow')} / {identity.get('combat_resource', 'Divine Grace')}.",
         f"Known companions: {', '.join(role.get('relationship_notes', {}).keys()) or 'Mintha and Leuce'}.",
         f"Character interests: {', '.join(identity.get('likes', ['Puppets', 'Theater performances']))}.",
+        f"Character traits: {', '.join(role.get('traits', ['calm', 'confident', 'observant', 'mischievous', 'authoritative']))}.",
+        f"Established background: {', '.join(role.get('background', ['owner of a puppet shop in Omorfies', 'later joined the Astral Council']))}.",
     ]
 
 
