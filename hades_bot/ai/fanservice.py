@@ -61,7 +61,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
     "admiration": (
         re.compile(
-            r"\b(?:(?:you(?:'re|\s+are)|ur|u)\s+(?:so\s+|very\s+|really\s+|extremely\s+|incredibly\s+|"
+            r"\b(?:(?:you(?:'re|\s+are)|ur|u(?:\s+r)?)\s+(?:so+\s+|very\s+|really\s+|extremely\s+|incredibly\s+|"
             r"absurdly\s+|unfairly\s+)?(?:gorgeous|beautiful|pretty|stunning|hot|cute|adorable|"
             r"elegant|graceful|refined|classy|perfect|amazing|majestic|breathtaking|unreal|"
             r"dangerously\s+attractive|ridiculously\s+pretty|good[- ]looking)|"
@@ -98,6 +98,11 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(
             r"\b(?:your|that)\s+(?:smile|voice|eyes|outfit|dress|hair|presence)\s+"
             r"(?:is|are)\s+(?:gorgeous|beautiful|perfect|unfair|everything|stunning)\b",
+            re.I,
+        ),
+        re.compile(
+            r"\b(?:absolute\s+beauty|what\s+a\s+beauty|you(?:'re|\s+are)\s+seriously\s+(?:pretty|beautiful|hot|gorgeous)|"
+            r"ur\s+seriously\s+(?:pretty|beautiful|hot|gorgeous))\b",
             re.I,
         ),
     ),
@@ -342,5 +347,6 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         + "Generate a fresh response for this exact message; this is not a response template. "
         + "Do not select from a fixed response list or repeat a stock line. Vary the wording and match the recent conversation. "
         + "Choose one dominant reaction style for the turn: direct acknowledgement, teasing, mockery, restrained flirtation, warmth, or challenge. "
-        + "Do not automatically intensify every turn. The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure."
+        + "For a one-line compliment or fan cue, a compact 1-2 sentence response is often strongest. Do not automatically intensify every turn. "
+        + "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure."
     )
