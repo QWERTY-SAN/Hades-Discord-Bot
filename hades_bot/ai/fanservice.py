@@ -192,7 +192,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you'?re\s+trouble|you\s+are\s+trouble|what\s+are\s+you\s+doing\s+to\s+me|"
             r"what\s+have\s+you\s+done\s+to\s+me|is\s+this\s+a\s+trap|"
             r"such\s+a\s+tease|quit\s+teasing\s+me|are\s+you\s+flirting\s+with\s+me|"
-            r"are\s+you\s+trying\s+to\s+flirt|hear\s+me\s+out)\b",
+            r"are\s+you\s+trying\s+to\s+flirt)\b",
             re.I,
         ),
     ),
