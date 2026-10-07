@@ -85,6 +85,17 @@ SHORT_FOLLOWUPS = frozenset({
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
     "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
     "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
+
+
+CONTEXTUAL_FOLLOWUPS = frozenset({
+    "why", "why?", "how so", "how so?", "go on", "go on.", "and then", "and then?",
+    "what about her", "what about her?", "what about him", "what about him?", "what about that", "what about that?",
+    "and you", "and you?", "you too", "you too?", "tell me more", "continue", "continue?",
+    "what do you mean", "what do you mean?", "how come", "how come?",
+    "your turn", "your turn?", "what then", "what then?",
+    "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
+    "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
+    "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
 })
 
 
@@ -197,7 +208,7 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
     # Hades conversation to attach them to. They remain socially classified so
     # the normal-conversation layer can recognize them, but scope must reject
     # them when no history exists.
-    if is_short_followup(normalized) and not has_history:
+    if normalized in CONTEXTUAL_FOLLOWUPS and not has_history:
         return False
     if not SETTINGS.strict_aether_topic:
         return True

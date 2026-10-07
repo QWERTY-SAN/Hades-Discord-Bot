@@ -8,6 +8,10 @@ def test_hard_off_topic_stays_blocked():
 
 def test_short_followup_requires_history():
     assert not is_hades_scope_allowed("why?", has_history=False)
+    assert not is_hades_scope_allowed("huh?", has_history=False)
+    assert is_hades_scope_allowed("same", has_history=False)
+    assert is_hades_scope_allowed("fair enough", has_history=False)
+    assert is_hades_scope_allowed("go ahead", has_history=False)
     assert is_hades_scope_allowed("why?", has_history=True)
 
 
