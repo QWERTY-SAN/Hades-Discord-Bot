@@ -15,6 +15,8 @@ def test_short_followup_requires_history():
     assert is_hades_scope_allowed("you too", has_history=False)
     assert is_hades_scope_allowed("no way", has_history=False)
     assert is_hades_scope_allowed("why?", has_history=True)
+    assert is_hades_scope_allowed("What do u mean?", has_history=False)
+    assert is_hades_scope_allowed("wdym?", has_history=False)
 
 
 def test_hades_social_and_admiration_scope():

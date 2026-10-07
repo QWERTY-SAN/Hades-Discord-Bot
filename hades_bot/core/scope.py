@@ -91,10 +91,8 @@ SHORT_FOLLOWUPS = frozenset({
 CONTEXTUAL_FOLLOWUPS = frozenset({
     "why", "why?", "how so", "how so?", "go on", "go on.", "and then", "and then?",
     "what about her", "what about her?", "what about him", "what about him?", "what about that", "what about that?",
-    "tell me more", "continue", "continue?", "what do you mean", "what do you mean?", "how come", "how come?",
+    "tell me more", "continue", "continue?", "how come", "how come?",
     "what then", "what then?", "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
-    "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
-    "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
 })
 
 
