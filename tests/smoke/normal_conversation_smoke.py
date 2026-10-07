@@ -24,6 +24,10 @@ def test_common_small_talk_is_allowed() -> None:
         "tell me something",
         "stay with me",
         "that's wild",
+        "woof woof!",
+        "meow :3",
+        "rawr",
+
         "Mind if I have a small allegiance here?",
         "What do u mean?",
         "wdym?",

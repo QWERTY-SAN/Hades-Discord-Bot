@@ -12,6 +12,8 @@ def test_short_followup_requires_history():
     assert is_hades_scope_allowed("same", has_history=False)
     assert is_hades_scope_allowed("fair enough", has_history=False)
     assert is_hades_scope_allowed("go ahead", has_history=False)
+    assert is_hades_scope_allowed("woof woof!", has_history=False)
+    assert is_hades_scope_allowed("meow :3", has_history=False)
     assert is_hades_scope_allowed("you too", has_history=False)
     assert is_hades_scope_allowed("no way", has_history=False)
     assert is_hades_scope_allowed("why?", has_history=True)

@@ -16,6 +16,7 @@ STORY_PATTERNS = (
 BANTER_PATTERNS = (
     re.compile(r"^(?:lol|lmao|haha|hehe|rofl|bruh|oof|welp|yikes|wow|damn|nice|cool|cute|seriously\??|really\??|no way|you're funny|that's (?:wild|crazy|funny|rough|cute|sweet|interesting|weird))\b", re.I),
     re.compile(r"\b(?:look at you|there you go|oh really|is that so)\??$", re.I),
+    re.compile(r"^(?:(?:woof|arf|awoo|meow|mew|nya|rawr)(?:[\s.!?]*(?:woof|arf|awoo|meow|mew|nya|rawr)){0,5})[\s.!?]*$", re.I),
 )
 SHORT_FOLLOWUPS = frozenset({
     "why", "why?", "really", "really?", "how so", "how so?", "go on", "go on.",
