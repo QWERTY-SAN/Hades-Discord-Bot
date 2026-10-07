@@ -96,7 +96,7 @@ HADES_GIF_URLS = [
 ]
 ```
 
-GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content. Image URLs are handled separately in `hades_bot/media/images.py`. Automatic media is attached to Hades' normal response embed rather than sent as a second message. Media state is pruned periodically so long-running Render instances do not accumulate stale per-channel entries.
+GIF URLs are not stored in `.env` and are not uploaded back to Discord. The bot uses the original external URL as an embed image, so the raw URL is not posted as message content. Image URLs are handled separately in `hades_bot/media/images.py`. Automatic media is attached to Hades' normal response embed rather than sent as a second message. Media state is pruned periodically so long-running Render instances do not accumulate stale per-user/channel entries. When both media types are configured, automatic selection chooses the type evenly before choosing a recent-URL-safe item.
 
 ### Endgame, events, and service lifecycle knowledge
 The local knowledge layer also covers:
@@ -251,7 +251,7 @@ Hades-Discord-Bot/
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Release
-This package consolidates the latest Hades persona, strict scope, dynamic refusals, fan-service, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
+Version 1.3.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
 
 
 ### Automatic media
