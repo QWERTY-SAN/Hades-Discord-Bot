@@ -61,11 +61,11 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
     "admiration": (
         re.compile(
-            r"\b(?:you(?:'re|\s+are)\s+(?:so\s+|very\s+|really\s+|extremely\s+|incredibly\s+|"
+            r"\b(?:(?:you(?:'re|\s+are)|ur|u)\s+(?:so\s+|very\s+|really\s+|extremely\s+|incredibly\s+|"
             r"absurdly\s+|unfairly\s+)?(?:gorgeous|beautiful|pretty|stunning|hot|cute|adorable|"
             r"elegant|graceful|refined|classy|perfect|amazing|majestic|breathtaking|unreal|"
             r"dangerously\s+attractive|ridiculously\s+pretty|good[- ]looking)|"
-            r"you\s+look\s+(?:gorgeous|beautiful|pretty|stunning|hot|cute|elegant|amazing|unfair)|"
+            r"(?:you\s+look|u\s+look)\s+(?:gorgeous|beautiful|pretty|stunning|hot|cute|elegant|amazing|unfair)|"
             r"you\s+(?:look|are)\s+like\s+a\s+(?:dream|temptation|snack)|"
             r"wife\s+material|my\s+gorgeous\s+woman|my\s+favorite\s+woman|"
             r"you\s+are\s+unfair|you're\s+unfair|how\s+are\s+you\s+this\s+pretty|"
