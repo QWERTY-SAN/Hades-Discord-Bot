@@ -314,7 +314,7 @@ async def status_command(ctx: commands.Context) -> None:
         await ctx.reply("That information is for those managing the stage. 🎭", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
         return
     count = await bot.hades_chat.memory.conversation_count()
-    await ctx.reply(embed=info_embed("🌙 Hades Status", f"Model: `{SETTINGS.gemini_model}`\nGuilds: `{len(bot.guilds)}`\nMemory: `{count}` active conversations\nRequests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\nTotal AI requests: `{bot.hades_chat.total_requests}`\nAuto media: `mention cooldown`\nGIFs: `{bot.media.configured_count}` external URLs\nImages: `{bot.media.image_configured_count}` external URLs\nLatency: `{round(bot.latency * 1000)}ms`"), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+    await ctx.reply(embed=info_embed("🌙 Hades Status", f"Model: `{SETTINGS.gemini_model}`\nGuilds: `{len(bot.guilds)}`\nMemory: `{count}` active conversations\nRequests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\nTotal AI requests: `{bot.hades_chat.total_requests}`\nAuto media: `mention cooldown`\nGIFs: `{bot.media.configured_count}` external URLs\nImages: `{bot.media.image_configured_count}` external URLs\nLatency: `{'unavailable' if bot.latency == float('inf') else str(round(bot.latency * 1000)) + 'ms'}`"), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
 @bot.command(name="hadeshelp", aliases=["help"])
