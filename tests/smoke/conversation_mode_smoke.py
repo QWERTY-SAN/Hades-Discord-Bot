@@ -15,7 +15,7 @@ CASES = {
     "It's either do it or not, but I ain't backing down to someone who's like a fine looking wine": "flirtation",
     "Don't tempt me like that.": "flirtation",
     "Is that an invitation?": "flirtation",
-    "Heimdall's shield is ridiculous.": "general"
+    "Heimdall's shield is ridiculous.": "general",
     "No, I meant the other one.": "correction",
     "what's this?": "continuation",
     "what does that mean?": "continuation",
