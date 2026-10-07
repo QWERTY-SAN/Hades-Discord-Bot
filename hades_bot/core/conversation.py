@@ -4,7 +4,7 @@ import re
 import unicodedata
 
 from ..ai.fanservice import fanservice_categories, fanservice_intensity
-from .scope import is_personal_life_request, is_social_message, is_subjective_question
+from .scope import is_personal_life_request, is_reaction_message, is_social_message, is_subjective_question
 
 EMOTIONAL_PATTERNS = (
     re.compile(r"\b(?:i(?:'m| am)|i feel)\s+(?:so\s+)?(?:sad|happy|angry|mad|annoyed|pissed|upset|tired|exhausted|lonely|bored|excited|nervous|anxious|embarrassed|overwhelmed|proud|disappointed|confused|stressed|frustrated|drained|sleepy|restless|hurt)\b", re.I),
@@ -14,7 +14,7 @@ STORY_PATTERNS = (
     re.compile(r"^(?:so today|today i|earlier i|yesterday i|last night i|guess what|you won't believe|you know what happened|i just (?:got|came|saw|watched|met|bought|found|heard|did|finished|received|started|ended)|i have to tell you|i need to tell you)\b", re.I),
 )
 BANTER_PATTERNS = (
-    re.compile(r"^(?:lol|lmao|haha|hehe|rofl|bruh|oof|welp|yikes|wow|damn|nice|cool|cute|ayoo+|seriously\??|really\??|no way|you're funny|that's (?:wild|crazy|funny|rough|cute|sweet|interesting|weird))\b", re.I),
+    re.compile(r"^(?:lol|lmao|haha|hehe|rofl|bruh|oof|welp|yikes|wow|damn|nice|cool|ayoo+|owo|uwu|whoa+|woah+|seriously\??|really\??|no way|you're funny|that's (?:wild|crazy|funny|rough|cute|sweet|interesting|weird))\b", re.I),
     re.compile(r"\b(?:look at you|there you go|oh really|is that so)\??$", re.I),
     re.compile(r"^(?:(?:woof|arf|awoo|meow|mew|nya|rawr)(?:[\s.!?]*(?:woof|arf|awoo|meow|mew|nya|rawr)){0,5})[\s.!?]*$", re.I),
 )
@@ -26,6 +26,8 @@ SHORT_FOLLOWUPS = frozenset({
     "continue?", "what do you mean", "what do you mean?", "how come", "how come?", "your turn",
     "your turn?", "really then", "prove it", "prove it?", "what then", "what then?",
     "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
+    "like what", "like what?", "what else", "what else?", "what now", "what now?",
+    "and", "and?", "so what", "so what?",
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
     "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
     "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
@@ -52,6 +54,8 @@ def conversation_mode(text: str) -> str:
         return "emotional"
     if any(pattern.search(text) for pattern in STORY_PATTERNS):
         return "storytelling"
+    if is_reaction_message(text):
+        return "banter"
     if any(pattern.search(text) for pattern in BANTER_PATTERNS):
         return "banter"
     if is_social_message(text):
