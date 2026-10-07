@@ -76,11 +76,7 @@ class HadesMedia:
         key = self._key(message)
         gif_options = self._fresh_options(self.gifs, self._recent_gif[key])
         image_options = self._fresh_options(self.images, self._recent_image[key])
-        choices: list[tuple[str, str]] = [
-            *(("gif", url) for url in gif_options),
-            *(("image", url) for url in image_options),
-        ]
-        if not choices:
+        if not gif_options and not image_options:
             return None
 
         if gif_options and image_options:
