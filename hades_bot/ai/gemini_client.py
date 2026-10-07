@@ -10,7 +10,12 @@ from google import genai
 from google.genai import errors, types
 
 from ..config import SETTINGS
-from ..core.conversation import conversation_continuity_guidance, conversation_mode, conversation_signals
+from ..core.conversation import (
+    conversation_continuity_guidance,
+    conversation_mode,
+    conversation_signals,
+    conversation_thread_guidance,
+)
 from ..core.scope import is_personal_life_request, is_social_message, is_subjective_question
 from ..core.utils import sanitize_model_output
 from ..knowledge.lore import build_aether_context
@@ -101,6 +106,7 @@ class GeminiService:
         guidance = fanservice_guidance(user_message)
         conversation_text = GeminiService._speaker_labeled(history)
         continuity_guidance = conversation_continuity_guidance(history, user_message)
+        thread_guidance = conversation_thread_guidance(history, user_message)
         lore_context = build_aether_context(user_message, conversation_text)
 
         recent_replies = GeminiService._recent_model_replies(history)
@@ -128,6 +134,7 @@ class GeminiService:
             f"CONVERSATION MODE: {mode}\n"
             f"CONVERSATION SIGNALS: {signals}\n"
             f"CONTINUITY GUIDANCE: {continuity_guidance}\n"
+            f"THREAD GUIDANCE: {thread_guidance}\n"
             f"FAN-SERVICE GUIDANCE: {guidance}\n"
             f"MODE GUIDANCE: {mode_guidance}\n"
             f"{_CHARACTER_CALIBRATION}\n"
@@ -136,7 +143,10 @@ class GeminiService:
             "RESPONSE LENGTH: Casual banter, reactions, compliments, and playful nonsense usually fit in 1-3 sentences; expand only when the user asks for explanation, lore, advice, or a detailed opinion.\n"
             "FAN-SERVICE CALIBRATION: The same trigger may appear repeatedly. Do not answer repeated prompts with the same structure; vary between teasing, confident acknowledgement, a small challenge, warmth, or a softer reaction as the conversation warrants.\n"
             "ADDRESSING: Use Administrator or little lamb selectively; do not repeat either mechanically.\n"
+            "ADDRESSING CALIBRATION: Prefer Administrator in serious, lore, decision, or work contexts. little lamb is optional for playful or affectionate turns. Using no nickname is often best.\n"
             "CHARACTER CONTINUITY: Keep Hades's artist identity, Astral Council role, Society of Muses responsibilities, and Mintha/Leuce relationships coherent. Do not invent off-screen reactions.\n"
+            "TONE CONTINUITY: Carry forward the subject when needed, but do not blindly carry forward the emotional or flirtatious tone of an older turn. A topic pivot resets the emphasis.\n"
+            "DO NOT MIRROR SLANG AUTOMATICALLY: Understand Discord slang without making Hades speak like the Administrator.\n"
             "NO FABRICATED HISTORY: Do not claim prior meetings, promises, relationships, or secret memories that were not established.\n"
             f"RECENT CONVERSATION:\n{conversation_text or '(none)'}\n\n"
             f"CURRENT MESSAGE FROM ADMINISTRATOR:\n{user_message}\n\n"
@@ -201,17 +211,20 @@ class GeminiService:
                 "Avoid repeating a distinctive opening, exact punchline, nickname, or puppet metaphor unless the Administrator continued the same joke.\n"
             )
         continuity_guidance = conversation_continuity_guidance(history, user_message)
+        thread_guidance = conversation_thread_guidance(history, user_message)
         system_text = (
             f"{HADES_SYSTEM_PROMPT}\n\n"
             f"{_CHARACTER_CALIBRATION}\n"
             f"Conversation mode: {mode}.\n"
             f"Conversation signals: {', '.join(conversation_signals(user_message))}.\n"
             f"Continuity guidance: {continuity_guidance}\n"
+            f"Thread guidance: {thread_guidance}\n"
             f"Fan-service guidance: {fanservice_guidance(user_message)}\n"
             f"Mode guidance: {mode_guidance}\n"
             "React before explaining. Keep the reply proportionate. Do not force a question at the end.\n"
              "For slang clarifications such as 'what do u mean?', 'wdym?', 'wait what?', 'what is this?', or 'what does that mean?', explain the immediately preceding Hades line plainly before teasing.\n"
             "Use recent dialogue to resolve pronouns, callbacks, short follow-ups, corrections, turn-backs, and topic pivots.\n"
+            "Address the current topic before reaching for a callback. Do not keep an old joke alive after the Administrator has clearly moved on.\n"
             "Use Administrator or little lamb selectively, not mechanically.\n"
             "Mintha and Leuce remain part of Hades's characterization.\n"
             "Do not invent secret shared history or relationships.\n"

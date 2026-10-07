@@ -19,7 +19,9 @@ CORE_TERMS = tuple(TERMINOLOGY.get("core_terms", []))
 LORE_ANCHORS = (
     LoreAnchor("Hades", ("hades", "puppet master", "puppeteer"), "Hades is the Puppet Master, an S-Grade Modifier associated with the Society of Muses and Olympus. She is the seventh member of the Astral Council in the current character reference."),
     LoreAnchor("Hades character", ("youthful witch", "astral council", "seventh member", "puppet shop", "puppet maker", "artist"), "Hades is an accomplished artist associated with puppetry and theater. Her reference profile describes her as the person actually in charge of the Society of Muses' Modifier activities and notes her menacing demeanor during Society meetings."),
-    LoreAnchor("Society of Muses", ("society of muses", "muses"), "The Society of Muses is central to Hades' identity and responsibilities."),
+    LoreAnchor("Society of Muses", ("society of muses", "muses"), "The Society of Muses is central to Hades' identity and responsibilities. Publicly it presents itself as an appraisal society for unconventional art; operationally it also monitors Source Layer stability and gathers information related to Visbanes in Omorfies."),
+    LoreAnchor("Astral Council", ("astral council", "seventh member", "seventh seat"), "The Astral Council is the chief council overseeing Omorfies. Hades holds the seventh seat in the current character reference."),
+    LoreAnchor("Oneiroi", ("oneiroi", "dreamshade"), "Hades brought Oneiroi into the Society of Muses, where Mintha and Leuce look after her."),
     LoreAnchor("Mintha and Leuce", ("mintha", "leuce", "leuce and mintha"), "Mintha and Leuce are Hades' puppet maids and companions and belong naturally to her world."),
     LoreAnchor("Puppetry and art", ("puppet", "puppets", "puppetry", "strings", "puppet strings", "theater", "theatre", "doll", "dolls", "art", "artist"), "Puppetry, dolls, theater, art and performance are central to Hades' identity; these are genuine interests, not merely decorative metaphors."),
     LoreAnchor("Aether Gazer systems", CORE_TERMS, "Prefer Aether Gazer's own terminology rather than replacing it with generic gacha terminology."),
@@ -70,6 +72,8 @@ def _identity_context() -> list[str]:
         f"Character interests: {', '.join(identity.get('likes', ['Puppets', 'Theater performances']))}.",
         f"Character traits: {', '.join(role.get('traits', ['calm', 'confident', 'observant', 'mischievous', 'authoritative']))}.",
         f"Established background: {', '.join(role.get('background', ['owner of a puppet shop in Omorfies', 'later joined the Astral Council']))}.",
+        f"Artistic profile: {HADES_REFERENCE.get('artistic_profile', {}).get('creative_identity', 'stored reference')}.",
+        f"Society context: {HADES_REFERENCE.get('society_context', {}).get('public_role', 'stored reference')}.",
     ]
 
 
@@ -102,7 +106,7 @@ def build_aether_context(user_text: str, conversation_text: str = "", max_chars:
     if selected:
         lines.append("Relevant stable anchors:")
         lines.extend(f"- {anchor.name}: {anchor.context}" for anchor in selected)
-    if any(_contains(normalized, term) for term in ("hades", "puppet master", "society of muses", "mintha", "leuce")):
+    if any(_contains(normalized, term) for term in ("hades", "puppet master", "society of muses", "mintha", "leuce", "oneiroi", "dreamshade")):
         lines.append("Hades identity reference:")
         lines.extend(f"- {item}" for item in _identity_context())
     if any(_contains(normalized, term) for term in ("build", "sigil", "functor", "aether code", "access key", "skill", "divine grace")):

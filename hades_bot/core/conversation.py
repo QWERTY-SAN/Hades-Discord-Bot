@@ -102,6 +102,81 @@ def conversation_continuity_guidance(history: list[dict[str, str]], user_message
     return " ".join(parts)
 
 
+def conversation_thread_guidance(history: list[dict[str, str]], user_message: str) -> str:
+    """Build deterministic guidance for the current turn without inventing a hidden mood state."""
+    mode = conversation_mode(user_message)
+    signals = conversation_signals(user_message)
+    normalized = unicodedata.normalize("NFKC", user_message or "").casefold()
+    normalized = re.sub(r"[\u200b-\u200d\ufeff]", "", normalized)
+    normalized = re.sub(r"\s+", " ", normalized.strip())
+
+    parts = [f"Current conversational mode: {mode}.", f"Current signals: {', '.join(signals)}."]
+
+    recent_user_messages = [
+        item.get("content", "").strip()
+        for item in history[-8:]
+        if item.get("role") == "user" and item.get("content")
+    ][-3:]
+    recent_user_fanservice = [
+        fanservice_categories(item)
+        for item in recent_user_messages
+        if fanservice_categories(item)
+    ]
+
+    if recent_user_fanservice and not fanservice_categories(user_message):
+        parts.append(
+            "FAN-SERVICE CARRYOVER RULE: previous turns contained fan-service, but the current message does not. "
+            "Do not carry the flirtatious tone forward automatically."
+        )
+
+    if any(signal == "topic_pivot" for signal in signals):
+        parts.append(
+            "TOPIC PIVOT: treat the newest subject as primary. Do not drag the previous joke, flirtation, or lore thread into it unless the user reconnects them."
+        )
+
+    if "achievement" in signals:
+        parts.append(
+            "ACHIEVEMENT PRIORITY: recognize the Administrator's success or milestone before giving analysis or advice."
+        )
+
+    if "needs_comfort" in signals or mode == "emotional":
+        parts.append(
+            "EMOTIONAL PRIORITY: acknowledge the Administrator's emotional state before teasing, correcting, or over-explaining."
+        )
+
+    if "turn_back" in signals:
+        parts.append(
+            "TURN-BACK: the Administrator is asking for Hades's own viewpoint; answer from Hades's established perspective instead of returning the question."
+        )
+
+    if "question" in signals and mode == "general":
+        parts.append(
+            "QUESTION PRIORITY: answer the actual question before adding persona flavor."
+        )
+
+    if normalized in {"lol", "lmao", "haha", "hehe", "bro", "bruh", "idk", "ikr", "nahhh"}:
+        parts.append(
+            "MICRO-TURN: keep this reply small. Do not turn a one-word Discord reaction into a theatrical monologue."
+        )
+
+    if history:
+        last_user = recent_user_messages[-1] if recent_user_messages else ""
+        previous_hades = next(
+            (
+                item.get("content", "").strip()
+                for item in reversed(history)
+                if item.get("role") in {"assistant", "model"} and item.get("content")
+            ),
+            "",
+        )
+        if last_user:
+            parts.append(f"Immediate Administrator context: {last_user[:300]}")
+        if previous_hades:
+            parts.append(f"Immediate Hades context: {previous_hades[:450]}")
+
+    return " ".join(parts)
+
+
 def conversation_signals(text: str) -> list[str]:
     normalized = re.sub(r"\s+", " ", text.strip())
     signals: list[str] = []

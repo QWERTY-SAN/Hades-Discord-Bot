@@ -35,6 +35,8 @@ def test_short_followup_requires_history():
     assert is_hades_scope_allowed("No, I meant the other one.", has_history=False)
     assert is_hades_scope_allowed("nahhh", has_history=False)
     assert is_hades_scope_allowed("ikr", has_history=False)
+    assert is_hades_scope_allowed("Hades, what do you think of puppets?")
+    assert is_hades_scope_allowed("Hades, tell me about Oneiroi.")
 
 
 def test_hades_social_and_admiration_scope():
