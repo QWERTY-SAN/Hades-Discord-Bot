@@ -118,7 +118,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "playful_fandom": (
         re.compile(
             r"\b(?:mommy|my\s+queen|goddess|adopt\s+me|own\s+me|"
-            r"please\s+notice\s+me|i\s+need\s+you|i\s+want\s+your\s+attention|"
+            r"please\s+notice\s+me|i\s+want\s+your\s+attention|"
             r"call\s+me\s+little\s+lamb|your\s+little\s+lamb|i(?:'m|\s+am)\s+your\s+little\s+lamb|"
             r"call\s+me\s+your\s+favorite|your\s+favorite\s+little\s+lamb|"
             r"let\s+me\s+serve\s+you|make\s+me\s+your\s+puppet|"
@@ -139,9 +139,9 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(
             r"\b(?:stop\s+making\s+me\s+blush|you(?:'re|\s+are)\s+making\s+me\s+blush|"
             r"you\s+make\s+me\s+blush|i(?:'m|\s+am)\s+blushing|i(?:'m|\s+am)\s+folding|"
-            r"i(?:'m|\s+am)\s+weak\s+for\s+you|i\s+can't\s+handle\s+you|"
-            r"i\s+cannot\s+think\s+straight|you'?ve\s+got\s+me|i(?:'m|\s+am)\s+speechless|"
-            r"i\s+cannot\s+handle\s+you|you\s+make\s+me\s+nervous)\b",
+            r"i(?:'m|\s+am)\s+weak\s+for\s+you|"
+            r"i\s+cannot\s+think\s+straight|i(?:'m|\s+am)\s+speechless|"
+            r"you\s+make\s+me\s+nervous)\b",
             re.I,
         ),
     ),
