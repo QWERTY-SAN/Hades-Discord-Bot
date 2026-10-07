@@ -26,7 +26,7 @@ def test_fan_teasing_scope() -> None:
         "u r so hot",
         "ur sooo pretty",
         "ur seriously gorgeous",
-        "Hades, you're making it hard to focus.",
+        "Hades, you're making me blush.",
         "Hades, you look dangerous.",
         "Hades, absolute beauty.",
         "I have a crush on you",
@@ -63,7 +63,7 @@ def test_fanservice_categories() -> None:
     assert fanservice_category("u r so hot") == "admiration"
     assert fanservice_category("ur sooo pretty") == "admiration"
     assert fanservice_category("ur seriously gorgeous") == "admiration"
-    assert fanservice_category("Hades, you're making it hard to focus.") == "admiration"
+    assert fanservice_category("Hades, you're making me blush.") == "flustered"
     assert fanservice_category("Hades, you look dangerous.") == "admiration"
     assert fanservice_category("Hades, absolute beauty.") == "admiration"
     assert fanservice_category("tell me I'm good") == "praise"
