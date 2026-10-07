@@ -27,10 +27,14 @@ SHORT_FOLLOWUPS = frozenset({
     "your turn?", "really then", "prove it", "prove it?", "what then", "what then?",
     "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
     "like what", "like what?", "what else", "what else?", "what now", "what now?",
-    "and", "and?", "so what", "so what?",
+    "so what", "so what?",
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
     "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
     "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
+    "what is this", "what is this?", "what's this", "what's this?", "whats this", "whats this?",
+    "what is that", "what is that?", "what's that", "what's that?", "whats that", "whats that?",
+    "what does this mean", "what does this mean?", "what does that mean", "what does that mean?",
+    "what's that mean", "what's that mean?", "whats that mean", "whats that mean?",
 })
 CORRECTION_PREFIXES = re.compile(r"^(?:no[, ]|nah[, ]|wait[, ]|not exactly[, ]|that's not what i meant[, ]|i meant[, ]|actually[, ]|correction[, ]|wrong[, ])", re.I)
 TURN_BACK_PATTERNS = (
@@ -46,6 +50,8 @@ def conversation_mode(text: str) -> str:
         return "flirtation"
     if is_short_followup(text):
         return "continuation"
+    if CORRECTION_PREFIXES.search(text):
+        return "correction"
     if is_personal_life_request(text):
         return "advice"
     if is_subjective_question(text):
@@ -72,7 +78,8 @@ def is_short_followup(text: str) -> bool:
 
 def conversation_continuity_guidance(history: list[dict[str, str]], user_message: str) -> str:
     """Explain how a short follow-up should inherit the active conversational thread."""
-    if not history or not is_short_followup(user_message):
+    is_correction = bool(CORRECTION_PREFIXES.search(user_message.strip()))
+    if not history or (not is_short_followup(user_message) and not is_correction):
         return "No special continuity handoff is needed."
 
     previous_user = next((item.get("content", "").strip() for item in reversed(history) if item.get("role") == "user" and item.get("content")), "")
@@ -88,8 +95,10 @@ def conversation_continuity_guidance(history: list[dict[str, str]], user_message
             parts.append(f"The active social/fan-service thread was: {', '.join(categories)}.")
     if previous_hades:
         parts.append(f"Previous Hades reply: {previous_hades[:700]}")
-    if re.match(r"^(?:what do|what did|what u|wdym|wait what|huh)\b", user_message.strip(), re.I):
+    if re.match(r"^(?:what do|what did|what u|wdym|wait what|huh|what(?:'s| is)\s+(?:this|that)|what does\s+(?:this|that)\s+mean)\b", user_message.strip(), re.I):
         parts.append("CLARIFICATION RULE: explain what Hades meant in the immediately preceding reply before adding any tease. Do not repeat the old line verbatim.")
+    if is_correction:
+        parts.append("CORRECTION RULE: accept the Administrator's correction without defensiveness. Reinterpret the message according to what they meant, then continue naturally.")
     return " ".join(parts)
 
 
