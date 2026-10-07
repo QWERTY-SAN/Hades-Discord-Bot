@@ -140,7 +140,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"\b(?:stop\s+making\s+me\s+blush|you(?:'re|\s+are)\s+making\s+me\s+blush|"
             r"you\s+make\s+me\s+blush|i(?:'m|\s+am)\s+blushing|i(?:'m|\s+am)\s+folding|"
             r"i(?:'m|\s+am)\s+weak\s+for\s+you|"
-            r"i\s+cannot\s+think\s+straight|i(?:'m|\s+am)\s+speechless|"
+            r"i\s+cannot\s+think\s+straight|you'?ve\s+got\s+me\s+speechless|i(?:'m|\s+am)\s+speechless|"
             r"you\s+make\s+me\s+nervous)\b",
             re.I,
         ),
