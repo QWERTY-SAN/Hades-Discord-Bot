@@ -35,6 +35,13 @@ CONTEXTUAL_OFF_TOPIC_PATTERNS = (
     ("unrelated entertainment or media", re.compile(r"\b(?:movie|movies|film|films|tv|television|series|anime|manga|celebrity|actor|actress|singer|song|songs|band|concert|netflix|youtube|twitch|streamer|influencer)\b", re.I)),
     ("unrelated racing", re.compile(r"\b(?:racing|race)\b", re.I)),
 )
+CORRECTION_PATTERN = re.compile(
+    r"^(?:no[,! ]+|nah[,! ]+|wait[,! ]+|actually[,! ]+|correction[,! ]+|wrong[,! ]+|"
+    r"nots+(?:exactly|quite)[,! ]+|that'ss+nots+whats+is+meant[,.! ]*|"
+    r"is+meant[,.! ]+).{1,700}$",
+    re.I | re.S,
+)
+
 SPECIALIST_REQUESTS = (
     re.compile(r"\b(?:write|build|make|create|code|debug|fix|program|implement|develop|generate|show|give|provide)\b.{0,100}\b(?:code|script|program|bot|api|regex|source\s+code|discord\s+bot)\b", re.I | re.S),
     re.compile(r"\b(?:write|build|make|create|code|debug|fix|program|implement|develop|generate|show|give|provide)\b.{0,100}\b(?:python|javascript|typescript|java|c\+\+|c#|rust|golang|ruby|php|sql|regex|html|css|api|script|source\s+code|code\s+snippet|discord\.py|programming)\b", re.I | re.S),
@@ -64,7 +71,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:there\s+you\s+are|glad\s+(?:you'?re|you\s+are)\s+here|i\s+(?:wanted|want)\s+to\s+(?:see|talk\s+to|hear\s+from)\s+you|i(?:'ve|\s+have)\s+been\s+(?:thinking\s+about|looking\s+for)\s+you)[!. ]*$", re.I),
     re.compile(r"^(?:you'?re|you\s+are)\s+(?:funny|hilarious|sweet|kind|nice|charming|amusing|interesting|adorable|lovely|something\s+else)\b.{0,250}$", re.I | re.S),
     re.compile(r"^(?:hi|hello|hey|hiya|yo+|ayo+|sup|morning|evening|night|good\s+(?:morning|afternoon|evening|night)|welcome\s+back|good\s+to\s+see\s+you|nice\s+to\s+see\s+you|long\s+time\s+no\s+see)[!. ]*(?::[A-Za-z0-9_~+-]+:|<a?:[A-Za-z0-9_~+-]+:\d+>)*[!. ]*$", re.I),
-    re.compile(r"^(?:thanks?|thank\s+you|thx|ty|you'?re\s+welcome|no\s+worries|my\s+bad|sorry|good\s+luck|same|same\s+here|me\s+too|me\s+neither|you\s+too|exactly|true|fair|fair\s+enough|makes\s+sense|that\s+makes\s+sense|for\s+real|fr|ngl|tbh|right|no\s+way|really\??|seriously\??|of\s+course|sure|okay|ok|alright|fine|yep|yes|yeah|yup|nope|nah|maybe|perhaps)[!. ]*$", re.I),
+    re.compile(r"^(?:thanks?|thank\s+you|thx|ty|you'?re\s+welcome|no\s+worries|my\s+bad|sorry|good\s+luck|same|same\s+here|me\s+too|me\s+neither|you\s+too|exactly|true|fair|fair\s+enough|makes\s+sense|that\s+makes\s+sense|for\s+real|fr|frfr|ikr|ngl|tbh|idk|idc|right|no\s+way|really\??|seriously\??|of\s+course|sure|okay|ok|alright|alrighty|fine|yep+|yes|yeah+|yuh|yup|nope|nah+|maybe|perhaps|bro|bruh+|lmao+|lol+)[!. ]*$", re.I),
     re.compile(r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+(?:okay|good|tired|busy|bored|happy|sad|lonely|curious|sleepy)|what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|what\s+about\s+you|how\s+about\s+you|and\s+you\??|how\s+was\s+your\s+day|did\s+you\s+sleep|did\s+you\s+rest|what\s+have\s+you\s+been\s+doing|can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|keep\s+me\s+company|tell\s+me\s+about\s+yourself|tell\s+me\s+something|say\s+something|what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember|miss)\s+me|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|what\s+do\s+you\s+(?:like|enjoy|prefer)|do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat))[?.! ]*$", re.I),
     re.compile(r"^(?:guess\s+what|look\s+at\s+this|listen|you\s+know\s+what|you\s+know|i\s+have\s+something\s+to\s+tell\s+you|want\s+to\s+hear\s+something|let's\s+(?:talk|chat)|let\s+us\s+(?:talk|chat)|make\s+me\s+smile|cheer\s+me\s+up|i'?m\s+(?:bored|tired|sad|happy|lonely|excited|upset|fine|okay|back|home|sleepy)|i\s+(?:just\s+got\s+home|just\s+woke\s+up|just\s+got\s+back|miss|missed|like|love|hate|need|want|feel|think|guess|remember)\b).{0,700}$", re.I | re.S),
     re.compile(r"^(?:that's|thats|this\s+is|this\s+was|that\s+is|that\s+was|it(?:'s|\s+is)|it\s+was|sounds\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|looks\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|seems\s+(?:like|good|fun|nice|rough|wild|crazy|interesting))\b.{0,700}$", re.I | re.S),
@@ -94,14 +101,23 @@ SHORT_FOLLOWUPS = frozenset({
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
     "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
     "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
+    "what is this", "what is this?", "what's this", "what's this?", "whats this", "whats this?",
+    "what is that", "what is that?", "what's that", "what's that?", "whats that", "whats that?",
+    "what does this mean", "what does this mean?", "what does that mean", "what does that mean?",
+    "what's that mean", "what's that mean?", "whats that mean", "whats that mean?",
 })
 
 
 CONTEXTUAL_FOLLOWUPS = frozenset({
     "why", "why?", "how so", "how so?", "go on", "go on.", "and then", "and then?",
     "what about her", "what about her?", "what about him", "what about him?", "what about that", "what about that?",
+    "what about this", "what about this?", "what about it", "what about it?",
     "tell me more", "continue", "continue?", "how come", "how come?",
     "what then", "what then?", "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
+    "what is this", "what is this?", "what's this", "what's this?", "whats this", "whats this?",
+    "what is that", "what is that?", "what's that", "what's that?", "whats that", "whats that?",
+    "what does this mean", "what does this mean?", "what does that mean", "what does that mean?",
+    "what's that mean", "what's that mean?", "whats that mean", "whats that mean?",
 })
 
 
@@ -193,6 +209,8 @@ def is_social_message(text: str) -> bool:
         return True
     if any(pattern.search(normalized) for pattern in STORYTELLING_PATTERNS):
         return True
+    if CORRECTION_PATTERN.search(normalized):
+        return True
     return any(pattern.search(normalized) for pattern in SOCIAL_PATTERNS)
 
 
@@ -244,7 +262,7 @@ def scope_block_reason(text: str) -> str:
         return category
     if is_specialist_request(text):
         return "programming or specialist work"
-    if is_personal_life_request(text) or is_social_message(text) or is_subjective_question(text):
+    if is_personal_life_request(text) or is_social_message(text) or is_subjective_question(text) or CORRECTION_PATTERN.search(_normalize(text)):
         return ""
     if GENERAL_FACTUAL_QUESTION.search(_normalize(text)):
         return "unrelated factual information"
