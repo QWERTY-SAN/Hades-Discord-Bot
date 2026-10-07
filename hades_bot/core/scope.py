@@ -45,6 +45,11 @@ GENERAL_FACTUAL_QUESTION = re.compile(
     r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define|is|are|can|could|do|does|did|should|would|will|have|has|may|might)\b",
     re.I,
 )
+REACTION_ONLY_PATTERN = re.compile(
+    r"^(?:(?:[\U0001F300-\U0001FAFF\u2600-\u27BF]|<a?:[A-Za-z0-9_~+-]+:\d+>|:[A-Za-z0-9_~+-]+:|:3c?|x3|xd)[\s.!?]*)+$",
+    re.I,
+)
+
 STORYTELLING_PATTERNS = (
     re.compile(
         r"^(?:so\s+today|today\s+i|earlier\s+i|yesterday\s+i|last\s+night\s+i|"
@@ -63,7 +68,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+(?:okay|good|tired|busy|bored|happy|sad|lonely|curious|sleepy)|what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|what\s+about\s+you|how\s+about\s+you|and\s+you\??|how\s+was\s+your\s+day|did\s+you\s+sleep|did\s+you\s+rest|what\s+have\s+you\s+been\s+doing|can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|keep\s+me\s+company|tell\s+me\s+about\s+yourself|tell\s+me\s+something|say\s+something|what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember|miss)\s+me|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|what\s+do\s+you\s+(?:like|enjoy|prefer)|do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat))[?.! ]*$", re.I),
     re.compile(r"^(?:guess\s+what|look\s+at\s+this|listen|you\s+know\s+what|you\s+know|i\s+have\s+something\s+to\s+tell\s+you|want\s+to\s+hear\s+something|let's\s+(?:talk|chat)|let\s+us\s+(?:talk|chat)|make\s+me\s+smile|cheer\s+me\s+up|i'?m\s+(?:bored|tired|sad|happy|lonely|excited|upset|fine|okay|back|home|sleepy)|i\s+(?:just\s+got\s+home|just\s+woke\s+up|just\s+got\s+back|miss|missed|like|love|hate|need|want|feel|think|guess|remember)\b).{0,700}$", re.I | re.S),
     re.compile(r"^(?:that's|thats|this\s+is|this\s+was|that\s+is|that\s+was|it(?:'s|\s+is)|it\s+was|sounds\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|looks\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|seems\s+(?:like|good|fun|nice|rough|wild|crazy|interesting))\b.{0,700}$", re.I | re.S),
-    re.compile(r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|oof|welp|bruh|based|real|hmm+|oh+|ah+|yikes|whoa+|phew|that's|thats|this\s+is|that\s+was|you'?re\s+funny|you\s+know|oh\s+really|is\s+that\s+so)(?:[!. ]|$).{0,300}$", re.I | re.S),
+    re.compile(r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|oof|welp|bruh|based|real|hmm+|oh+|ah+|yikes|whoa+|woah+|phew|that's|thats|this\s+is|that\s+was|you'?re\s+funny|you\s+know|oh\s+really|is\s+that\s+so|owo|uwu)(?:[!. ]|$).{0,300}$", re.I | re.S),
     re.compile(r"^(?:eh|uh+|umm*|well)[,\s]+(?:like\s+what|and\s+what|what\s+else|what\s+now|so\s+what)[?!., ]*$", re.I),
     re.compile(r"^(?:like\s+what|and\s+what|what\s+else|what\s+now|so\s+what)[?!., ]*$", re.I),
     re.compile(r"^(?:ok|okay|alright|fine)[,\s]+as\s+(?:u|you)\s+say\b.{0,700}$", re.I | re.S),
@@ -166,6 +171,11 @@ def is_specialist_request(text: str) -> bool:
     return any(pattern.search(normalized) for pattern in SPECIALIST_REQUESTS)
 
 
+def is_reaction_message(text: str) -> bool:
+    normalized = _normalize(text)
+    return bool(REACTION_ONLY_PATTERN.fullmatch(normalized))
+
+
 def is_personal_life_request(text: str) -> bool:
     normalized = _normalize(text)
     return any(pattern.search(normalized) for pattern in PERSONAL_LIFE_PATTERNS)
@@ -174,6 +184,8 @@ def is_personal_life_request(text: str) -> bool:
 def is_social_message(text: str) -> bool:
     normalized = _normalize(text)
     if fanservice_category(normalized) is not None:
+        return True
+    if is_reaction_message(normalized):
         return True
     if is_short_followup(normalized):
         return True
