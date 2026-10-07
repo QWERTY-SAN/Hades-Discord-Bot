@@ -201,7 +201,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"\b(?:give\s+me\s+attention|give\s+me\s+your\s+attention|pay\s+attention\s+to\s+me|"
             r"look\s+at\s+me|notice\s+me|don't\s+ignore\s+me|please\s+notice\s+me|"
             r"i\s+need\s+your\s+attention|i\s+want\s+your\s+attention|pick\s+me|choose\s+me|"
-            r"talk\s+to\s+me|look\s+my\s+way|stay\s+with\s+me)\b",
+            r"look\s+my\s+way)\b",
             re.I,
         ),
     ),
