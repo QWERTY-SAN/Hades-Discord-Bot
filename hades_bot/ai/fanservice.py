@@ -60,7 +60,11 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"\b(?:kiss(?:\s+me)?|give\s+me\s+a\s+kiss|hug(?:\s+me)?|cuddle(?:\s+me)?|hold\s+me|"
             r"hold\s+my\s+hand|take\s+my\s+hand|pat\s+my\s+head|headpats?|headpat(?:\s+me)?|"
             r"pet\s+me|embrace\s+me|comfort\s+me|stay\s+close\s+to\s+me|stay\s+with\s+me|"
-            r"sit\s+next\s+to\s+me|sit\s+with\s+me|carry\s+me|let\s+me\s+hold\s+you|"
+            r"sit\s+next\s+to\s+me|sit\s+with\s+me|sit\s+beside\s+me|come\s+sit\s+with\s+me|"
+            r"carry\s+me|let\s+me\s+hold\s+you|let\s+me\s+hold\s+your\s+hand|"
+            r"let\s+me\s+lean\s+on\s+you|let\s+me\s+rest\s+on\s+your\s+shoulder|"
+            r"give\s+me\s+a\s+forehead\s+kiss|kiss\s+my\s+forehead|kiss\s+my\s+cheek|"
+            r"kiss\s+my\s+hand|hold\s+me\s+close|pull\s+me\s+closer|"
             r"let\s+me\s+cuddle|sleep\s+on\s+(?:your|ur)\s+(?:thighs?|lap)|"
             r"rest\s+(?:my|your)\s+head\s+on\s+(?:your|my)\s+(?:lap|thighs?)|"
             r"(?:sit|lie)\s+on\s+(?:your|my)\s+lap|take\s+a\s+nap\s+(?:on|with)\s+you)\b",
@@ -83,6 +87,42 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(
             r"\b(?:your|ur)\s+(?:scent|aroma|perfume)\b|"
             r"\b(?:sniff|smell|whiff)\s+(?:behind\s+)?(?:your|ur)\b",
+            re.I,
+        ),
+    ),
+
+    "captivated": (
+        re.compile(
+            r"\b(?:you\s+have\s+me\s+under\s+your\s+spell|you've\s+got\s+me\s+under\s+your\s+spell|"
+            r"you\s+have\s+me\s+wrapped\s+around\s+your\s+finger|you've\s+got\s+me\s+wrapped\s+around\s+your\s+finger|"
+            r"putty\s+in\s+your\s+hands|you\s+have\s+me\s+mesmerized|you've\s+got\s+me\s+mesmerized|"
+            r"you\s+live\s+rent[- ]free\s+in\s+my\s+head|you(?:'re|\s+are)\s+living\s+rent[- ]free\s+in\s+my\s+head|"
+            r"i\s+can't\s+stop\s+thinking\s+about\s+you|i\s+can't\s+get\s+you\s+out\s+of\s+my\s+head|"
+            r"you\s+are\s+so\s+captivating|you're\s+so\s+captivating|you\s+are\s+mesmerizing|you're\s+mesmerizing|"
+            r"you\s+have\s+my\s+full\s+attention|you've\s+got\s+my\s+full\s+attention)\b",
+            re.I,
+        ),
+    ),
+
+    "devotion": (
+        re.compile(
+            r"\b(?:i\s+am\s+devoted\s+to\s+you|i'm\s+devoted\s+to\s+you|"
+            r"your\s+devoted\s+(?:little\s+)?lamb|your\s+loyal\s+(?:little\s+)?lamb|"
+            r"i'd\s+serve\s+you|i\s+will\s+serve\s+you|let\s+me\s+serve\s+you|"
+            r"i'd\s+worship\s+you|i\s+would\s+worship\s+you|worship\s+you|"
+            r"i\s+am\s+at\s+your\s+feet|i'm\s+at\s+your\s+feet|"
+            r"all\s+for\s+you|anything\s+for\s+you|your\s+faithful\s+little\s+lamb)\b",
+            re.I,
+        ),
+    ),
+
+    "playful_jealousy": (
+        re.compile(
+            r"\b(?:don't\s+make\s+me\s+jealous|are\s+you\s+flirting\s+with\s+(?:everyone|someone\s+else)|"
+            r"am\s+i\s+the\s+only\s+one|am\s+i\s+your\s+favorite|"
+            r"are\s+you\s+giving\s+(?:them|her|him)\s+that\s+look|"
+            r"what\s+about\s+me|save\s+some\s+attention\s+for\s+me|"
+            r"you're\s+making\s+me\s+jealous|you'?re\s+making\s+me\s+jealous)\b",
             re.I,
         ),
     ),
@@ -130,6 +170,17 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(
             r"\b(?:absolute\s+beauty|what\s+a\s+beauty|you(?:'re|\s+are)\s+seriously\s+(?:pretty|beautiful|hot|gorgeous)|"
             r"ur\s+seriously\s+(?:pretty|beautiful|hot|gorgeous))\b",
+            re.I,
+        ),
+        re.compile(
+            r"\b(?:i\s+could\s+(?:stare|look)\s+at\s+you\s+all\s+day|i\s+could\s+listen\s+to\s+(?:you|your\s+voice)\s+all\s+day|"
+            r"your\s+voice\s+is\s+(?:dangerous|beautiful|addictive|mesmerizing|gorgeous)|"
+            r"the\s+way\s+you\s+speak\s+is\s+(?:dangerous|beautiful|mesmerizing)|"
+            r"your\s+smile\s+should\s+be\s+illegal|you\s+should\s+be\s+illegal\s+to\s+look\s+at|"
+            r"you\s+are\s+such\s+a\s+distraction|you're\s+such\s+a\s+distraction|"
+            r"you\s+make\s+it\s+hard\s+to\s+focus|you've\s+made\s+me\s+forget\s+what\s+i\s+was\s+saying|"
+            r"i\s+forgot\s+what\s+i\s+was\s+saying\s+because\s+of\s+you|"
+            r"i\s+can'?t\s+look\s+away\s+from\s+you)\b",
             re.I,
         ),
     ),
@@ -260,6 +311,9 @@ _CATEGORY_PRIORITY = (
     "romantic",
     "affection",
     "scent_and_proximity",
+    "captivated",
+    "devotion",
+    "playful_jealousy",
     "admiration",
     "praise",
     "playful_fandom",
@@ -292,6 +346,19 @@ _CATEGORY_GUIDANCE = {
         "The Administrator is making a playful, intimate-but-non-explicit request involving Hades's scent, perfume, sniffing, whiffing, "
         "or close physical proximity. Hades may tease the boldness, set a boundary, allow a harmless playful gesture, or mock the request. "
         "Keep it non-explicit and avoid erotic or graphic detail."
+    ),
+    "captivated": (
+        "The Administrator is describing being fascinated, distracted, mesmerized, or mentally preoccupied by Hades. "
+        "Hades may enjoy the effect, tease them for losing focus, accept the attention, or calmly point out that they seem rather captivated. "
+        "Keep it playful and non-explicit."
+    ),
+    "devotion": (
+        "The Administrator is using exaggerated devotion or worshipful fandom language. Treat it as playful fictional admiration, not a literal hierarchy. "
+        "Hades may indulge the drama, tease their devotion, give them a mock task, or graciously accept the compliment without encouraging dependency."
+    ),
+    "playful_jealousy": (
+        "The Administrator is expressing playful jealousy or asking whether Hades gives others the same attention. "
+        "Respond with teasing, reassurance, or amused confidence. Never turn this into possessiveness, exclusivity, loyalty tests, or emotional dependency."
     ),
     "admiration": (
         "The user is admiring Hades. Acknowledge the actual compliment first. Hades may accept it calmly, tease the user's boldness, "
@@ -330,9 +397,9 @@ _CATEGORY_GUIDANCE = {
     ),
 }
 
-_WARM_CATEGORIES = frozenset({"affection", "scent_and_proximity", "admiration", "attention_seek", "playful_fandom", "praise"})
+_WARM_CATEGORIES = frozenset({"affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
-_FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
+_FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
 
 def fanservice_categories(text: str) -> tuple[str, ...]:
@@ -360,6 +427,9 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         "fan_command",
         "playful_dominance",
         "romantic",
+        "captivated",
+        "devotion",
+        "playful_jealousy",
         "puppet_fantasy",
         "flirtation",
         "flustered",
@@ -369,7 +439,7 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         token in normalized
         for token in ("gorgeous", "beautiful", "pretty", "stunning", "hot", "breathtaking", "caught my eye", "drew my attention")
     )
-    soft_categories = {"affection", "attention_seek", "playful_fandom", "praise"}
+    soft_categories = {"affection", "scent_and_proximity", "admiration", "attention_seek", "playful_fandom", "praise"}
     if strong_primary or direct_admiration:
         confidence = "high"
     elif categories and set(categories).issubset(soft_categories):
@@ -433,7 +503,9 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         + " Recognize what the Administrator actually said before escalating the joke. "
         + "Generate a fresh response for this exact message; this is not a response template. "
         + "Do not select from a fixed response list or repeat a stock line. Vary the wording and match the recent conversation. "
-        + "Choose one dominant reaction style for the turn: direct acknowledgement, teasing, mockery, restrained flirtation, warmth, or challenge. "
+        + "Choose one dominant reaction style for the turn: direct acknowledgement, teasing, mockery, restrained flirtation, warmth, challenge, amused acceptance, or graceful deflection. "
+        + "Use the category as a cue, not a script: the same category can produce very different Hades reactions. "
+        + "Do not make Hades more intimate just because multiple categories matched; use the strongest cue and keep the rest as supporting context. "
         + "For a one-line compliment or fan cue, a compact 1-2 sentence response is often strongest. Do not automatically intensify every turn. "
         + "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure."
     )

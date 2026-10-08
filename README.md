@@ -73,6 +73,10 @@ The bot includes a narrow, dynamic fan-service layer for playful admiration and 
 
 Hades' strict topic scope now recognizes more Hades-directed social cues without turning her into a general-purpose assistant. This includes date invitations, shared meals, scent/perfume/whiff requests, close-proximity affection, playful "hard to get" banter, and contextual follow-ups such as "how did you know?". These cues remain dynamic Gemini-generated interactions; they are not predefined responses.
 
+### Expanded fan-service
+
+Fan-service now covers more than direct compliments or "step on me" prompts. Detection includes captivated/mesmerized language, theatrical devotion, playful jealousy, additional affection cues, voice/presence compliments, and attention-focused flirting. These are classification cues for Gemini—not a fixed response bank—and Hades is instructed to vary between teasing, graceful acceptance, mock authority, warmth, challenge, and restrained flirtation.
+
 
 ### Hades images
 
@@ -256,7 +260,7 @@ Hades-Discord-Bot/
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Release
-Version 1.4.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
+Version 1.5.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
 
 
 ### Automatic media
