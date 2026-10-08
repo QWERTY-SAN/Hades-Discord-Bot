@@ -57,7 +57,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
     "social_invitation": (
         re.compile(
-            r"\b(?:want\s+to\s+go\s+out|wanna\s+go\s+out(?!\s+for\s+(?:a|an)\s+date)|"
+            r"\b(?:want\s+to\s+go\s+out(?!\s+for\s+(?:a|an)\s+date)|wanna\s+go\s+out(?!\s+for\s+(?:a|an)\s+date)|"
             r"want\s+to\s+go\s+out\s+and\s+eat(?:\s+something)?|"
             r"wanna\s+go\s+out\s+and\s+eat(?:\s+something)?|"
             r"go\s+out\s+for\s+(?:food|dinner|lunch|breakfast|coffee)|"
