@@ -56,6 +56,12 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
     ),
+    "relationship_banter": (
+        re.compile(
+            r"\b(?:what\s+are\s+we|so\s+what\s+are\s+we|are\s+we\s+(?:dating|a\s+thing|official)|what(?:'s|\s+is)\s+our\s+(?:status|relationship)|where\s+do\s+i\s+stand\s+with\s+you|what\s+am\s+i\s+to\s+you|do\s+i\s+have\s+(?:a\s+chance|a\s+shot)|any\s+chance\s+for\s+me|are\s+you\s+(?:into|interested\s+in)\s+me|is\s+there\s+something\s+between\s+us|do\s+you\s+like\s+me)\b",
+            re.I,
+        ),
+    ),
     "social_invitation": (
         re.compile(
             r"\b(?:want\s+to\s+go\s+out(?!\s+for\s+(?:a|an)\s+date)|wanna\s+go\s+out(?!\s+for\s+(?:a|an)\s+date)|"
@@ -359,6 +365,7 @@ _CATEGORY_PRIORITY = (
     "fan_command",
     "playful_dominance",
     "romantic",
+    "relationship_banter",
     "social_invitation",
     "affection",
     "scent_and_proximity",
@@ -391,6 +398,10 @@ _CATEGORY_GUIDANCE = {
     "romantic": (
         "Treat the user's romantic declaration as light fictional affection. Hades may flirt back, tease them, "
         "or playfully question how serious they are without promising a literal real-world relationship."
+    ),
+    "relationship_banter": (
+        "The Administrator is probing the relationship dynamic itself. Answer the social question instead of dodging it. "
+        "Hades may tease, give a measured answer, keep them guessing, or flirt lightly without inventing an established real-world relationship."
     ),
     "social_invitation": (
         "Treat this as a normal invitation to spend time together. It is social first, not automatically romantic. "
@@ -477,7 +488,7 @@ _REACTION_REPERTOIRE = (
 
 _WARM_CATEGORIES = frozenset({"social_invitation", "affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "voice_and_eye_contact", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
-_FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
+_FLIRTY_CATEGORIES = frozenset({"romantic", "relationship_banter", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
 
 def fanservice_categories(text: str) -> tuple[str, ...]:
@@ -505,6 +516,7 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         "fan_command",
         "playful_dominance",
         "romantic",
+        "relationship_banter",
         "captivated",
         "devotion",
         "playful_jealousy",
@@ -574,6 +586,8 @@ def fanservice_cue_shape(text: str) -> str:
         return "social_invitation"
     if "romantic" in categories:
         return "romantic_admission"
+    if "relationship_banter" in categories:
+        return "relationship_banter"
     if "affection" in categories:
         return "affection_request"
     if "attention_seek" in categories:
@@ -609,6 +623,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         "fan_command": "bold_request",
         "playful_dominance": "bold_request",
         "romantic": "romantic_admission",
+        "relationship_banter": "relationship_banter",
         "social_invitation": "social_invitation",
         "affection": "affection_request",
         "scent_and_proximity": "focused_attention",
