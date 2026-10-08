@@ -145,7 +145,7 @@ class HadesBot(commands.Bot):
                 await self.cooldowns.release(key)
                 await message.reply("Tsk. You have my attention. Try that again.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
                 return
-            await self.send_chunks(message, reply, attach_auto_media=(trigger == "mention"))
+            await self.send_chunks(message, reply, attach_auto_media=(trigger in {"mention", "command"}))
         except UnsafeModelOutputError:
             logger.warning("Blocked forbidden-topic model output for %s", key)
             await self.cooldowns.release(key)
