@@ -2,6 +2,9 @@ from hades_bot.core.scope import is_hades_scope_allowed, scope_block_reason
 
 allowed = [
     "Hades, tell me about the Society of Muses.",
+    "wanna go out for an date?",
+    "Old Hag",
+    "Fine, you won the battle, but have yet to win the war.",
     "What do you think of puppetry?",
     "How are you feeling, Hades?",
     "Tell me about Divine Grace.",
