@@ -235,7 +235,9 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(
             r"\b(?:prove\s+it|try\s+me|bet\s+you\s+can't|bet\s+you\s+won't|make\s+me\s+blush|"
             r"make\s+me\s+flustered|fluster\s+me|think\s+you\s+can\s+handle\s+me|"
-            r"can\s+you\s+handle\s+me|your\s+move|your\s+turn|go\s+on\s+then)\b",
+            r"can\s+you\s+handle\s+me|your\s+move|your\s+turn|go\s+on\s+then|"
+            r"hard\s+to\s+get|playing\s+hard\s+to\s+get|making\s+me\s+work\s+for\s+it|"
+            r"short\s+end\s+of\s+the\s+stick)\b",
             re.I,
         ),
     ),
