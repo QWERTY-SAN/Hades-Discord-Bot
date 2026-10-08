@@ -152,6 +152,8 @@ def test_expanded_fluster_and_type_cues():
     assert fanservice_category("you got me folding") == "flustered"
     assert fanservice_category("you're exactly my type") == "admiration"
     assert fanservice_category("Hades is definitely my type") == "admiration"
+    assert fanservice_category("Hades is exactly my type") == "admiration"
+    assert fanservice_category("Hades is my type") == "admiration"
 
 
 def test_cue_shape_distinguishes_social_moves():

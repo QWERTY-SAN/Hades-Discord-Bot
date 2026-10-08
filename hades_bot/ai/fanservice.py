@@ -191,8 +191,8 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
         re.compile(
-            r"\b(?:you(?:'re|\s+are)|ur|hades)\s+(?:exactly\s+)?my\s+type\b|"
-            r"\b(?:you(?:'re|\s+are)|ur|hades)\s+(?:totally|definitely|absolutely)\s+my\s+type\b",
+            r"\b(?:you(?:'re|\s+are)|ur)\s+(?:(?:exactly|totally|definitely|absolutely)\s+)?my\s+type\b|"
+            r"\bhades\s+(?:is\s+)?(?:(?:exactly|totally|definitely|absolutely)\s+)?my\s+type\b",
             re.I,
         ),
     ),
