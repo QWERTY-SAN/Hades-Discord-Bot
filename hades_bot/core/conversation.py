@@ -4,7 +4,13 @@ import re
 import unicodedata
 
 from ..ai.fanservice import analyze_fanservice, fanservice_categories, fanservice_intensity
-from .scope import is_personal_life_request, is_reaction_message, is_social_message, is_subjective_question
+from .scope import (
+    is_personal_life_request,
+    is_reaction_message,
+    is_social_message,
+    is_social_planning_request,
+    is_subjective_question,
+)
 
 EMOTIONAL_PATTERNS = (
     re.compile(r"\b(?:i(?:'m| am)|i feel)\s+(?:so\s+)?(?:sad|happy|angry|mad|annoyed|pissed|upset|tired|exhausted|lonely|bored|excited|nervous|anxious|embarrassed|overwhelmed|proud|disappointed|confused|stressed|frustrated|drained|sleepy|restless|hurt)\b", re.I),
@@ -47,7 +53,20 @@ TOPIC_PIVOT_PATTERNS = (
 )
 
 
+ACKNOWLEDGEMENT_WORDS = frozenset({
+    "ok", "okay", "alright", "alrighty", "sure", "fine", "yep", "yeah", "yup",
+    "yes", "nope", "nah", "fair enough", "makes sense", "that makes sense",
+    "got it", "understood", "exactly", "true", "fr", "frfr", "same", "same here",
+})
+
+def is_simple_acknowledgement(text: str) -> bool:
+    normalized = unicodedata.normalize("NFKC", text or "").casefold()
+    normalized = re.sub(r"[\u200b-\u200d\ufeff]", "", normalized)
+    normalized = re.sub(r"\s+", " ", normalized.strip())
+    return normalized.rstrip(".!?") in ACKNOWLEDGEMENT_WORDS
+
 def conversation_mode(text: str) -> str:
+
     # Emotional intent takes precedence over affection/fan-service cues.
     if any(pattern.search(text) for pattern in EMOTIONAL_PATTERNS):
         return "emotional"
@@ -71,6 +90,10 @@ def conversation_mode(text: str) -> str:
         return "continuation"
     if CORRECTION_PREFIXES.search(text):
         return "correction"
+    if is_social_planning_request(text):
+        return "social_planning"
+    if is_simple_acknowledgement(text):
+        return "acknowledgement"
     if is_personal_life_request(text):
         return "advice"
     if is_subjective_question(text):
@@ -165,6 +188,19 @@ def conversation_thread_guidance(history: list[dict[str, str]], user_message: st
             "TURN-BACK: the Administrator is asking for Hades's own viewpoint; answer from Hades's established perspective instead of returning the question."
         )
 
+    if mode == "social_planning":
+        parts.append(
+            "SOCIAL-PLANNING: the Administrator is proposing or asking about spending time together. "
+            "Treat the plan as the actual subject. Offer a natural Hades-like option, accept/decline/tease it, or suggest a fitting activity. "
+            "Do not automatically turn ordinary companionship into romance."
+        )
+
+    if mode == "acknowledgement":
+        parts.append(
+            "ACKNOWLEDGEMENT: the Administrator is simply confirming or agreeing. "
+            "Keep the response small and conversational. Do not turn a simple confirmation into a formal ruling or theatrical closure."
+        )
+
     if "question" in signals and mode == "general":
         parts.append(
             "QUESTION PRIORITY: answer the actual question before adding persona flavor."
@@ -208,6 +244,10 @@ def conversation_signals(text: str) -> list[str]:
         signals.append("turn_back")
     if any(pattern.search(normalized) for pattern in TOPIC_PIVOT_PATTERNS):
         signals.append("topic_pivot")
+    if is_social_planning_request(normalized):
+        signals.append("social_planning")
+    if is_simple_acknowledgement(normalized):
+        signals.append("acknowledgement")
     if re.search(r"\b(?:finally|i did it|we did it|got it|got them|got her|got him|pulled|won|cleared|finished|completed)\b", normalized, re.I):
         signals.append("achievement")
     if re.search(r"\b(?:rough day|bad day|i feel awful|i feel like crap|i need comfort|comfort me|reassure me|i'm overwhelmed|i am overwhelmed)\b", normalized, re.I):
