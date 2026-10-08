@@ -96,7 +96,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"\b(?:you\s+have\s+me\s+under\s+your\s+spell|you've\s+got\s+me\s+under\s+your\s+spell|"
             r"you\s+have\s+me\s+wrapped\s+around\s+your\s+finger|you've\s+got\s+me\s+wrapped\s+around\s+your\s+finger|"
             r"putty\s+in\s+your\s+hands|you\s+have\s+me\s+mesmerized|you've\s+got\s+me\s+mesmerized|"
-            r"you\s+live\s+rent[- ]free\s+in\s+my\s+head|you\s+are\s+living\s+rent[- ]free\s+in\s+my\s+head|"
+            r"you\s+live\s+rent[- ]free\s+in\s+my\s+head|you\s+(?:are|re)\s+living\s+rent[- ]free\s+in\s+my\s+head|"
             r"i\s+can't\s+stop\s+thinking\s+about\s+you|i\s+can't\s+get\s+you\s+out\s+of\s+my\s+head|"
             r"you\s+are\s+so\s+captivating|you're\s+so\s+captivating|you\s+are\s+mesmerizing|you're\s+mesmerizing|"
             r"you\s+have\s+my\s+full\s+attention|you've\s+got\s+my\s+full\s+attention)\b",
