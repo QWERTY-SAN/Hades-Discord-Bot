@@ -50,6 +50,12 @@ def test_new_categories_are_detected():
     assert fanservice_category("stop making me blush") == "flustered"
     assert fanservice_category("prove it") == "teasing_challenge"
 
+    assert fanservice_category("Want to go on a date?") == "romantic"
+    assert fanservice_category("Can I take you out to dinner?") == "romantic"
+    assert fanservice_category("May I take a whiff of your scent?") == "scent_and_proximity"
+    assert fanservice_category("Can I sniff behind your ears?") == "scent_and_proximity"
+    assert fanservice_category("why are you so hard to get?") == "teasing_challenge"
+
 
 def test_multiple_categories_survive():
     categories = fanservice_categories("You're gorgeous. Step on me.")
@@ -61,6 +67,7 @@ def test_intensity_is_calibrated():
     assert fanservice_intensity("you're gorgeous") == "warm"
     assert fanservice_intensity("don't tempt me like that") == "flirty"
     assert fanservice_intensity("step on me") == "bold"
+    assert fanservice_intensity("may I take a whiff of your scent?") == "warm"
 
 
 def test_guidance_is_not_a_response_template():

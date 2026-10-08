@@ -1,4 +1,11 @@
-# Hades Discord Bot 1.3.0
+# Hades Discord Bot 1.4.0
+
+## Expanded social behavior
+- Date invitations and shared meal plans are recognized as Hades-directed social interaction.
+- Scent/perfume/whiff requests and close-proximity requests are handled as playful, non-explicit fan-service cues rather than unrelated-topic refusals.
+- Common continuation questions such as "how did you know?" inherit the active Hades conversation when history exists.
+- More Aether Gazer character names are recognized directly by the strict scope gate.
+- New smoke coverage mirrors the problematic conversation patterns seen in the Discord export.
 
 ## Reliability
 - Generated replies are scope-checked before they enter memory.

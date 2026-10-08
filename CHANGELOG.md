@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+- Expanded Hades-directed social detection for date invitations, shared meals, scent/perfume/whiff requests, close-proximity banter, and lap/thigh comfort requests.
+- Added broader Aether Gazer character-name scope recognition so named characters can be discussed without requiring a second lore keyword.
+- Expanded contextual follow-up handling for phrases such as "how did you know?" so ongoing dialogue no longer falls into the unrelated-topic gate.
+- Added regression coverage for the expanded social/fan-service cases drawn from the bot's real Discord conversation behavior.
+
 ## 1.3.0
 - Loaded the canonical `hades_reference.json` at runtime to prevent Hades data drift.
 - Fixed correction-message scope matching.
