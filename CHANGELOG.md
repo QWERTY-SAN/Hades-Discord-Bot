@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0
+- Improved Hades fan-service reaction quality and character presence.
+- Added specific-cue-first reaction guidance so Hades reacts to what was actually said before adding flavor.
+- Added more distinct reaction lanes: dry amusement, mock reprimand, elegant approval, measured flirtation, and restrained moments of fluster.
+- Reduced generic roleplay filler, stock pickup-line behavior, repetitive openings, and forced end-of-message questions.
+- Strengthened composure/authority guidance so Hades feels knowingly confident instead of generically eager.
+- Added smoke-test contracts for the improved reaction voice.
+
 ## 1.5.0
 - Added captivated/mesmerized fan-service cues such as being under Hades' spell, wrapped around her finger, living rent-free in the Administrator's head, and being unable to look away.
 - Added theatrical devotion cues including worship, serving, being at Hades' feet, and devoted little-lamb language.

@@ -89,6 +89,15 @@ def test_guidance_is_not_a_response_template():
     assert "fixed response list" in guidance
 
 
+def test_guidance_prioritizes_specific_hades_reactions():
+    guidance = fanservice_guidance("you make it hard to focus")
+    assert "React to the exact social move" in guidance
+    assert "three beats" in guidance
+    assert "Hades-specific social texture" in guidance
+    assert "generic pickup lines" in guidance
+    assert "ending with a question" in guidance
+
+
 def test_normal_game_question_is_not_fanservice():
     assert not is_fanservice_message("What team works well with Hades?")
 
