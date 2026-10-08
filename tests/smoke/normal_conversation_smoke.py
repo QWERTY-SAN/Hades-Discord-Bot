@@ -40,6 +40,8 @@ def test_common_small_talk_is_allowed() -> None:
         "Ok as u say so I'll get out of the shadows",
         "Eh ur so hot",
         "Want to go on a date?",
+        "Romance where?",
+        "What else to do with u?",
         "wanna go out for an date?",
         "wanna hang out with me?",
         "wanna go out?",

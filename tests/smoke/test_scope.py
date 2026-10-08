@@ -50,6 +50,8 @@ def test_short_followup_requires_history():
     assert is_hades_scope_allowed("what can I do for u?", has_history=False)
     assert is_hades_scope_allowed("anyways what can I do for u?", has_history=False)
     assert is_hades_scope_allowed("Well, anything I can do for you?", has_history=False)
+    assert is_hades_scope_allowed("What else to do with u?", has_history=False)
+    assert is_hades_scope_allowed("What else can we do together?", has_history=False)
 
 
 def test_hades_social_and_admiration_scope():

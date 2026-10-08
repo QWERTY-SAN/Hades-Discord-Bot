@@ -52,6 +52,8 @@ def test_new_categories_are_detected():
     assert fanservice_category("prove it") == "teasing_challenge"
 
     assert fanservice_category("Want to go on a date?") == "romantic"
+    assert fanservice_category("Romance where?") == "romantic"
+    assert fanservice_category("where's the romance?") == "romantic"
     assert fanservice_category("wanna go out for an date?") == "romantic"
     assert fanservice_category("wanna hang out with me?") == "social_invitation"
     assert fanservice_category("come hang out with me") == "social_invitation"

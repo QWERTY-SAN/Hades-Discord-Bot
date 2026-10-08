@@ -90,6 +90,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:i|i'm|im|i've|ive|my|mine|today\s+i|tonight\s+i|this\s+is|that\s+was|just|currently|honestly|literally)\b.{0,700}$", re.I | re.S),
     re.compile(r"^(?:mind\s+if\s+i|can\s+i|may\s+i|is\s+it\s+(?:okay|alright)\s+if\s+i|would\s+you\s+mind\s+if\s+i)\b.{0,300}$", re.I | re.S),
     re.compile(r"^(?:what\s+can\s+i\s+do\s+for\s+(?:you|u)|anything\s+i\s+can\s+do\s+for\s+(?:you|u)|is\s+there\s+anything\s+i\s+can\s+do\s+for\s+(?:you|u)|do\s+you\s+need\s+anything|need\s+anything|how\s+can\s+i\s+help(?:\s+(?:you|u))?|what\s+do\s+you\s+need)[?.! ]*$", re.I),
+    re.compile(r"^(?:what\s+else\s+(?:can|should)\s+i\s+do\s+(?:with|for)\s+(?:you|u)|what\s+else\s+(?:can|should)\s+we\s+do(?:\s+together)?|what\s+else\s+do\s+you\s+want\s+to\s+do(?:\s+with\s+me)?)[?.! ]*$", re.I),
 )
 PERSONAL_LIFE_PATTERNS = (
     re.compile(r"^(?:what\s+should\s+i\s+do|what\s+can\s+i\s+do|what\s+could\s+i\s+do|what\s+else\s+(?:can|should)\s+i\s+do|what\s+should\s+we\s+do|what\s+can\s+we\s+do|what\s+do\s+you\s+suggest\s+i\s+do|how\s+should\s+i\s+spend\s+(?:my\s+time|my\s+day|my\s+evening|my\s+night)|give\s+me\s+(?:something|an\s+idea)\s+to\s+do|give\s+me\s+an?\s+idea|pick\s+something\s+for\s+me|choose\s+something\s+for\s+me|surprise\s+me|help\s+me\s+decide\s+(?:what\s+to\s+do|what\s+i\s+should\s+do)|i\s+(?:don't|do\s+not)\s+know\s+what\s+to\s+do|i\s+have\s+nothing\s+to\s+do|anything\s+else)(?:\s+(?:tonight|today|right\s+now|this\s+(?:morning|afternoon|evening|weekend)|tomorrow|for\s+fun|when\s+i'?m\s+bored))?[?.! ]*$", re.I),
