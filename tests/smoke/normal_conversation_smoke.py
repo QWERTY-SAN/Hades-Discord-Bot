@@ -39,6 +39,12 @@ def test_common_small_talk_is_allowed() -> None:
         "what else?",
         "Ok as u say so I'll get out of the shadows",
         "Eh ur so hot",
+        "Want to go on a date?",
+        "Can I take you out to dinner?",
+        "May I take a whiff of your scent?",
+        "Can I sniff behind your ears?",
+        "why are you so hard to get?",
+        "How did you know?",
 
         "Mind if I have a small allegiance here?",
         "What do u mean?",
