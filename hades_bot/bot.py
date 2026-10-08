@@ -121,7 +121,7 @@ class HadesBot(commands.Bot):
 
         key = self.conversation_key(message)
         has_history = await self.hades_chat.memory.has_history(key)
-        if not is_hades_scope_allowed(content, has_history=has_history):
+        if not is_hades_scope_allowed(content, has_history=has_history, direct_reply=replied):
             record_runtime_metric("scope_blocks")
             try:
                 refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
