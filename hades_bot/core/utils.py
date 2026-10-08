@@ -8,6 +8,8 @@ from ..config import SETTINGS
 
 
 DISCORD_MESSAGE_LIMIT = 2000
+_GIF_URL_RE = re.compile(r"https?://[^\s<>]+?\.gif(?:\?[^\s<>]*)?", re.I)
+_RAW_DISCORD_MENTION_RE = re.compile(r"<@!?\d+>|<@&\d+>|<#\d+>")
 
 
 def split_message(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
@@ -46,6 +48,8 @@ def sanitize_model_output(text: str) -> str:
     text = text.replace("\x00", "").strip()
     text = re.sub(r"^(?:Hades\s*:\s*)+", "", text, flags=re.I)
     text = re.sub(r"\bAs an AI(?: language model)?[,:]", "", text, flags=re.I)
+    text = _GIF_URL_RE.sub("", text)
+    text = _RAW_DISCORD_MENTION_RE.sub("", text)
     text = re.sub(r"\n{4,}", "\n\n", text)
     return text.strip()
 
