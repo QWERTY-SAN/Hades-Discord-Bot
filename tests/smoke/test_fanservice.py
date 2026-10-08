@@ -56,6 +56,15 @@ def test_new_categories_are_detected():
     assert fanservice_category("Can I sniff behind your ears?") == "scent_and_proximity"
     assert fanservice_category("why are you so hard to get?") == "teasing_challenge"
 
+    assert fanservice_category("You've got me under your spell.") == "captivated"
+    assert fanservice_category("You're living rent-free in my head.") == "captivated"
+    assert fanservice_category("I'm your devoted little lamb.") == "devotion"
+    assert fanservice_category("I'd worship you, Lady Hades.") == "devotion"
+    assert fanservice_category("Am I your favorite?") == "playful_jealousy"
+    assert fanservice_category("Don't make me jealous.") == "playful_jealousy"
+    assert fanservice_category("I could listen to your voice all day.") == "admiration"
+    assert fanservice_category("You make it hard to focus.") == "admiration"
+
 
 def test_multiple_categories_survive():
     categories = fanservice_categories("You're gorgeous. Step on me.")
@@ -68,6 +77,10 @@ def test_intensity_is_calibrated():
     assert fanservice_intensity("don't tempt me like that") == "flirty"
     assert fanservice_intensity("step on me") == "bold"
     assert fanservice_intensity("may I take a whiff of your scent?") == "warm"
+
+    assert fanservice_intensity("you've got me under your spell") == "flirty"
+    assert fanservice_intensity("I'd worship you") == "flirty"
+    assert fanservice_intensity("am I your favorite?") == "flirty"
 
 
 def test_guidance_is_not_a_response_template():
