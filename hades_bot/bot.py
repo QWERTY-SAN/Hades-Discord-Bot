@@ -21,9 +21,9 @@ logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
 
 SCOPE_FALLBACKS = (
-    "Mm. I have no interest in that matter, Administrator. Ask me about something within my realm.",
-    "That lies outside my stage, little lamb. Bring me something from Aether Gazer instead.",
-    "Some subjects are simply too dull to deserve my attention. Choose something closer to my world. 🌙",
+    "Mm. That is not quite a subject I care to entertain, Administrator. Bring me something from Aether Gazer—or simply talk to me.",
+    "That topic is not one I intend to pursue, little lamb. Try an Aether Gazer question, or ask me something more personal.",
+    "No. That thread leads nowhere interesting for me. Change the subject, and I may surprise you. 🌙",
 )
 EMPTY_CALL_RESPONSES = (
     "You summoned me, little lamb. Speak. 🌙",
