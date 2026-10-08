@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.7.0
+- Expanded Hades's fan-service reaction repertoire beyond the existing tease/flirt/challenge lanes.
+- Added composed indulgence, dry disbelief, mock-formal rulings, elegant approval, playful offense, caught-you observations, amused permission, quiet sincerity, graceful deflection, patient amusement, understated fluster, and theatrical verdicts.
+- Improved repeated fan-service handling so variation changes the underlying reaction style instead of only swapping words.
+- Added recent-reply continuity guidance so variety stays natural rather than becoming a mechanical rotation.
+- Added regression tests for the expanded reaction repertoire.
+
+
 ## 1.6.0
 - Improved Hades fan-service reaction quality and character presence.
 - Added specific-cue-first reaction guidance so Hades reacts to what was actually said before adding flavor.
