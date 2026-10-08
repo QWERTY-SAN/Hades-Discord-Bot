@@ -74,10 +74,10 @@ class HadesBot(commands.Bot):
         guild_id = message.guild.id if message.guild else "no-guild"
         return f"guild:{guild_id}:channel:{message.channel.id}:user:{message.author.id}"
 
-    async def send_chunks(self, message: discord.Message, text: str, *, attach_auto_media: bool = False) -> None:
+    async def send_chunks(self, message: discord.Message, text: str, *, attach_auto_media: bool = False, trigger: str = "mention") -> None:
         chunks = split_message(text)
         media_embed = None
-        if attach_auto_media and self.media.should_auto_send_media(message, "mention"):
+        if attach_auto_media and self.media.should_auto_send_media(message, trigger):
             media_embed = self.media.choose_auto_media_embed(message)
         for index, chunk in enumerate(chunks):
             if index == 0:
@@ -145,7 +145,7 @@ class HadesBot(commands.Bot):
                 await self.cooldowns.release(key)
                 await message.reply("Tsk. You have my attention. Try that again.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
                 return
-            await self.send_chunks(message, reply, attach_auto_media=(trigger in {"mention", "command"}))
+            await self.send_chunks(message, reply, attach_auto_media=(trigger in {"mention", "command"}), trigger=trigger)
         except UnsafeModelOutputError:
             logger.warning("Blocked forbidden-topic model output for %s", key)
             await self.cooldowns.release(key)
