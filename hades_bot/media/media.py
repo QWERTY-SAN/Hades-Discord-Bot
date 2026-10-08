@@ -7,14 +7,16 @@ from urllib.parse import urlparse
 
 import discord
 
+from ..config import SETTINGS
+from ..web import record_runtime_metric
 from .gifs import HADES_GIF_URLS
 from .images import HADES_IMAGE_URLS
 
-AUTO_MEDIA_COOLDOWN_SECONDS = 300.0
-GIF_COOLDOWN_SECONDS = 300.0
-IMAGE_COOLDOWN_SECONDS = 300.0
-RECENT_COUNT = 6
-STATE_TTL_SECONDS = 7200.0
+AUTO_MEDIA_COOLDOWN_SECONDS = SETTINGS.media_auto_cooldown_seconds
+GIF_COOLDOWN_SECONDS = SETTINGS.media_gif_cooldown_seconds
+IMAGE_COOLDOWN_SECONDS = SETTINGS.media_image_cooldown_seconds
+RECENT_COUNT = SETTINGS.media_recent_count
+STATE_TTL_SECONDS = SETTINGS.media_state_ttl_seconds
 
 
 class HadesMedia:
@@ -47,7 +49,8 @@ class HadesMedia:
 
     def _key(self, message: discord.Message) -> str:
         guild = message.guild.id if message.guild else "dm"
-        return f"{guild}:{message.channel.id}"
+        user = message.author.id if getattr(message, "author", None) else "unknown-user"
+        return f"{guild}:{message.channel.id}:user:{user}"
 
     def _cooldown_ready(self, store: dict[str, float], key: str, cooldown: float, *, force: bool) -> bool:
         if force:
@@ -87,13 +90,14 @@ class HadesMedia:
             kind, url = "gif", self.rng.choice(gif_options)
         else:
             kind, url = "image", self.rng.choice(image_options)
-        self._last_auto[key] = time.monotonic()
         embed = discord.Embed()
         embed.set_image(url=url)
         if kind == "gif":
             self._recent_gif[key].append(url)
         else:
             self._recent_image[key].append(url)
+        self._last_auto[key] = time.monotonic()
+        record_runtime_metric("media_sent")
         return embed
 
     async def send_gif(self, channel, message: discord.Message, *, force: bool = False) -> bool:
@@ -105,9 +109,13 @@ class HadesMedia:
         recent = self._recent_gif[key]
         options = self._fresh_options(self.gifs, recent)
         url = self.rng.choice(options)
+        try:
+            await channel.send(embed=discord.Embed().set_image(url=url))
+        except discord.HTTPException:
+            return False
         recent.append(url)
         self._last_gif[key] = time.monotonic()
-        await channel.send(embed=discord.Embed().set_image(url=url))
+        record_runtime_metric("media_sent")
         return True
 
     async def send_image(self, channel, message: discord.Message, *, force: bool = False) -> bool:
@@ -119,9 +127,13 @@ class HadesMedia:
         recent = self._recent_image[key]
         options = self._fresh_options(self.images, recent)
         url = self.rng.choice(options)
+        try:
+            await channel.send(embed=discord.Embed().set_image(url=url))
+        except discord.HTTPException:
+            return False
         recent.append(url)
         self._last_image[key] = time.monotonic()
-        await channel.send(embed=discord.Embed().set_image(url=url))
+        record_runtime_metric("media_sent")
         return True
 
     async def prune(self) -> int:
