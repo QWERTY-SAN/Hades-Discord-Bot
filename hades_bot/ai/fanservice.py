@@ -39,7 +39,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "romantic": (
         re.compile(
             r"\b(?:marry\s+me|be\s+my\s+wife|be\s+my\s+girlfriend|date\s+me|take\s+me\s+out|go\s+out\s+with\s+me|want\s+to\s+go\s+out|go\s+out\s+and\s+eat|go\s+out\s+for\s+(?:food|dinner|lunch|coffee)|want\s+to\s+eat\s+(?:with\s+me|together)|"
-            r"take\s+you\s+out|go\s+on\s+a\s+date|want\s+to\s+go\s+on\s+a\s+date|wanna\s+go\s+out(?:\s+for\s+(?:a|an)\s+date)?|want\s+to\s+go\s+out|want\s+to\s+hang\s+out(?:\s+with\s+me|\s+together)?|wanna\s+hang\s+out(?:\s+with\s+me|\s+together)?|come\s+out\s+with\s+me|come\s+hang\s+out\s+with\s+me|spend\s+time\s+with\s+me|go\s+somewhere\s+with\s+me|"
+            r"take\s+you\s+out|go\s+on\s+a\s+date|want\s+to\s+go\s+on\s+a\s+date|wanna\s+go\s+out\s+for\s+(?:a|an)\s+date|"
             r"go\s+out\s+with\s+me|romance\s+me|i\s+(?:have\s+a\s+crush|am\s+crushing)\s+on\s+you|"
             r"i(?:'m|\s+am)\s+(?:in\s+love|down\s+bad|smitten|head\s+over\s+heels)\s+"
             r"(?:for|with)\s+you|i\s+am\s+obsessed\s+with\s+you|"
@@ -52,6 +52,19 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(
             r"\b(?:have|grab|share|join\s+me\s+for)\s+(?:some\s+)?(?:dinner|lunch|breakfast|coffee)\s+"
             r"(?:with\s+me|together)|\b(?:dinner|lunch|breakfast|coffee)\s+with\s+me\b",
+            re.I,
+        ),
+    ),
+    "social_invitation": (
+        re.compile(
+            r"\b(?:want\s+to\s+go\s+out|wanna\s+go\s+out(?!\s+for\s+(?:a|an)\s+date)|"
+            r"want\s+to\s+hang\s+out(?:\s+with\s+me|\s+together)?|"
+            r"wanna\s+hang\s+out(?:\s+with\s+me|\s+together)?|"
+            r"come\s+out\s+with\s+me|come\s+hang\s+out\s+with\s+me|"
+            r"spend\s+time\s+with\s+me|go\s+somewhere\s+with\s+me|"
+            r"join\s+me\s+(?:for\s+)?(?:dinner|lunch|breakfast|coffee)|"
+            r"grab\s+(?:dinner|lunch|breakfast|coffee)\s+with\s+me|"
+            r"eat\s+(?:with\s+me|together)|have\s+(?:dinner|lunch|breakfast|coffee)\s+with\s+me)\b",
             re.I,
         ),
     ),
@@ -315,8 +328,15 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         ),
     ),
     "rivalry_banter": (
-        "Treat this as playful rivalry or teasing directed at Hades. She can return the jab, acknowledge the mock-insult, "
-        "or continue a harmless battle-of-wits. Do not turn it into genuine hostility, and do not overuse theatrical battle language."
+        re.compile(
+            r"\b(?:old\s+hag|old\s+witch|you\s+really\s+are\s+an?\s+old\s+hag|"
+            r"you\s+won\s+the\s+battle|i\s+won\s+the\s+battle|"
+            r"(?:yet\s+to|have\s+yet\s+to)\s+win\s+the\s+war|"
+            r"the\s+war\s+isn'?t\s+over|this\s+isn'?t\s+over|"
+            r"we'?ll\s+see\s+who\s+wins|you\s+think\s+you'?ve\s+won|"
+            r"not\s+so\s+fast|my\s+turn\s+next|your\s+move)\b",
+            re.I,
+        ),
     ),
     "teasing_challenge": (
         re.compile(
@@ -345,6 +365,7 @@ _CATEGORY_PRIORITY = (
     "fan_command",
     "playful_dominance",
     "romantic",
+    "social_invitation",
     "affection",
     "scent_and_proximity",
     "captivated",
@@ -376,6 +397,11 @@ _CATEGORY_GUIDANCE = {
     "romantic": (
         "Treat the user's romantic declaration as light fictional affection. Hades may flirt back, tease them, "
         "or playfully question how serious they are without promising a literal real-world relationship."
+    ),
+    "social_invitation": (
+        "Treat this as a normal invitation to spend time together. It is social first, not automatically romantic. "
+        "Hades may accept, tease the Administrator about the plan, suggest a setting, or make a playful counterproposal. "
+        "Keep the response grounded in the invitation instead of forcing fan-service."
     ),
     "affection": (
         "Treat the user's request for affection as playful in-character fan interaction. "
@@ -440,6 +466,11 @@ _CATEGORY_GUIDANCE = {
         "The Administrator is challenging Hades to tease or fluster them. Answer with confidence and wit instead of a canned pickup line. "
         "A clever counter-challenge is often better than a flat refusal."
     ),
+    "rivalry_banter": (
+        "Treat this as playful rivalry, mock-insulting, or a battle of wits directed at Hades. "
+        "She can return the jab, acknowledge the challenge, or let herself be amused. "
+        "Keep it playful rather than genuinely hostile, and do not force battle metaphors into every reply."
+    ),
 }
 
 _REACTION_REPERTOIRE = (
@@ -450,7 +481,7 @@ _REACTION_REPERTOIRE = (
     "Do not force variety when continuity calls for the same attitude."
 )
 
-_WARM_CATEGORIES = frozenset({"affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "voice_and_eye_contact", "attention_seek", "playful_fandom", "praise"})
+_WARM_CATEGORIES = frozenset({"social_invitation", "affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "voice_and_eye_contact", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 _FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
@@ -545,6 +576,8 @@ def fanservice_cue_shape(text: str) -> str:
         return "playful_jealousy"
     if "devotion" in categories:
         return "devotion"
+    if "social_invitation" in categories:
+        return "social_invitation"
     if "romantic" in categories:
         return "romantic_admission"
     if "affection" in categories:
