@@ -69,6 +69,11 @@ The bot includes a narrow, dynamic fan-service layer for playful admiration and 
 ### Emojis
 `EMOJIS_ENABLED=true` enables sparse Hades-style emoji use. Usually 0-2 emojis are used; many responses use none.
 
+### Expanded social interaction
+
+Hades' strict topic scope now recognizes more Hades-directed social cues without turning her into a general-purpose assistant. This includes date invitations, shared meals, scent/perfume/whiff requests, close-proximity affection, playful "hard to get" banter, and contextual follow-ups such as "how did you know?". These cues remain dynamic Gemini-generated interactions; they are not predefined responses.
+
+
 ### Hades images
 
 Standalone Hades images are configured separately from GIFs in `hades_bot/media/images.py`:
@@ -251,7 +256,7 @@ Hades-Discord-Bot/
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Release
-Version 1.3.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
+Version 1.4.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
 
 
 ### Automatic media
