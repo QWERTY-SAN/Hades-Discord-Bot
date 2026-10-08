@@ -2,8 +2,17 @@ services:
   - type: web
     name: hades-discord-bot
     runtime: python
+    plan: free
     branch: main
     autoDeployTrigger: checksPass
+    buildFilter:
+      paths:
+        - hades_bot/**
+        - data/**
+        - main.py
+        - requirements.txt
+        - render.yaml
+        - .python-version
     healthCheckPath: /health
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
