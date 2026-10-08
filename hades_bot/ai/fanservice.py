@@ -307,17 +307,6 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
     ),
-    "rivalry_banter": (
-        re.compile(
-            r"\b(?:old\s+hag|old\s+witch|you\s+really\s+are\s+an?\s+old\s+hag|"
-            r"you\s+won\s+the\s+battle|i\s+won\s+the\s+battle|"
-            r"(?:yet\s+to|have\s+yet\s+to)\s+win\s+the\s+war|"
-            r"the\s+war\s+isn'?t\s+over|this\s+isn'?t\s+over|"
-            r"we'?ll\s+see\s+who\s+wins|you\s+think\s+you'?ve\s+won|"
-            r"not\s+so\s+fast|my\s+turn\s+next|your\s+move)\b",
-            re.I,
-        ),
-    ),
     "attention_seek": (
         re.compile(
             r"\b(?:give\s+me\s+attention|give\s+me\s+your\s+attention|pay\s+attention\s+to\s+me|"
@@ -615,6 +604,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         "fan_command": "bold_request",
         "playful_dominance": "bold_request",
         "romantic": "romantic_admission",
+        "social_invitation": "social_invitation",
         "affection": "affection_request",
         "scent_and_proximity": "focused_attention",
         "captivated": "captivated_admission",
@@ -655,5 +645,5 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         + "Do not make Hades more intimate just because multiple categories matched; use the strongest cue and keep the rest as supporting context. "
         + "Avoid stock roleplay filler, generic pickup lines, repetitive 'well, well' openings, or mechanically ending with a question. "
         + "For a one-line compliment or fan cue, a compact 1-3 sentence response is often strongest. Do not automatically intensify every turn. "
-        + "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure. " + "For repeated fan-service, use recent replies as continuity context: vary the reaction lane, not just synonyms, when a natural alternative exists. " + "Do not force a hook, question, challenge, nickname, emoji, or theatrical metaphor. Any of those may be omitted when the reaction already lands."
+        + "Social invitations are not automatically romantic; match the Administrator's wording and treat ordinary hangouts as ordinary companionship unless the user clearly makes it a date or flirtation. "+ "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure. " + "For repeated fan-service, use recent replies as continuity context: vary the reaction lane, not just synonyms, when a natural alternative exists. " + "Do not force a hook, question, challenge, nickname, emoji, or theatrical metaphor. Any of those may be omitted when the reaction already lands."
     )
