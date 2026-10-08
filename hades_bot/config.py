@@ -31,7 +31,12 @@ class Settings:
     memory_ttl_seconds: int = 21600
     max_conversations: int = 500
     memory_prune_interval: float = 180.0
-    cooldown_prune_interval: float = 300.0
+    cooldown_prune_interval: float = 3600.0
+    media_auto_cooldown_seconds: float = 300.0
+    media_gif_cooldown_seconds: float = 300.0
+    media_image_cooldown_seconds: float = 300.0
+    media_recent_count: int = 6
+    media_state_ttl_seconds: float = 7200.0
     web_host: str = "0.0.0.0"
     web_port: int = 10000
 
@@ -86,7 +91,12 @@ SETTINGS = Settings(
     memory_ttl_seconds=max(60, _int("MEMORY_TTL_SECONDS", 21600)),
     max_conversations=max(10, _int("MAX_CONVERSATIONS", 500)),
     memory_prune_interval=max(30.0, _float("MEMORY_PRUNE_INTERVAL", 180.0)),
-    cooldown_prune_interval=max(30.0, _float("COOLDOWN_PRUNE_INTERVAL", 300.0)),
+    cooldown_prune_interval=max(60.0, _float("COOLDOWN_PRUNE_INTERVAL", 3600.0)),
+    media_auto_cooldown_seconds=max(0.0, _float("AUTO_MEDIA_COOLDOWN_SECONDS", 300.0)),
+    media_gif_cooldown_seconds=max(0.0, _float("GIF_COOLDOWN_SECONDS", 300.0)),
+    media_image_cooldown_seconds=max(0.0, _float("IMAGE_COOLDOWN_SECONDS", 300.0)),
+    media_recent_count=max(1, _int("MEDIA_RECENT_COUNT", 6)),
+    media_state_ttl_seconds=max(300.0, _float("MEDIA_STATE_TTL_SECONDS", 7200.0)),
     web_host=os.getenv("WEB_HOST", "0.0.0.0").strip() or "0.0.0.0",
     web_port=max(1, _int("PORT", _int("WEB_PORT", 10000))),
 )
