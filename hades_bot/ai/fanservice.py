@@ -183,8 +183,6 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"i\s+can'?t\s+look\s+away\s+from\s+you)\b",
             re.I,
         ),
-            re.I,
-        ),
     ),
     "praise": (
         re.compile(
