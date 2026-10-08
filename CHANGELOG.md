@@ -3,6 +3,10 @@
 ## 2.0.0 — 2026-10-08
 
 ### Character and conversation
+- Expanded social routing so date invitations, casual hangouts, shared meals, and one-on-one plans are distinguished instead of being treated as one generic flirt cue.
+- Added a dedicated rivalry/banter lane for playful insults, battle-of-wits lines, victory boasts, and mock challenges.
+- Added regression coverage for casual outing wording such as "wanna go out", "wanna hang out", and "go out and eat something".
+- Calibrated Gemini to avoid turning ordinary companionship into automatic romance and to answer rivalry as banter.
 - Expanded Hades character calibration and contextual fan-service guidance.
 - Improved continuity for short follow-ups, corrections, callbacks, and topic pivots.
 - Reduced forced questions, repetitive theatrical phrasing, and automatic flirting escalation.
