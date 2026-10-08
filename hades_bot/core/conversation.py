@@ -31,6 +31,8 @@ SHORT_FOLLOWUPS = frozenset({
     "for real", "for real?", "okay then", "okay then?", "go ahead", "go ahead?",
     "what do u mean", "what do u mean?", "what u mean", "what u mean?", "wdym", "wdym?",
     "wait what do u mean", "wait what do u mean?", "what did you mean", "what did you mean?",
+    "how did you know", "how did you know?", "how'd you know", "how'd you know?",
+    "how did you know that", "how did you know that?", "how'd you know that", "how'd you know that?",
     "what is this", "what is this?", "what's this", "what's this?", "whats this", "whats this?",
     "what is that", "what is that?", "what's that", "what's that?", "whats that", "whats that?",
     "what does this mean", "what does this mean?", "what does that mean", "what does that mean?",
