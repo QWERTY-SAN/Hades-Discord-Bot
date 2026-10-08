@@ -52,6 +52,9 @@ def test_new_categories_are_detected():
     assert fanservice_category("prove it") == "teasing_challenge"
 
     assert fanservice_category("Want to go on a date?") == "romantic"
+    assert fanservice_category("What are we?") == "relationship_banter"
+    assert fanservice_category("Do I have a chance with you?") == "relationship_banter"
+    assert fanservice_category("Where do I stand with you?") == "relationship_banter"
     assert fanservice_category("Romance where?") == "romantic"
     assert fanservice_category("where's the romance?") == "romantic"
     assert fanservice_category("wanna go out for an date?") == "romantic"
@@ -175,6 +178,7 @@ def test_cue_shape_distinguishes_social_moves():
     assert fanservice_cue_shape("give me a hug") == "affection_request"
     assert fanservice_cue_shape("say my name") == "focused_attention"
     assert fanservice_cue_shape("wanna hang out with me?") == "social_invitation"
+    assert fanservice_cue_shape("What are we?") == "relationship_banter"
 
 
 def test_guidance_exposes_cue_shape_without_becoming_a_template():
