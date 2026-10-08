@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0
+- Added captivated/mesmerized fan-service cues such as being under Hades' spell, wrapped around her finger, living rent-free in the Administrator's head, and being unable to look away.
+- Added theatrical devotion cues including worship, serving, being at Hades' feet, and devoted little-lamb language.
+- Added playful-jealousy detection while explicitly preventing possessive or dependency-driven behavior.
+- Expanded admiration detection for Hades' voice, presence, distraction, eye contact, and lingering attention.
+- Expanded affectionate cues for forehead/cheek/hand kisses, hand-holding, leaning on a shoulder, sitting beside Hades, and similar non-explicit closeness.
+- Kept all fan-service dynamically generated; no new canned response bank was introduced.
+
 ## 1.4.0
 - Expanded Hades-directed social detection for date invitations, shared meals, scent/perfume/whiff requests, close-proximity banter, and lap/thigh comfort requests.
 - Added broader Aether Gazer character-name scope recognition so named characters can be discussed without requiring a second lore keyword.
