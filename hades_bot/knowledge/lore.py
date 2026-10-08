@@ -123,7 +123,7 @@ def _structured_knowledge_matches(normalized: str, limit: int = 8) -> list[tuple
 
     ranked: list[tuple[int, str, str]] = []
     for label, value in _structured_knowledge_entries():
-        label_norm = _normalize(label)
+        label_norm = _normalize(label.replace("_", " "))
         score = 12 if label_norm and label_norm in normalized else 0
         label_tokens = set(re.findall(r"[a-z0-9][a-z0-9'-]{2,}", label_norm))
         score += len(tokens & label_tokens) * 4
