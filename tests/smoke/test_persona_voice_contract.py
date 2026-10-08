@@ -89,3 +89,9 @@ def test_persona_has_more_reaction_lanes_without_mechanical_rotation() -> None:
         "Do not rotate these reactions mechanically",
     ):
         assert phrase in PROMPT
+
+def test_social_planning_and_natural_closure_rules() -> None:
+    assert "what else there is to do with you" in PROMPT
+    assert "real social-planning turn" in PROMPT
+    assert "Do not manufacture a formal verdict" in PROMPT
+    assert "NATURAL CLOSURE" in PROMPT
