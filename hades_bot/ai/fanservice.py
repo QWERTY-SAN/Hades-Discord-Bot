@@ -39,7 +39,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "romantic": (
         re.compile(
             r"\b(?:marry\s+me|be\s+my\s+wife|be\s+my\s+girlfriend|date\s+me|take\s+me\s+out|go\s+out\s+with\s+me|want\s+to\s+go\s+out|go\s+out\s+and\s+eat|go\s+out\s+for\s+(?:food|dinner|lunch|coffee)|want\s+to\s+eat\s+(?:with\s+me|together)|"
-            r"take\s+you\s+out|go\s+on\s+a\s+date|want\s+to\s+go\s+on\s+a\s+date|wanna\s+go\s+out(?:\s+for\s+(?:a|an)\s+date)?|"
+            r"take\s+you\s+out|go\s+on\s+a\s+date|want\s+to\s+go\s+on\s+a\s+date|wanna\s+go\s+out(?:\s+for\s+(?:a|an)\s+date)?|want\s+to\s+go\s+out|want\s+to\s+hang\s+out(?:\s+with\s+me|\s+together)?|wanna\s+hang\s+out(?:\s+with\s+me|\s+together)?|come\s+out\s+with\s+me|come\s+hang\s+out\s+with\s+me|spend\s+time\s+with\s+me|go\s+somewhere\s+with\s+me|"
             r"go\s+out\s+with\s+me|romance\s+me|i\s+(?:have\s+a\s+crush|am\s+crushing)\s+on\s+you|"
             r"i(?:'m|\s+am)\s+(?:in\s+love|down\s+bad|smitten|head\s+over\s+heels)\s+"
             r"(?:for|with)\s+you|i\s+am\s+obsessed\s+with\s+you|"
@@ -294,6 +294,17 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
     ),
+    "rivalry_banter": (
+        re.compile(
+            r"\\b(?:old\\s+hag|old\\s+witch|you\\s+really\\s+are\\s+an?\\s+old\\s+hag|"
+            r"you\\s+won\\s+the\\s+battle|i\\s+won\\s+the\\s+battle|"
+            r"(?:yet\\s+to|have\\s+yet\\s+to)\\s+win\\s+the\\s+war|"
+            r"the\\s+war\\s+isn'?t\\s+over|this\\s+isn'?t\\s+over|"
+            r"we'?ll\\s+see\\s+who\\s+wins|you\\s+think\\s+you'?ve\\s+won|"
+            r"not\\s+so\\s+fast|my\\s+turn\\s+next|your\\s+move)",
+            re.I,
+        ),
+    ),
     "attention_seek": (
         re.compile(
             r"\b(?:give\s+me\s+attention|give\s+me\s+your\s+attention|pay\s+attention\s+to\s+me|"
@@ -302,6 +313,10 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"look\s+my\s+way)\b",
             re.I,
         ),
+    ),
+    "rivalry_banter": (
+        "Treat this as playful rivalry or teasing directed at Hades. She can return the jab, acknowledge the mock-insult, "
+        "or continue a harmless battle-of-wits. Do not turn it into genuine hostility, and do not overuse theatrical battle language."
     ),
     "teasing_challenge": (
         re.compile(
@@ -344,6 +359,7 @@ _CATEGORY_PRIORITY = (
     "flirtation",
     "attention_seek",
     "teasing_challenge",
+    "rivalry_banter",
 )
 
 _CATEGORY_GUIDANCE = {
@@ -471,6 +487,7 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         "flirtation",
         "flustered",
         "teasing_challenge",
+        "rivalry_banter",
     }
     direct_admiration = categories[0] == "admiration" and any(
         token in normalized
