@@ -186,7 +186,6 @@ class HadesBot(commands.Bot):
     async def on_disconnect(self) -> None:
         update_discord_state(ready=False)
         set_runtime_error("Discord disconnected")
-        set_runtime_error("Discord disconnected")
 
     async def on_resumed(self) -> None:
         update_discord_state(
