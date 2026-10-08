@@ -62,9 +62,11 @@ def select_live_sources(text: str) -> tuple[str, ...]:
                 selected.append(url)
 
     if _BUILD_TERMS.search(text):
-        add(MIMIR_TEAMS, MIMIR_HADES_BUILD, MIMIR_HADES_GUIDE)
-        if re.search(r"\b(?:latest|current|currently|today|now|meta|tier)\b", text, re.I):
-            add(OFFICIAL_NEWS)
+        current = bool(re.search(r"\b(?:latest|current|currently|today|now|meta|tier)\b", text, re.I))
+        if current:
+            add(MIMIR_TEAMS, MIMIR_HADES_BUILD, OFFICIAL_NEWS)
+        else:
+            add(MIMIR_TEAMS, MIMIR_HADES_BUILD, MIMIR_HADES_GUIDE)
     elif _VOICE_TERMS.search(text):
         add(MIMIR_HADES_VOICE, MIMIR_HADES_PROFILE)
     elif _LORE_TERMS.search(text):
