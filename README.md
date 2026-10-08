@@ -260,8 +260,18 @@ Hades-Discord-Bot/
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Release
-Version 1.5.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
+Version 2.0.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
 
+
+### 2.0.0 hardening and expansion
+
+- Bumped the application release to `2.0.0` so the runtime version, README, and release state stay aligned.
+- Hardened Render deployment with an explicit free plan and a build filter so documentation-only changes do not unnecessarily rebuild the bot.
+- Kept After CI Checks Pass deployment enabled so failed GitHub Actions checks do not reach Render.
+- Removed duplicate disconnect-state handling and improved command-error wording.
+- Sanitized generated GIF URLs and raw Discord mention markup so model output cannot accidentally expose media links or mention markup as visible text.
+- Kept the Gemini 3.5 Flash-Lite model as the default; it is currently a GA model and remains the low-cost/high-throughput choice for this bot.
+- Preserved dynamic fan-service behavior: reaction lanes are generated from the current message and recent context rather than a fixed response bank.
 
 ### Automatic media
 
