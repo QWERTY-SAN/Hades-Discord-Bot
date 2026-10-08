@@ -166,7 +166,7 @@ class HadesBot(commands.Bot):
     async def on_ready(self) -> None:
         update_discord_state(ready=True, user=str(self.user) if self.user else None, guild_count=len(self.guilds))
         logger.info("Logged in as %s", self.user)
-        await self.change_presence(status=discord.Status.online, activity=discord.Game(name="Aether Gazer"))
+        await self.change_presence(status=discord.Status.online, activity=discord.CustomActivity(name=f"{SETTINGS.bot_prefix}help"))
 
     async def on_disconnect(self) -> None:
         update_discord_state(ready=False)
