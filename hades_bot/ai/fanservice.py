@@ -39,6 +39,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "romantic": (
         re.compile(
             r"\b(?:marry\s+me|be\s+my\s+wife|be\s+my\s+girlfriend|date\s+me|take\s+me\s+out|"
+            r"take\s+you\s+out|go\s+on\s+a\s+date|want\s+to\s+go\s+on\s+a\s+date|"
             r"go\s+out\s+with\s+me|romance\s+me|i\s+(?:have\s+a\s+crush|am\s+crushing)\s+on\s+you|"
             r"i(?:'m|\s+am)\s+(?:in\s+love|down\s+bad|smitten|head\s+over\s+heels)\s+"
             r"(?:for|with)\s+you|i\s+am\s+obsessed\s+with\s+you|"
@@ -48,6 +49,11 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you\s+have\s+my\s+heart)\b",
             re.I,
         ),
+        re.compile(
+            r"\b(?:have|grab|share|join\s+me\s+for)\s+(?:some\s+)?(?:dinner|lunch|breakfast|coffee)\s+"
+            r"(?:with\s+me|together)|\b(?:dinner|lunch|breakfast|coffee)\s+with\s+me\b",
+            re.I,
+        ),
     ),
     "affection": (
         re.compile(
@@ -55,10 +61,30 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"hold\s+my\s+hand|take\s+my\s+hand|pat\s+my\s+head|headpats?|headpat(?:\s+me)?|"
             r"pet\s+me|embrace\s+me|comfort\s+me|stay\s+close\s+to\s+me|stay\s+with\s+me|"
             r"sit\s+next\s+to\s+me|sit\s+with\s+me|carry\s+me|let\s+me\s+hold\s+you|"
-            r"let\s+me\s+cuddle)\b",
+            r"let\s+me\s+cuddle|sleep\s+on\s+(?:your|ur)\s+(?:thighs?|lap)|"
+            r"rest\s+(?:my|your)\s+head\s+on\s+(?:your|my)\s+(?:lap|thighs?)|"
+            r"(?:sit|lie)\s+on\s+(?:your|my)\s+lap|take\s+a\s+nap\s+(?:on|with)\s+you)\b",
             re.I,
         ),
         re.compile(r"\b(?:love\s+you|i\s+adore\s+you|i\s+love\s+you|i\s+miss\s+you)\b", re.I),
+    ),
+
+    "scent_and_proximity": (
+        re.compile(
+            r"\b(?:sniff(?:ing)?|whiff(?:ing)?|smell(?:ing)?)\b.{0,45}\b(?:you|your|ur|hades|her)\b|"
+            r"\b(?:you|your|ur|hades|her)\b.{0,45}\b(?:scent|aroma|perfume|smell|sniff|whiff)\b",
+            re.I,
+        ),
+        re.compile(
+            r"\b(?:let|can|may|could|would)\s+me\s+(?:take\s+a\s+)?"
+            r"(?:whiff|sniff|smell)\b.{0,45}\b(?:you|your|ur|hades|her)\b",
+            re.I,
+        ),
+        re.compile(
+            r"\b(?:your|ur)\s+(?:scent|aroma|perfume)\b|"
+            r"\b(?:sniff|smell|whiff)\s+(?:behind\s+)?(?:your|ur)\b",
+            re.I,
+        ),
     ),
     "admiration": (
         re.compile(
@@ -231,6 +257,7 @@ _CATEGORY_PRIORITY = (
     "playful_dominance",
     "romantic",
     "affection",
+    "scent_and_proximity",
     "admiration",
     "praise",
     "playful_fandom",
@@ -258,6 +285,11 @@ _CATEGORY_GUIDANCE = {
     "affection": (
         "Treat the user's request for affection as playful in-character fan interaction. "
         "Hades can answer with warmth, a teasing verbal equivalent, a playful challenge, or a coy gesture."
+    ),
+    "scent_and_proximity": (
+        "The Administrator is making a playful, intimate-but-non-explicit request involving Hades's scent, perfume, sniffing, whiffing, "
+        "or close physical proximity. Hades may tease the boldness, set a boundary, allow a harmless playful gesture, or mock the request. "
+        "Keep it non-explicit and avoid erotic or graphic detail."
     ),
     "admiration": (
         "The user is admiring Hades. Acknowledge the actual compliment first. Hades may accept it calmly, tease the user's boldness, "
@@ -296,7 +328,7 @@ _CATEGORY_GUIDANCE = {
     ),
 }
 
-_WARM_CATEGORIES = frozenset({"affection", "admiration", "attention_seek", "playful_fandom", "praise"})
+_WARM_CATEGORIES = frozenset({"affection", "scent_and_proximity", "admiration", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 _FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
