@@ -12,13 +12,33 @@ from .version import APP_NAME, APP_VERSION, branch, runtime, short_commit
 
 logger = logging.getLogger("hades-bot.web")
 
-_started_at = time.time()
+_started_at = time.monotonic()
 _state: dict[str, Any] = {
     "ready": False,
     "user": None,
     "guild_count": 0,
     "last_error": None,
+    "messages_seen": 0,
+    "ai_requests": 0,
+    "ai_successes": 0,
+    "ai_failures": 0,
+    "scope_blocks": 0,
+    "media_sent": 0,
 }
+
+
+
+def record_runtime_metric(name: str, amount: int = 1) -> None:
+    if name not in _state:
+        return
+    try:
+        _state[name] = max(0, int(_state[name]) + amount)
+    except (TypeError, ValueError):
+        logger.warning("Unable to update runtime metric %s", name)
+
+
+def set_runtime_error(error: str | None) -> None:
+    _state["last_error"] = error
 
 
 def update_discord_state(**values: Any) -> None:
@@ -40,7 +60,7 @@ def _base_payload() -> dict[str, Any]:
         "runtime": runtime(),
         "commit": short_commit(),
         "branch": branch(),
-        "uptime_seconds": max(0, round(time.time() - _started_at)),
+        "uptime_seconds": max(0, round(time.monotonic() - _started_at)),
         **_state,
     }
 
