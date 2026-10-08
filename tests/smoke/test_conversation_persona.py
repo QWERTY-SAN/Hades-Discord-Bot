@@ -55,6 +55,10 @@ class FanserviceDetectionTests(unittest.TestCase):
         self.assertEqual(fanservice_categories("I got home late today."), ())
         self.assertFalse(is_fanservice_message("Fair enough, that makes sense."))
 
+    def test_rivalry_banter_stays_banter(self):
+        self.assertEqual(fanservice_category("Old Hag"), "rivalry_banter")
+        self.assertEqual(fanservice_category("Fine, you won the battle, but have yet to win the war."), "rivalry_banter")
+
 
 class PersonaContinuityTests(unittest.TestCase):
     def test_prompt_requires_contextual_followups_and_variety(self):
