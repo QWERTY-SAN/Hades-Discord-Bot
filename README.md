@@ -1,3 +1,7 @@
+## 2.1.0 conversational expansion
+
+The current release further improves ordinary Discord interaction: social-planning turns such as "what else can we do together?" get their own conversational mode, acknowledgements such as "okay" stay small, relationship-status fan-service gets a dedicated cue class, Hades-adjacent art/craft questions are admitted, and the health/metrics state is protected against cross-thread races. These remain dynamic Gemini-generated interactions rather than predefined response templates.
+
 # Hades Discord Bot
 
 A modular Discord AI bot that roleplays as Hades from *Aether Gazer* using Gemini.
@@ -260,7 +264,7 @@ Hades-Discord-Bot/
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Release
-Version 2.0.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
+Version 2.1.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
 
 
 ### 2.0.0 hardening and expansion
