@@ -265,9 +265,18 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
 def scope_block_reason(text: str) -> str:
     category = forbidden_topic_category(text)
     if category:
-        return category
+        aliases = {
+            "F1 or motorsport": "Formula One or motorsports",
+            "other sports": "sports",
+            "other games": "other games",
+            "programming or technology": "programming or software development",
+            "politics, news, or finance": "politics, news, or finance",
+            "unrelated entertainment or media": "unrelated entertainment or media",
+            "unrelated racing": "Formula One or motorsports",
+        }
+        return aliases.get(category, category)
     if is_specialist_request(text):
-        return "programming or specialist work"
+        return "a specialist technical subject"
     if is_personal_life_request(text) or is_social_message(text) or is_subjective_question(text) or CORRECTION_PATTERN.search(_normalize(text)):
         return ""
     if GENERAL_FACTUAL_QUESTION.search(_normalize(text)):
