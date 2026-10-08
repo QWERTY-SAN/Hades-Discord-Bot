@@ -66,3 +66,11 @@ def test_variety_rules_guard_against_mechanical_catchphrases() -> None:
     assert "Do not repeat the same opening" in PROMPT
     assert "Avoid answering every compliment with coy denial" in PROMPT
     assert "purple prose" in PROMPT
+
+
+def test_fanservice_reactions_prioritize_specificity_and_composure() -> None:
+    assert "self-possessed rather than eager" in PROMPT
+    assert "Prefer specific reactions over generic praise-back" in PROMPT
+    assert "mock reprimand" in PROMPT
+    assert "generic roleplay filler" in PROMPT
+    assert "Do not make every reply end with a question" in PROMPT
