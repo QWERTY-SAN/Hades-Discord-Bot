@@ -39,7 +39,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "romantic": (
         re.compile(
             r"\b(?:marry\s+me|be\s+my\s+wife|be\s+my\s+girlfriend|date\s+me|take\s+me\s+out|go\s+out\s+with\s+me|want\s+to\s+go\s+out|go\s+out\s+and\s+eat|go\s+out\s+for\s+(?:food|dinner|lunch|coffee)|want\s+to\s+eat\s+(?:with\s+me|together)|"
-            r"take\s+you\s+out|go\s+on\s+a\s+date|want\s+to\s+go\s+on\s+a\s+date|wanna\s+go\s+out(?:\s+for\s+a\s+date)?|"
+            r"take\s+you\s+out|go\s+on\s+a\s+date|want\s+to\s+go\s+on\s+a\s+date|wanna\s+go\s+out(?:\s+for\s+(?:a|an)\s+date)?|"
             r"go\s+out\s+with\s+me|romance\s+me|i\s+(?:have\s+a\s+crush|am\s+crushing)\s+on\s+you|"
             r"i(?:'m|\s+am)\s+(?:in\s+love|down\s+bad|smitten|head\s+over\s+heels)\s+"
             r"(?:for|with)\s+you|i\s+am\s+obsessed\s+with\s+you|"
