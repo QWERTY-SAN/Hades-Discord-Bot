@@ -253,6 +253,16 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
     # after a real Hades conversation already exists for this user/channel.
     if has_history and is_short_followup(normalized):
         return True
+
+    # Once a real conversation is established, ordinary banter should stay a
+    # conversation instead of falling through to the generic scope refusal.
+    # Hard off-topic categories and specialist requests were already rejected
+    # above; this bridge is specifically for natural replies such as teasing,
+    # invitations, insults, jokes, reactions, and conversational continuations.
+    if has_history and len(normalized) <= 700:
+        if not GENERAL_FACTUAL_QUESTION.match(normalized):
+            return True
+
     if any(_contains_term(normalized, term) for term in HADES_TERMS):
         return True
     if fanservice_category(normalized) is not None:
