@@ -173,7 +173,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
         re.compile(
-            r"\b(?:i\s+could\s+(?:stare|look)\s+at\s+you\s+all\s+day|i\s+could\s+listen\s+to\s+you\s+all\s+day|"
+            r"\b(?:i\s+could\s+(?:stare|look)\s+at\s+you\s+all\s+day|i\s+could\s+listen\s+to\s+(?:you|your\s+voice)\s+all\s+day|"
             r"your\s+voice\s+is\s+(?:dangerous|beautiful|addictive|mesmerizing|gorgeous)|"
             r"the\s+way\s+you\s+speak\s+is\s+(?:dangerous|beautiful|mesmerizing)|"
             r"your\s+smile\s+should\s+be\s+illegal|you\s+should\s+be\s+illegal\s+to\s+look\s+at|"
