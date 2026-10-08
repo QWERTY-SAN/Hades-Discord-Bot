@@ -48,6 +48,16 @@ services:
         value: "21600"
       - key: MAX_CONVERSATIONS
         value: "500"
+      - key: AUTO_MEDIA_COOLDOWN_SECONDS
+        value: "300"
+      - key: GIF_COOLDOWN_SECONDS
+        value: "300"
+      - key: IMAGE_COOLDOWN_SECONDS
+        value: "300"
+      - key: MEDIA_RECENT_COUNT
+        value: "6"
+      - key: MEDIA_STATE_TTL_SECONDS
+        value: "7200"
       - key: MEMORY_PRUNE_INTERVAL
         value: "900"
       - key: COOLDOWN_PRUNE_INTERVAL
