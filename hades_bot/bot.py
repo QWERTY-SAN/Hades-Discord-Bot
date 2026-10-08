@@ -140,12 +140,13 @@ class HadesBot(commands.Bot):
             return
 
         record_runtime_metric("ai_requests")
-        record_runtime_metric("ai_requests")
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
             reply = sanitize_model_output(reply)
             if not reply:
+                record_runtime_metric("ai_failures")
+                set_runtime_error("Gemini returned an empty response")
                 await self.cooldowns.release(key)
                 await message.reply("Tsk. You have my attention. Try that again.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
                 return
@@ -153,6 +154,8 @@ class HadesBot(commands.Bot):
             record_runtime_metric("ai_successes")
             set_runtime_error(None)
         except UnsafeModelOutputError:
+            record_runtime_metric("ai_failures")
+            set_runtime_error("blocked forbidden-topic model output")
             logger.warning("Blocked forbidden-topic model output for %s", key)
             await self.cooldowns.release(key)
             refusal = await self.hades_chat.scope_refusal("an unrelated or forbidden topic")
