@@ -92,6 +92,8 @@ def conversation_mode(text: str) -> str:
         return "correction"
     if is_social_planning_request(text):
         return "social_planning"
+    if is_social_message(text):
+        return "casual"
     if is_simple_acknowledgement(text):
         return "acknowledgement"
     if is_personal_life_request(text):
