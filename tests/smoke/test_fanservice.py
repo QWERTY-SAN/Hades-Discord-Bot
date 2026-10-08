@@ -3,6 +3,7 @@ from hades_bot.ai.fanservice import (
     fanservice_category,
     fanservice_guidance,
     fanservice_intensity,
+    fanservice_cue_shape,
     is_fanservice_message,
 )
 
@@ -131,3 +132,38 @@ def test_guidance_has_expanded_reaction_repertoire():
         "recent replies",
     ):
         assert phrase in guidance
+
+
+def test_expanded_soft_physical_affection_cues():
+    assert "affection" in fanservice_categories("play with my hair")
+    assert "affection" in fanservice_categories("touch my cheek")
+    assert "affection" in fanservice_categories("boop my nose")
+    assert "affection" in fanservice_categories("touch foreheads")
+
+
+def test_voice_and_eye_contact_cues():
+    assert fanservice_category("say my name again") == "voice_and_eye_contact"
+    assert fanservice_category("let me hear your voice") == "voice_and_eye_contact"
+    assert fanservice_category("look into my eyes") == "voice_and_eye_contact"
+    assert fanservice_category("hold my gaze") == "voice_and_eye_contact"
+
+
+def test_expanded_fluster_and_type_cues():
+    assert fanservice_category("you got me folding") == "flustered"
+    assert fanservice_category("you're exactly my type") == "admiration"
+    assert fanservice_category("Hades is definitely my type") == "admiration"
+
+
+def test_cue_shape_distinguishes_social_moves():
+    assert fanservice_cue_shape("step on me") == "bold_request"
+    assert fanservice_cue_shape("you're gorgeous") == "compliment"
+    assert fanservice_cue_shape("make me blush") == "challenge"
+    assert fanservice_cue_shape("give me a hug") == "affection_request"
+    assert fanservice_cue_shape("say my name") == "focused_attention"
+
+
+def test_guidance_exposes_cue_shape_without_becoming_a_template():
+    guidance = fanservice_guidance("say my name again")
+    assert "Cue shape: focused_attention" in guidance
+    assert "Generate a fresh response" in guidance
+    assert "fixed response list" in guidance

@@ -70,6 +70,13 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"(?:sit|lie)\s+on\s+(?:your|my)\s+lap|take\s+a\s+nap\s+(?:on|with)\s+you)\b",
             re.I,
         ),
+        re.compile(
+            r"\b(?:play\s+with\s+my\s+hair|stroke\s+my\s+hair|brush\s+my\s+hair|"
+            r"fix\s+my\s+hair|fix\s+my\s+collar|touch\s+my\s+cheek|kiss\s+my\s+cheek|"
+            r"cup\s+my\s+face|hold\s+my\s+face|boop\s+my\s+nose|"
+            r"touch\s+foreheads?|rest\s+your\s+forehead\s+against\s+mine)\b",
+            re.I,
+        ),
         re.compile(r"\b(?:love\s+you|i\s+adore\s+you|i\s+love\s+you|i\s+miss\s+you)\b", re.I),
     ),
 
@@ -184,6 +191,27 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
     ),
+    "admiration": (
+        re.compile(
+            r"\b(?:you(?:'re|\s+are)|ur|hades)\s+(?:exactly\s+)?my\s+type\b|"
+            r"\b(?:you(?:'re|\s+are)|ur|hades)\s+(?:totally|definitely|absolutely)\s+my\s+type\b",
+            re.I,
+        ),
+    ),
+    "voice_and_eye_contact": (
+        re.compile(
+            r"\b(?:say\s+my\s+name(?:\s+again)?|let\s+me\s+hear\s+your\s+voice|"
+            r"i\s+want\s+to\s+hear\s+your\s+voice|whisper\s+my\s+name|"
+            r"look\s+into\s+my\s+eyes|look\s+me\s+in\s+the\s+eyes|hold\s+my\s+gaze|"
+            r"keep\s+eye\s+contact|don't\s+break\s+eye\s+contact)\b",
+            re.I,
+        ),
+    ),
+    "voice_and_eye_contact": (
+        "The Administrator is focusing on Hades's voice, name, eyes, or deliberate eye contact. "
+        "Hades can turn that attention into a poised, intimate-but-non-explicit moment: she may make the attention deliberate, "
+        "tease the Administrator for staring, or simply let them have the moment without escalating it."
+    ),
     "praise": (
         re.compile(
             r"\b(?:praise\s+me|tell\s+me\s+i(?:'m|\s+am)\s+good|say\s+i(?:'m|\s+am)\s+good|"
@@ -218,7 +246,7 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"you\s+make\s+me\s+blush|i(?:'m|\s+am)\s+blushing|i(?:'m|\s+am)\s+folding|"
             r"i(?:'m|\s+am)\s+weak\s+for\s+you|"
             r"i\s+cannot\s+think\s+straight|you'?ve\s+got\s+me\s+speechless|i(?:'m|\s+am)\s+speechless|"
-            r"you\s+make\s+me\s+nervous)\b",
+            r"you\s+make\s+me\s+nervous|i(?:'m|\s+am)\s+folding|i\s+folded|you\s+got\s+me\s+folding|i\s+feel\s+weak\s+for\s+you)\b",
             re.I,
         ),
     ),
@@ -315,6 +343,7 @@ _CATEGORY_PRIORITY = (
     "devotion",
     "playful_jealousy",
     "admiration",
+    "voice_and_eye_contact",
     "praise",
     "playful_fandom",
     "puppet_fantasy",
@@ -407,7 +436,7 @@ _REACTION_REPERTOIRE = (
     "Do not force variety when continuity calls for the same attitude."
 )
 
-_WARM_CATEGORIES = frozenset({"affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "attention_seek", "playful_fandom", "praise"})
+_WARM_CATEGORIES = frozenset({"affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "voice_and_eye_contact", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 _FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
@@ -488,6 +517,44 @@ def is_fanservice_message(text: str) -> bool:
     return bool(fanservice_categories(text))
 
 
+def fanservice_cue_shape(text: str) -> str:
+    """Return a compact semantic hint describing the Administrator's social move."""
+    categories = set(fanservice_categories(text))
+    if not categories:
+        return "ordinary_banter"
+    if categories & {"fan_command", "playful_dominance"}:
+        return "bold_request"
+    if "teasing_challenge" in categories:
+        return "challenge"
+    if "playful_jealousy" in categories:
+        return "playful_jealousy"
+    if "devotion" in categories:
+        return "devotion"
+    if "romantic" in categories:
+        return "romantic_admission"
+    if "affection" in categories:
+        return "affection_request"
+    if "attention_seek" in categories:
+        return "attention_request"
+    if "praise" in categories:
+        return "praise_request"
+    if "flustered" in categories:
+        return "flustered_admission"
+    if "captivated" in categories:
+        return "captivated_admission"
+    if "voice_and_eye_contact" in categories:
+        return "focused_attention"
+    if "admiration" in categories:
+        return "compliment"
+    if "puppet_fantasy" in categories:
+        return "puppet_play"
+    if "playful_fandom" in categories:
+        return "fandom_banter"
+    if "flirtation" in categories:
+        return "flirtatious_banter"
+    return "fandom_banter"
+
+
 def fanservice_guidance(category_or_text: str | None) -> str:
     raw = category_or_text or ""
     is_category = raw in PATTERNS
@@ -496,6 +563,25 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         return "No special fan-service behavior is required. Keep Hades conversational and in character."
 
     analysis = analyze_fanservice(raw) if not is_category else FanserviceAnalysis(raw, (), "bold" if raw in _BOLD_CATEGORIES else "flirty" if raw in _FLIRTY_CATEGORIES else "warm", "high")
+    cue_shape = fanservice_cue_shape(raw) if not is_category else {
+        "fan_command": "bold_request",
+        "playful_dominance": "bold_request",
+        "romantic": "romantic_admission",
+        "affection": "affection_request",
+        "scent_and_proximity": "focused_attention",
+        "captivated": "captivated_admission",
+        "devotion": "devotion",
+        "playful_jealousy": "playful_jealousy",
+        "admiration": "compliment",
+        "voice_and_eye_contact": "focused_attention",
+        "praise": "praise_request",
+        "playful_fandom": "fandom_banter",
+        "puppet_fantasy": "puppet_play",
+        "flustered": "flustered_admission",
+        "flirtation": "flirtatious_banter",
+        "attention_seek": "attention_request",
+        "teasing_challenge": "challenge",
+    }.get(raw, "fandom_banter")
     intensity = fanservice_intensity(raw) if not is_category else (
         "bold" if raw in _BOLD_CATEGORIES else "flirty" if raw in _FLIRTY_CATEGORIES else "warm"
     )
@@ -508,7 +594,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
     }[intensity]
     sections = [_CATEGORY_GUIDANCE.get(category, "") for category in categories]
     return (
-        f"Fan-service mode: {', '.join(categories)}. {intensity_guidance} "
+        f"Fan-service mode: {', '.join(categories)}. Cue shape: {cue_shape}. {intensity_guidance} "
         + " ".join(section for section in sections if section)
         + " Recognize what the Administrator actually said before escalating the joke. "
         + "Generate a fresh response for this exact message; this is not a response template. "

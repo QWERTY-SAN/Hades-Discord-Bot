@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0
+- Expanded fan-service recognition for gentle affection, focused attention, eye contact, voice/name requests, additional fluster cues, and direct "you're my type" admiration.
+- Added semantic cue-shape guidance so Gemini can distinguish compliments, affection requests, bold requests, challenges, focused attention, and flustered admissions without selecting canned replies.
+- Kept all fan-service wording dynamically generated and context-sensitive.
+- Added regression coverage for the new detector paths and cue-shape contract.
+
 ## 1.7.0
 - Expanded Hades's fan-service reaction repertoire beyond the existing tease/flirt/challenge lanes.
 - Added composed indulgence, dry disbelief, mock-formal rulings, elegant approval, playful offense, caught-you observations, amused permission, quiet sincerity, graceful deflection, patient amusement, understated fluster, and theatrical verdicts.

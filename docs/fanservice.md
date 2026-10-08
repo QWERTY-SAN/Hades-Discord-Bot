@@ -81,3 +81,14 @@ Natural Discord wording is intentionally accepted, including shorthand and typos
 - similar wording that clearly describes Hades catching the Administrator's attention
 
 These are treated as social subtext when the surrounding message supports it. A clearly Hades-directed personal remark does not need an Aether Gazer keyword just to remain in scope; the strict filter still blocks unrelated specialist topics, sports, other games, politics, finance, and similar categories.
+
+
+## 1.8.0 expansion
+
+The fan-service layer now distinguishes more of the user's social move before the model writes the response.
+
+New coverage includes gentle physical-affection cues such as playing with or stroking hair, touching a cheek, booping a nose, fixing a collar, and touching foreheads. It also recognizes focused-attention cues around Hades's voice, saying her name, and deliberate eye contact, plus additional fluster and "you're my type" wording.
+
+The detector now exposes a small **cue shape** hint such as **bold_request**, **compliment**, **affection_request**, **challenge**, **focused_attention**, or **flustered_admission**. This is guidance for Gemini rather than a response selector, so the same category can still produce different Hades reactions depending on the exact wording and recent replies.
+
+The purpose is better character presence: a request for a hug should feel different from a bold command, a compliment should feel different from an admission of being flustered, and focused eye contact should not automatically become a stronger flirtation. All of these remain non-explicit and dynamically generated.

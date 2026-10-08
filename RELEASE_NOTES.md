@@ -1,4 +1,13 @@
-# Hades Discord Bot 1.4.0
+# Hades Discord Bot 1.8.0
+
+## Fan-service expansion
+- Added more gentle, non-explicit affection cues: hair play, cheek touches, head/face gestures, nose boops, collar fixes, and forehead touches.
+- Added focused-attention cues around Hades's voice, saying her name, and deliberate eye contact.
+- Added more indirect attraction/fluster wording, including "you're exactly my type" and "you got me folding."
+- Added semantic cue-shape hints for Gemini. These hints describe the user's social move; they do not select a canned response.
+- Kept recent-reply continuity and reaction-lane variety as the primary drivers of response style.
+
+
 
 ## Expanded social behavior
 - Date invitations and shared meal plans are recognized as Hades-directed social interaction.
