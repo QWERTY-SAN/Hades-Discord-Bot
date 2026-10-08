@@ -114,3 +114,20 @@ def test_expanded_classic_and_indirect_cues():
     assert fanservice_category("you've got me looking at you") == "admiration"
     assert fanservice_category("I was drawn to you") == "admiration"
     assert fanservice_category("I can't look away from you") == "admiration"
+
+
+def test_guidance_has_expanded_reaction_repertoire():
+    guidance = fanservice_guidance("step on me")
+    for phrase in (
+        "composed indulgence",
+        "dry disbelief",
+        "mock-formal ruling",
+        "playful offense",
+        "caught-you observation",
+        "amused permission",
+        "quiet sincerity",
+        "graceful deflection",
+        "not a rotation",
+        "recent replies",
+    ):
+        assert phrase in guidance

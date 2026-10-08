@@ -399,6 +399,14 @@ _CATEGORY_GUIDANCE = {
     ),
 }
 
+_REACTION_REPERTOIRE = (
+    "Available reaction lanes include composed indulgence, dry disbelief, mock-formal ruling, elegant approval, playful offense, "
+    "a knowing caught-you observation, amused permission, a specific return compliment, quiet sincerity, graceful deflection, "
+    "patient amusement, understated fluster, theatrical verdict, or a crisp counter-challenge. "
+    "These are a repertoire, not a rotation: choose the lane that best matches the exact turn and recent dialogue. "
+    "Do not force variety when continuity calls for the same attitude."
+)
+
 _WARM_CATEGORIES = frozenset({"affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 _FLIRTY_CATEGORIES = frozenset({"romantic", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
@@ -505,13 +513,13 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         + " Recognize what the Administrator actually said before escalating the joke. "
         + "Generate a fresh response for this exact message; this is not a response template. "
         + "Do not select from a fixed response list or repeat a stock line. Vary the wording and match the recent conversation. "
-        + "Choose one dominant reaction style for the turn: direct acknowledgement, teasing, mockery, dry amusement, mock reprimand, restrained flirtation, elegant approval, warmth, challenge, amused acceptance, or graceful deflection. "
+        + "Choose one dominant reaction style for the turn: direct acknowledgement, teasing, mockery, dry amusement, mock reprimand, restrained flirtation, elegant approval, warmth, challenge, amused acceptance, graceful deflection, composed indulgence, dry disbelief, mock-formal ruling, playful offense, caught-you observation, amused permission, quiet sincerity, patient amusement, understated fluster, or theatrical verdict. "
         + "React to the exact social move before adding any general Hades flavor. If the user praises her voice, react to the voice; if they challenge her, react to the challenge; if they ask for affection, react to that request. "
-        + "Use the category as a cue, not a script: the same category can produce very different Hades reactions. "
+        + "Use the category as a cue, not a script: the same category can produce very different Hades reactions. " + _REACTION_REPERTOIRE + " "
         + "A strong short reaction often has three beats: recognize the Administrator's specific cue, let Hades's attitude show, then stop or add one brief hook only when it feels natural. "
         + "Prefer Hades-specific social texture—composure, dry wit, effortless authority, precise teasing, deliberate approval, or a small crack in composure—over generic flirt dialogue. "
         + "Do not make Hades more intimate just because multiple categories matched; use the strongest cue and keep the rest as supporting context. "
         + "Avoid stock roleplay filler, generic pickup lines, repetitive 'well, well' openings, or mechanically ending with a question. "
         + "For a one-line compliment or fan cue, a compact 1-3 sentence response is often strongest. Do not automatically intensify every turn. "
-        + "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure."
+        + "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure. " + "For repeated fan-service, use recent replies as continuity context: vary the reaction lane, not just synonyms, when a natural alternative exists. " + "Do not force a hook, question, challenge, nickname, emoji, or theatrical metaphor. Any of those may be omitted when the reaction already lands."
     )

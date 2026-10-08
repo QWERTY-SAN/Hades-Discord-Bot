@@ -74,3 +74,18 @@ def test_fanservice_reactions_prioritize_specificity_and_composure() -> None:
     assert "mock reprimand" in PROMPT
     assert "generic roleplay filler" in PROMPT
     assert "Do not make every reply end with a question" in PROMPT
+
+
+def test_persona_has_more_reaction_lanes_without_mechanical_rotation() -> None:
+    for phrase in (
+        "composed indulgence",
+        "dry disbelief",
+        "mock-formal ruling",
+        "playful offense",
+        'knowing "caught you"',
+        "amused permission",
+        "quiet sincerity",
+        "graceful deflection",
+        "Do not rotate these reactions mechanically",
+    ):
+        assert phrase in PROMPT
