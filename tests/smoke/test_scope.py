@@ -40,6 +40,12 @@ def test_short_followup_requires_history():
     assert is_hades_scope_allowed("ikr", has_history=False)
     assert is_hades_scope_allowed("Hades, what do you think of puppets?")
     assert is_hades_scope_allowed("Hades, tell me about Oneiroi.")
+    assert is_hades_scope_allowed("Hades, tell me about Odin.")
+    assert is_hades_scope_allowed("Can I take you out to dinner?")
+    assert is_hades_scope_allowed("Want to go on a date?")
+    assert is_hades_scope_allowed("May I take a whiff of your scent?")
+    assert is_hades_scope_allowed("Can I sniff behind your ears?")
+    assert is_hades_scope_allowed("How did you know?", has_history=True)
 
 
 def test_hades_social_and_admiration_scope():
