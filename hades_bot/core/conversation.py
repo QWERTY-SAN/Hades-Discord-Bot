@@ -53,6 +53,8 @@ def conversation_mode(text: str) -> str:
         return "emotional"
 
     analysis = analyze_fanservice(text)
+    if analysis.primary_category == "rivalry_banter":
+        return "banter"
     if analysis.confidence != "low" and analysis.primary_category in {
         "fan_command",
         "playful_dominance",
