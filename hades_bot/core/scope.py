@@ -74,7 +74,7 @@ CORRECTION_PATTERN = re.compile(
 )
 
 CONVERSATION_PREFIX_PATTERN = re.compile(
-    r"^(?:(?:anyways?|well|so|btw|tbh|honestly|okay|ok|alright|right|uh+|um+|hmm+)[,\s:-]+)+",
+    r"^(?:(?:anyways?|well|so|btw|tbh|honestly|right|uh+|um+|hmm+)[,\s:-]+)+",
     re.I,
 )
 
