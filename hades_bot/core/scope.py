@@ -49,7 +49,7 @@ SOCIAL_COMPANIONSHIP_PATTERNS = (
     re.compile(
         r"^(?:"
         r"how\s+about|how\s+abt"
-        r")\s+(?:(?:we|you|u)\s+)?(?:"
+        r")\s+(?:(?:we|you|u|to)\s+)?(?:"
         r"have|having|grab|grabbing|get|gettin|getting|drink|drinking|share|sharing|take|taking|make|making|brew|brewing"
         r")\b.{0,300}$",
         re.I | re.S,
