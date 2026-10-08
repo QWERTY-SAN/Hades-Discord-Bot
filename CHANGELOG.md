@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.9.0
+- Hardened runtime observability with readiness state and bounded health metrics.
+- Made maintenance cleanup resilient so a single failed cleanup pass does not stop the background loop.
+- Fixed automatic GIF/image state isolation to use guild/channel/user keys.
+- Made media cooldowns configurable through environment and Render settings.
+- Fixed deterministic scope blocker labels so refusal wording matches the detected topic category.
+- Expanded nested Aether Gazer/Hades knowledge retrieval beyond the top-level alias list.
+- Improved current build/meta source selection by prioritizing Mimir Global Teams and official news for time-sensitive requests.
+- Added regression coverage for these runtime, scope, media, and knowledge paths.
+
 ## 1.8.0
 - Expanded fan-service recognition for gentle affection, focused attention, eye contact, voice/name requests, additional fluster cues, and direct "you're my type" admiration.
 - Added semantic cue-shape guidance so Gemini can distinguish compliments, affection requests, bold requests, challenges, focused attention, and flustered admissions without selecting canned replies.
