@@ -299,7 +299,12 @@ def is_short_followup(text: str) -> bool:
     return _normalize(text) in SHORT_FOLLOWUPS
 
 
-def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
+def is_hades_scope_allowed(
+    text: str,
+    *,
+    has_history: bool = False,
+    direct_reply: bool = False,
+) -> bool:
     normalized = _normalize(text)
     if not normalized:
         return False
@@ -311,6 +316,13 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
         return False
     if is_specialist_request(normalized):
         return False
+
+    # A direct Discord reply to Hades is already anchored to her current
+    # conversation, even when the replying user has no private memory entry.
+    # Preserve the hard off-topic/specialist blocks above, but do not demand
+    # user-specific history for an otherwise ordinary conversational reply.
+    if direct_reply and not GENERAL_FACTUAL_QUESTION.match(normalized):
+        return True
     # Short conversational follow-ups only make sense when there is an active
     # Hades conversation to attach them to. They remain socially classified so
     # the normal-conversation layer can recognize them, but scope must reject
