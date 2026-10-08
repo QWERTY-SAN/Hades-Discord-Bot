@@ -296,12 +296,12 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
     "rivalry_banter": (
         re.compile(
-            r"\\b(?:old\\s+hag|old\\s+witch|you\\s+really\\s+are\\s+an?\\s+old\\s+hag|"
-            r"you\\s+won\\s+the\\s+battle|i\\s+won\\s+the\\s+battle|"
-            r"(?:yet\\s+to|have\\s+yet\\s+to)\\s+win\\s+the\\s+war|"
-            r"the\\s+war\\s+isn'?t\\s+over|this\\s+isn'?t\\s+over|"
-            r"we'?ll\\s+see\\s+who\\s+wins|you\\s+think\\s+you'?ve\\s+won|"
-            r"not\\s+so\\s+fast|my\\s+turn\\s+next|your\\s+move)",
+            r"\b(?:old\s+hag|old\s+witch|you\s+really\s+are\s+an?\s+old\s+hag|"
+            r"you\s+won\s+the\s+battle|i\s+won\s+the\s+battle|"
+            r"(?:yet\s+to|have\s+yet\s+to)\s+win\s+the\s+war|"
+            r"the\s+war\s+isn'?t\s+over|this\s+isn'?t\s+over|"
+            r"we'?ll\s+see\s+who\s+wins|you\s+think\s+you'?ve\s+won|"
+            r"not\s+so\s+fast|my\s+turn\s+next|your\s+move)\b",
             re.I,
         ),
     ),
