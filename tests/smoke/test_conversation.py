@@ -15,6 +15,9 @@ def test_signals():
 
 def test_flirtation_mode():
     assert conversation_mode("You drew my attention.") == "flirtation"
+    assert conversation_mode("wanna go out for an date?") == "flirtation"
+    assert conversation_mode("wanna hang out with me?") == "casual"
+    assert conversation_mode("Old Hag") == "banter"
 
 
 def test_elegance_maternal_question_is_fanservice():
