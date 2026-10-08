@@ -10,7 +10,7 @@ assert "async def send_auto_media" not in media
 assert 'kind = self.rng.choice(("gif", "image"))' in media
 assert "should_auto_send_gif(message, trigger)" not in bot
 assert "should_auto_send_image(message, trigger)" not in bot
-assert bot.count("should_auto_send_media(message, trigger)") == 1
+assert bot.count("should_auto_send_media(message, trigger)") == 2
 assert "choose_auto_media_embed(message)" in bot
 assert 'attach_auto_media=(trigger in {"mention", "command"}), trigger=trigger' in bot
 
