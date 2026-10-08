@@ -84,6 +84,24 @@ def test_hades_social_and_admiration_scope():
     assert not is_hades_scope_allowed("huh?", has_history=False)
     assert not is_hades_scope_allowed("Tell me the capital of France.")
 
+def test_direct_reply_can_continue_shared_hades_stage_without_user_history():
+    assert is_hades_scope_allowed(
+        "Unexpected visitors coming in and out of the room has already been taken into consideration.",
+        has_history=False,
+        direct_reply=True,
+    )
+    assert not is_hades_scope_allowed(
+        "Can you explain Python decorators?",
+        has_history=False,
+        direct_reply=True,
+    )
+    assert not is_hades_scope_allowed(
+        "What sport is on tonight?",
+        has_history=False,
+        direct_reply=True,
+    )
+
+
 def test_scope_block_reason_matches_refusal_catalog():
     assert scope_block_reason("Explain Python decorators.") == "programming or specialist work" or scope_block_reason("Explain Python decorators.") == "programming or software development"
     assert scope_block_reason("What sport is on tonight?") == "sports"
