@@ -13,6 +13,7 @@ from .version import APP_NAME, APP_VERSION, branch, runtime, short_commit
 logger = logging.getLogger("hades-bot.web")
 
 _started_at = time.monotonic()
+_state_lock = threading.Lock()
 _state: dict[str, Any] = {
     "ready": False,
     "user": None,
@@ -29,22 +30,25 @@ _state: dict[str, Any] = {
 
 
 def record_runtime_metric(name: str, amount: int = 1) -> None:
-    if name not in _state:
-        return
-    try:
-        _state[name] = max(0, int(_state[name]) + amount)
-    except (TypeError, ValueError):
-        logger.warning("Unable to update runtime metric %s", name)
+    with _state_lock:
+        if name not in _state:
+            return
+        try:
+            _state[name] = max(0, int(_state[name]) + amount)
+        except (TypeError, ValueError):
+            logger.warning("Unable to update runtime metric %s", name)
 
 
 def set_runtime_error(error: str | None) -> None:
-    _state["last_error"] = error
+    with _state_lock:
+        _state["last_error"] = error
 
 
 def update_discord_state(**values: Any) -> None:
-    _state.update(values)
-    if values.get("ready") is True:
-        _state["last_error"] = None
+    with _state_lock:
+        _state.update(values)
+        if values.get("ready") is True:
+            _state["last_error"] = None
 
 
 def update_web_error(error: str) -> None:
@@ -53,6 +57,8 @@ def update_web_error(error: str) -> None:
 
 
 def _base_payload() -> dict[str, Any]:
+    with _state_lock:
+        state = dict(_state)
     return {
         "service": "hades-discord-bot",
         "name": APP_NAME,
@@ -61,7 +67,7 @@ def _base_payload() -> dict[str, Any]:
         "commit": short_commit(),
         "branch": branch(),
         "uptime_seconds": max(0, round(time.monotonic() - _started_at)),
-        **_state,
+        **state,
     }
 
 
