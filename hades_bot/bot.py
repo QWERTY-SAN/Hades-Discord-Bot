@@ -15,7 +15,7 @@ from .core.memory import ConversationMemory
 from .core.scope import is_hades_scope_allowed, scope_block_reason
 from .core.utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
 from .media.media import HadesMedia
-from .web import update_discord_state
+from .web import record_runtime_metric, set_runtime_error, update_discord_state
 
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
@@ -103,6 +103,7 @@ class HadesBot(commands.Bot):
         return referenced.author.id == self.user.id
 
     async def handle_ai_message(self, message: discord.Message, content: str, trigger: str = "mention") -> None:
+        record_runtime_metric("messages_seen")
         content = content.strip()
         if not content:
             response = self._rng.choice(EMPTY_CALL_RESPONSES)
@@ -121,6 +122,7 @@ class HadesBot(commands.Bot):
         key = self.conversation_key(message)
         has_history = await self.hades_chat.memory.has_history(key)
         if not is_hades_scope_allowed(content, has_history=has_history):
+            record_runtime_metric("scope_blocks")
             try:
                 refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
             except Exception:
@@ -137,6 +139,7 @@ class HadesBot(commands.Bot):
             )
             return
 
+        record_runtime_metric("ai_requests")
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
@@ -146,6 +149,8 @@ class HadesBot(commands.Bot):
                 await message.reply("Tsk. You have my attention. Try that again.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
                 return
             await self.send_chunks(message, reply, attach_auto_media=(trigger in {"mention", "command"}), trigger=trigger)
+            record_runtime_metric("ai_successes")
+            set_runtime_error(None)
         except UnsafeModelOutputError:
             logger.warning("Blocked forbidden-topic model output for %s", key)
             await self.cooldowns.release(key)
@@ -153,12 +158,18 @@ class HadesBot(commands.Bot):
             await self.send_chunks(message, refusal)
             return
         except AIServiceError as exc:
+            record_runtime_metric("ai_failures")
+            set_runtime_error(exc.user_message)
             await self.cooldowns.release(key)
             await message.reply(exc.user_message, mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
         except RuntimeError:
+            record_runtime_metric("ai_failures")
+            set_runtime_error("response queue full")
             await self.cooldowns.release(key)
             await message.reply("The response queue is full. Try again in a moment.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
         except Exception:
+            record_runtime_metric("ai_failures")
+            set_runtime_error("unexpected AI handling failure")
             await self.cooldowns.release(key)
             logger.exception("Unexpected AI handling failure")
             await message.reply("Something went wrong behind the curtain. Try again in a moment.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
@@ -170,6 +181,7 @@ class HadesBot(commands.Bot):
 
     async def on_disconnect(self) -> None:
         update_discord_state(ready=False)
+        set_runtime_error("Discord disconnected")
 
     async def on_resumed(self) -> None:
         update_discord_state(
@@ -181,9 +193,13 @@ class HadesBot(commands.Bot):
 
     @tasks.loop(seconds=SETTINGS.memory_prune_interval)
     async def maintenance_loop(self) -> None:
-        await self.hades_chat.prune_memory()
-        await self.cooldowns.prune()
-        await self.media.prune()
+        try:
+            await self.hades_chat.prune_memory()
+            await self.cooldowns.prune()
+            await self.media.prune()
+        except Exception:
+            logger.exception("Maintenance pass failed; the loop will continue.")
+            set_runtime_error("maintenance pass failed")
 
     @maintenance_loop.before_loop
     async def before_maintenance(self) -> None:
