@@ -65,6 +65,9 @@ class FanserviceDetectionTests(unittest.TestCase):
         self.assertEqual(fanservice_category("Fine, you won the battle, but have yet to win the war."), "rivalry_banter")
 
 
+    def test_personal_advice_is_not_social_planning(self):
+        self.assertEqual(conversation_mode("What should I do tonight?"), "advice")
+
     def test_social_planning_has_its_own_mode(self):
         self.assertEqual(conversation_mode("What else can we do together?"), "social_planning")
         self.assertEqual(conversation_mode("Let's hang out sometime."), "social_planning")
