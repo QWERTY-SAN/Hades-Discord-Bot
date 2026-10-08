@@ -1,6 +1,11 @@
 import unittest
 
-from hades_bot.core.conversation import conversation_continuity_guidance, conversation_mode, is_short_followup
+from hades_bot.core.conversation import (
+    conversation_continuity_guidance,
+    conversation_mode,
+    is_short_followup,
+    is_simple_acknowledgement,
+)
 from hades_bot.core.scope import is_hades_scope_allowed
 
 from hades_bot.ai.fanservice import (
@@ -58,6 +63,15 @@ class FanserviceDetectionTests(unittest.TestCase):
     def test_rivalry_banter_stays_banter(self):
         self.assertEqual(fanservice_category("Old Hag"), "rivalry_banter")
         self.assertEqual(fanservice_category("Fine, you won the battle, but have yet to win the war."), "rivalry_banter")
+
+
+    def test_social_planning_has_its_own_mode(self):
+        self.assertEqual(conversation_mode("What else can we do together?"), "social_planning")
+        self.assertEqual(conversation_mode("Let's hang out sometime."), "social_planning")
+
+    def test_acknowledgements_stay_small_and_natural(self):
+        self.assertTrue(is_simple_acknowledgement("Okay."))
+        self.assertEqual(conversation_mode("Fair enough."), "acknowledgement")
 
 
 class PersonaContinuityTests(unittest.TestCase):
