@@ -65,3 +65,7 @@ def test_hades_social_and_admiration_scope():
     assert is_hades_scope_allowed("I've been thinking about you")
     assert not is_hades_scope_allowed("huh?", has_history=False)
     assert not is_hades_scope_allowed("Tell me the capital of France.")
+
+def test_scope_block_reason_matches_refusal_catalog():
+    assert scope_block_reason("Explain Python decorators.") == "programming or specialist work" or scope_block_reason("Explain Python decorators.") == "programming or software development"
+    assert scope_block_reason("What sport is on tonight?") == "sports"
