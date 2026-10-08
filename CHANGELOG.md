@@ -1,5 +1,38 @@
 # Changelog
 
+## 2.0.0 — 2026-10-08
+
+### Character and conversation
+- Expanded Hades character calibration and contextual fan-service guidance.
+- Improved continuity for short follow-ups, corrections, callbacks, and topic pivots.
+- Reduced forced questions, repetitive theatrical phrasing, and automatic flirting escalation.
+- Preserved selective use of Administrator and little lamb.
+
+### Scope and safety
+- Kept the strict Aether Gazer-focused scope.
+- Preserved deterministic blocking for unrelated technical work, sports/F1, other games, politics/news/finance, and unrelated specialist requests.
+- Sanitized generated raw Discord mention markup and direct GIF URLs.
+
+### Runtime and deployment
+- Added release version 2.0.0.
+- Added an explicit Render free plan.
+- Added a Render build filter so documentation-only changes do not trigger unnecessary service builds.
+- Kept Render deployment behind passing CI checks.
+- Removed duplicate Discord disconnect-state updates.
+- Improved command-error messaging.
+
+### Gemini
+- Kept gemini-3.5-flash-lite as the default model.
+- Preserved URL Context fallback behavior for current/source-sensitive questions.
+- Preserved bounded concurrency, retries, request timeout, and output limits.
+
+### Media
+- GIFs remain external embeds rather than raw URLs in bot messages.
+- Automatic media remains limited and cooldown-protected.
+- Generated GIF URLs are removed from model text before Discord delivery.
+
+# Changelog
+
 ## 1.9.0
 - Hardened runtime observability with readiness state and bounded health metrics.
 - Made maintenance cleanup resilient so a single failed cleanup pass does not stop the background loop.
