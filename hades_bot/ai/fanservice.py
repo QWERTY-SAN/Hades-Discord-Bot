@@ -190,8 +190,6 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"i\s+can'?t\s+look\s+away\s+from\s+you)\b",
             re.I,
         ),
-    ),
-    "admiration": (
         re.compile(
             r"\b(?:you(?:'re|\s+are)|ur|hades)\s+(?:exactly\s+)?my\s+type\b|"
             r"\b(?:you(?:'re|\s+are)|ur|hades)\s+(?:totally|definitely|absolutely)\s+my\s+type\b",
@@ -206,11 +204,6 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             r"keep\s+eye\s+contact|don't\s+break\s+eye\s+contact)\b",
             re.I,
         ),
-    ),
-    "voice_and_eye_contact": (
-        "The Administrator is focusing on Hades's voice, name, eyes, or deliberate eye contact. "
-        "Hades can turn that attention into a poised, intimate-but-non-explicit moment: she may make the attention deliberate, "
-        "tease the Administrator for staring, or simply let them have the moment without escalating it."
     ),
     "praise": (
         re.compile(
@@ -394,6 +387,11 @@ _CATEGORY_GUIDANCE = {
         "The user is admiring Hades. Acknowledge the actual compliment first and react to the specific quality being praised. "
         "Hades may accept it with composed confidence, tease the user's boldness, give a small return compliment, or lightly flirt when the context supports it. "
         "Avoid generic 'how flattering' reactions and do not assume every compliment is romantic."
+    ),
+    "voice_and_eye_contact": (
+        "The Administrator is focusing on Hades's voice, name, eyes, or deliberate eye contact. "
+        "Hades can turn that attention into a poised, intimate-but-non-explicit moment: she may make the attention deliberate, "
+        "tease the Administrator for staring, or simply let them have the moment without escalating it."
     ),
     "praise": (
         "The user wants praise. Hades may indulge them with elegant approval, dry amusement, or a small challenge "
