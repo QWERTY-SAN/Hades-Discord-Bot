@@ -44,6 +44,11 @@ CORRECTION_PATTERN = re.compile(
     re.I | re.S,
 )
 
+CONVERSATION_PREFIX_PATTERN = re.compile(
+    r"^(?:(?:anyways?|well|so|btw|tbh|honestly|okay|ok|alright|right|uh+|um+|hmm+)[,\s:-]+)+",
+    re.I,
+)
+
 SPECIALIST_REQUESTS = (
     re.compile(r"\b(?:write|build|make|create|code|debug|fix|program|implement|develop|generate|show|give|provide)\b.{0,100}\b(?:code|script|program|bot|api|regex|source\s+code|discord\s+bot)\b", re.I | re.S),
     re.compile(r"\b(?:write|build|make|create|code|debug|fix|program|implement|develop|generate|show|give|provide)\b.{0,100}\b(?:python|javascript|typescript|java|c\+\+|c#|rust|golang|ruby|php|sql|regex|html|css|api|script|source\s+code|code\s+snippet|discord\.py|programming)\b", re.I | re.S),
@@ -84,6 +89,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:(?:woof|arf|awoo|meow|mew|nya|rawr)(?:[\s.!?]*(?:woof|arf|awoo|meow|mew|nya|rawr)){0,5})[\s.!?]*(?::3|:3c|x3|X3)?[\s.!?]*$", re.I),
     re.compile(r"^(?:i|i'm|im|i've|ive|my|mine|today\s+i|tonight\s+i|this\s+is|that\s+was|just|currently|honestly|literally)\b.{0,700}$", re.I | re.S),
     re.compile(r"^(?:mind\s+if\s+i|can\s+i|may\s+i|is\s+it\s+(?:okay|alright)\s+if\s+i|would\s+you\s+mind\s+if\s+i)\b.{0,300}$", re.I | re.S),
+    re.compile(r"^(?:what\s+can\s+i\s+do\s+for\s+(?:you|u)|anything\s+i\s+can\s+do\s+for\s+(?:you|u)|is\s+there\s+anything\s+i\s+can\s+do\s+for\s+(?:you|u)|do\s+you\s+need\s+anything|need\s+anything|how\s+can\s+i\s+help(?:\s+(?:you|u))?|what\s+do\s+you\s+need)[?.! ]*$", re.I),
 )
 PERSONAL_LIFE_PATTERNS = (
     re.compile(r"^(?:what\s+should\s+i\s+do|what\s+can\s+i\s+do|what\s+could\s+i\s+do|what\s+else\s+(?:can|should)\s+i\s+do|what\s+should\s+we\s+do|what\s+can\s+we\s+do|what\s+do\s+you\s+suggest\s+i\s+do|how\s+should\s+i\s+spend\s+(?:my\s+time|my\s+day|my\s+evening|my\s+night)|give\s+me\s+(?:something|an\s+idea)\s+to\s+do|give\s+me\s+an?\s+idea|pick\s+something\s+for\s+me|choose\s+something\s+for\s+me|surprise\s+me|help\s+me\s+decide\s+(?:what\s+to\s+do|what\s+i\s+should\s+do)|i\s+(?:don't|do\s+not)\s+know\s+what\s+to\s+do|i\s+have\s+nothing\s+to\s+do|anything\s+else)(?:\s+(?:tonight|today|right\s+now|this\s+(?:morning|afternoon|evening|weekend)|tomorrow|for\s+fun|when\s+i'?m\s+bored))?[?.! ]*$", re.I),
@@ -131,6 +137,10 @@ def _normalize(text: str) -> str:
     value = unicodedata.normalize("NFKC", text).casefold()
     value = re.sub(r"[\u200b-\u200d\ufeff]", "", value)
     return re.sub(r"\s+", " ", value).strip()
+
+
+def _conversation_candidate(normalized: str) -> str:
+    return CONVERSATION_PREFIX_PATTERN.sub("", normalized, count=1).strip()
 
 
 def _contains_term(normalized: str, term: str) -> bool:
@@ -199,12 +209,12 @@ def is_reaction_message(text: str) -> bool:
 
 
 def is_personal_life_request(text: str) -> bool:
-    normalized = _normalize(text)
+    normalized = _conversation_candidate(_normalize(text))
     return any(pattern.search(normalized) for pattern in PERSONAL_LIFE_PATTERNS)
 
 
 def is_social_message(text: str) -> bool:
-    normalized = _normalize(text)
+    normalized = _conversation_candidate(_normalize(text))
     if fanservice_category(normalized) is not None:
         return True
     if is_reaction_message(normalized):
@@ -221,7 +231,7 @@ def is_social_message(text: str) -> bool:
 
 
 def is_subjective_question(text: str) -> bool:
-    normalized = _normalize(text)
+    normalized = _conversation_candidate(_normalize(text))
     return bool(SUBJECTIVE_QUESTION.search(normalized))
 
 

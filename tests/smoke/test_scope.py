@@ -46,6 +46,10 @@ def test_short_followup_requires_history():
     assert is_hades_scope_allowed("May I take a whiff of your scent?")
     assert is_hades_scope_allowed("Can I sniff behind your ears?")
     assert is_hades_scope_allowed("How did you know?", has_history=True)
+    assert is_hades_scope_allowed("What can I do for you?", has_history=False)
+    assert is_hades_scope_allowed("what can I do for u?", has_history=False)
+    assert is_hades_scope_allowed("anyways what can I do for u?", has_history=False)
+    assert is_hades_scope_allowed("Well, anything I can do for you?", has_history=False)
 
 
 def test_hades_social_and_admiration_scope():
