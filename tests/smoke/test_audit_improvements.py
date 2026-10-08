@@ -65,3 +65,11 @@ def test_forbidden_generated_reply_never_enters_memory():
             await chat.close()
 
     asyncio.run(run())
+
+from hades_bot.knowledge.lore import build_aether_context
+
+
+def test_nested_knowledge_lookup_surfaces_named_catalog_entries():
+    context = build_aether_context("Explain service lifecycle and Ancient Shadow.")
+    assert "service lifecycle" in context.lower()
+    assert "ancient shadow" in context.lower()
