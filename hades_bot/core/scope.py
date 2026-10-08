@@ -45,6 +45,28 @@ ART_AND_CRAFT_TERMS = {
 }
 HADES_TERMS.update(ART_AND_CRAFT_TERMS)
 
+SOCIAL_COMPANIONSHIP_PATTERNS = (
+    re.compile(
+        r"^(?:"
+        r"how\s+about|how\s+abt"
+        r")\s+(?:(?:we|you|u)\s+)?(?:"
+        r"have|having|grab|grabbing|get|gettin|getting|drink|drinking|share|sharing|take|taking|make|making|brew|brewing"
+        r")\b.{0,300}$",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"^(?:(?:want|wanna|would\s+you\s+like|do\s+you\s+want|care\s+for)\s+)?"
+        r"(?:some\s+)?(?:tea|coffee|a\s+drink|something\s+to\s+drink)"
+        r"[?!.,\s]*(?:with\s+me|together)?[?!.,\s]*$",
+        re.I,
+    ),
+    re.compile(
+        r"^(?:(?:let's|lets)\s+)?(?:have|grab|get|drink|share|make|brew)\s+"
+        r"(?:some\s+)?(?:tea|coffee|a\s+drink|something\s+to\s+drink)\b.{0,120}$",
+        re.I | re.S,
+    ),
+)
+
 SOCIAL_PLANNING_PATTERNS = (
     re.compile(
         r"^(?:what(?:'s|\s+is)\s+(?:the\s+plan|next)|"
@@ -61,6 +83,11 @@ SOCIAL_PLANNING_PATTERNS = (
         re.I | re.S,
     ),
 )
+
+def is_social_companionship_request(text: str) -> bool:
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.search(normalized) for pattern in SOCIAL_COMPANIONSHIP_PATTERNS)
+
 
 def is_social_planning_request(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
@@ -108,7 +135,7 @@ SOCIAL_PATTERNS = (
     re.compile(r"^(?:you'?re|you\s+are)\s+(?:funny|hilarious|sweet|kind|nice|charming|amusing|interesting|adorable|lovely|something\s+else)\b.{0,250}$", re.I | re.S),
     re.compile(r"^(?:hi|hello|hey|hiya|yo+|ayo+|sup|morning|evening|night|good\s+(?:morning|afternoon|evening|night)|welcome\s+back|good\s+to\s+see\s+you|nice\s+to\s+see\s+you|long\s+time\s+no\s+see)[!. ]*(?::[A-Za-z0-9_~+-]+:|<a?:[A-Za-z0-9_~+-]+:\d+>)*[!. ]*$", re.I),
     re.compile(r"^(?:thanks?|thank\s+you|thx|ty|you'?re\s+welcome|no\s+worries|my\s+bad|sorry|good\s+luck|same|same\s+here|me\s+too|me\s+neither|you\s+too|exactly|true|fair|fair\s+enough|makes\s+sense|that\s+makes\s+sense|for\s+real|fr|frfr|ikr|ngl|tbh|idk|idc|right|no\s+way|really\??|seriously\??|of\s+course|sure|okay|ok|alright|alrighty|fine|yep+|yes|yeah+|yuh|yup|nope|nah+|maybe|perhaps|bro|bruh+|lmao+|lol+)[!. ]*$", re.I),
-    re.compile(r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+(?:okay|good|tired|busy|bored|happy|sad|lonely|curious|sleepy)|what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|what\s+about\s+you|how\s+about\s+you|and\s+you\??|how\s+was\s+your\s+day|did\s+you\s+sleep|did\s+you\s+rest|what\s+have\s+you\s+been\s+doing|can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|keep\s+me\s+company|tell\s+me\s+about\s+yourself|tell\s+me\s+something|say\s+something|what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember|miss)\s+me|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|what\s+do\s+you\s+(?:like|enjoy|prefer)|do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat))[?.! ]*$", re.I),
+    re.compile(r"^(?:how\s+are\s+you|how're\s+you|how\s+do\s+you\s+feel|are\s+you\s+(?:okay|good|tired|busy|bored|happy|sad|lonely|curious|sleepy)|what(?:'s|\s+is)\s+up|what\s+are\s+you\s+doing|what\s+about\s+you|how\s+about\s+you|and\s+you\??|how\s+was\s+your\s+day|did\s+you\s+sleep|did\s+you\s+rest|what\s+have\s+you\s+been\s+doing|can\s+we\s+(?:talk|chat)|talk\s+to\s+me|stay\s+with\s+me|keep\s+me\s+company|tell\s+me\s+about\s+yourself|tell\s+me\s+something|say\s+something|what\s+do\s+you\s+think\s+of\s+me|do\s+you\s+(?:like|trust|remember|miss)\s+me|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|what\s+do\s+(?:you|u)\s+(?:like|enjoy|prefer)(?:\s+then)?|do\s+you\s+(?:like|enjoy|prefer)|would\s+you\s+rather|want\s+to\s+(?:talk|chat))[?.! ]*$", re.I),
     re.compile(r"^(?:guess\s+what|look\s+at\s+this|listen|you\s+know\s+what|you\s+know|i\s+have\s+something\s+to\s+tell\s+you|want\s+to\s+hear\s+something|let's\s+(?:talk|chat)|let\s+us\s+(?:talk|chat)|make\s+me\s+smile|cheer\s+me\s+up|i'?m\s+(?:bored|tired|sad|happy|lonely|excited|upset|fine|okay|back|home|sleepy)|i\s+(?:just\s+got\s+home|just\s+woke\s+up|just\s+got\s+back|miss|missed|like|love|hate|need|want|feel|think|guess|remember)\b).{0,700}$", re.I | re.S),
     re.compile(r"^(?:that's|thats|this\s+is|this\s+was|that\s+is|that\s+was|it(?:'s|\s+is)|it\s+was|sounds\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|looks\s+(?:like|good|fun|nice|rough|wild|crazy|interesting)|seems\s+(?:like|good|fun|nice|rough|wild|crazy|interesting))\b.{0,700}$", re.I | re.S),
     re.compile(r"^(?:lol|lmao|haha|hehe|nice|cool|cute|damn|wow|ugh|oof|welp|bruh|based|real|hmm+|oh+|ah+|yikes|whoa+|woah+|phew|that's|thats|this\s+is|that\s+was|you'?re\s+funny|you\s+know|oh\s+really|is\s+that\s+so|owo|uwu)(?:[!. ]|$).{0,300}$", re.I | re.S),
@@ -245,7 +272,7 @@ def is_personal_life_request(text: str) -> bool:
 
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
-    if is_social_planning_request(normalized):
+    if is_social_planning_request(normalized) or is_social_companionship_request(normalized):
         return True
     if fanservice_category(normalized) is not None:
         return True
@@ -312,6 +339,7 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
     if (
         is_personal_life_request(normalized)
         or is_social_planning_request(normalized)
+        or is_social_companionship_request(normalized)
         or is_social_message(normalized)
         or is_subjective_question(normalized)
     ):
@@ -337,6 +365,7 @@ def scope_block_reason(text: str) -> str:
     if (
         is_personal_life_request(text)
         or is_social_planning_request(text)
+        or is_social_companionship_request(text)
         or is_social_message(text)
         or is_subjective_question(text)
         or CORRECTION_PATTERN.search(_normalize(text))
