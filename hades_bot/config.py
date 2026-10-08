@@ -30,7 +30,7 @@ class Settings:
     max_retries: int = 3
     memory_ttl_seconds: int = 21600
     max_conversations: int = 500
-    memory_prune_interval: float = 180.0
+    memory_prune_interval: float = 900.0
     cooldown_prune_interval: float = 3600.0
     media_auto_cooldown_seconds: float = 300.0
     media_gif_cooldown_seconds: float = 300.0
@@ -90,7 +90,7 @@ SETTINGS = Settings(
     max_retries=max(0, _int("MAX_RETRIES", 3)),
     memory_ttl_seconds=max(60, _int("MEMORY_TTL_SECONDS", 21600)),
     max_conversations=max(10, _int("MAX_CONVERSATIONS", 500)),
-    memory_prune_interval=max(30.0, _float("MEMORY_PRUNE_INTERVAL", 180.0)),
+    memory_prune_interval=max(60.0, _float("MEMORY_PRUNE_INTERVAL", 900.0)),
     cooldown_prune_interval=max(60.0, _float("COOLDOWN_PRUNE_INTERVAL", 3600.0)),
     media_auto_cooldown_seconds=max(0.0, _float("AUTO_MEDIA_COOLDOWN_SECONDS", 300.0)),
     media_gif_cooldown_seconds=max(0.0, _float("GIF_COOLDOWN_SECONDS", 300.0)),
