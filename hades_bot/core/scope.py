@@ -37,6 +37,32 @@ CONTEXTUAL_OFF_TOPIC_PATTERNS = (
     ("unrelated entertainment or media", re.compile(r"\b(?:movie|movies|film|films|tv|television|series|anime|manga|celebrity|actor|actress|singer|song|songs|band|concert|netflix|youtube|twitch|streamer|influencer)\b", re.I)),
     ("unrelated racing", re.compile(r"\b(?:racing|race)\b", re.I)),
 )
+ART_AND_CRAFT_TERMS = {
+    "puppet craft", "puppet making", "puppet-making", "puppet shop", "stagecraft",
+    "stage craft", "costume design", "set design", "sculpture", "painting",
+    "illustration", "sketching", "craftsmanship", "crafting", "aesthetics",
+    "artistry", "performance art", "dramaturgy", "choreography",
+}
+HADES_TERMS.update(ART_AND_CRAFT_TERMS)
+
+SOCIAL_PLANNING_PATTERNS = (
+    re.compile(
+        r"^(?:what(?:'s|\s+is)\s+(?:the\s+plan|next)|"
+        r"what\s+(?:should|can|could)\s+(?:we|i)\s+do(?:\s+(?:together|with\s+(?:you|u)))?|"
+        r"what\s+else\s+(?:can|should|could)\s+(?:we|i)\s+do(?:\s+(?:together|with\s+(?:you|u)))?|"
+        r"what\s+(?:do|would)\s+you\s+(?:want|like)\s+to\s+do(?:\s+with\s+(?:me|you|u))?|"
+        r"how\s+about\s+(?:we\s+)?(?:go|going|hang\s+out|spend\s+some\s+time)|"
+        r"should\s+we\s+(?:go|hang\s+out|do\s+something)|"
+        r"(?:let's|lets)\s+(?:go|hang\s+out|do\s+something|spend\s+some\s+time)|"
+        r"(?:wanna|want\s+to)\s+(?:hang\s+out|do\s+something|go\s+somewhere)\b).*$",
+        re.I | re.S,
+    ),
+)
+
+def is_social_planning_request(text: str) -> bool:
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.search(normalized) for pattern in SOCIAL_PLANNING_PATTERNS)
+
 CORRECTION_PATTERN = re.compile(
     r"^(?:no[,! ]+|nah[,! ]+|wait[,! ]+|actually[,! ]+|correction[,! ]+|wrong[,! ]+|"
     r"not\s+(?:exactly|quite)[,! ]+|that's\s+not\s+what\s+i\s+meant[,.! ]*|"
@@ -216,6 +242,8 @@ def is_personal_life_request(text: str) -> bool:
 
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
+    if is_social_planning_request(normalized):
+        return True
     if fanservice_category(normalized) is not None:
         return True
     if is_reaction_message(normalized):
@@ -278,7 +306,12 @@ def is_hades_scope_allowed(text: str, *, has_history: bool = False) -> bool:
         return True
     if fanservice_category(normalized) is not None:
         return True
-    if is_personal_life_request(normalized) or is_social_message(normalized) or is_subjective_question(normalized):
+    if (
+        is_personal_life_request(normalized)
+        or is_social_planning_request(normalized)
+        or is_social_message(normalized)
+        or is_subjective_question(normalized)
+    ):
         return True
     return False
 
@@ -298,7 +331,13 @@ def scope_block_reason(text: str) -> str:
         return aliases.get(category, category)
     if is_specialist_request(text):
         return "a specialist technical subject"
-    if is_personal_life_request(text) or is_social_message(text) or is_subjective_question(text) or CORRECTION_PATTERN.search(_normalize(text)):
+    if (
+        is_personal_life_request(text)
+        or is_social_planning_request(text)
+        or is_social_message(text)
+        or is_subjective_question(text)
+        or CORRECTION_PATTERN.search(_normalize(text))
+    ):
         return ""
     if GENERAL_FACTUAL_QUESTION.search(_normalize(text)):
         return "unrelated factual information"
