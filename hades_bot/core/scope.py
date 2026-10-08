@@ -276,13 +276,13 @@ def scope_block_reason(text: str) -> str:
     category = forbidden_topic_category(text)
     if category:
         aliases = {
-            "F1 or motorsport": "Formula One or motorsports",
+            "F1 or motorsport": "F1 or motorsport",
             "other sports": "sports",
             "other games": "other games",
             "programming or technology": "programming or software development",
             "politics, news, or finance": "politics, news, or finance",
             "unrelated entertainment or media": "unrelated entertainment or media",
-            "unrelated racing": "Formula One or motorsports",
+            "unrelated racing": "F1 or motorsport",
         }
         return aliases.get(category, category)
     if is_specialist_request(text):
