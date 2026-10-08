@@ -48,8 +48,11 @@ HADES_TERMS.update(ART_AND_CRAFT_TERMS)
 SOCIAL_PLANNING_PATTERNS = (
     re.compile(
         r"^(?:what(?:'s|\s+is)\s+(?:the\s+plan|next)|"
-        r"what\s+(?:should|can|could)\s+(?:we|i)\s+do(?:\s+(?:together|with\s+(?:you|u)))?|"
-        r"what\s+else\s+(?:can|should|could)\s+(?:we|i)\s+do(?:\s+(?:together|with\s+(?:you|u)))?|"
+        r"what\s+(?:should|can|could)\s+we\s+do(?:\s+(?:together|with\s+(?:you|u)))?|"
+        r"what\s+(?:can|could)\s+i\s+do\s+(?:with\s+(?:you|u)|together)|"
+        r"what\s+else\s+(?:can|should|could)\s+we\s+do(?:\s+(?:together|with\s+(?:you|u)))?|"
+        r"what\s+else\s+(?:can|should|could)\s+i\s+do\s+(?:with\s+(?:you|u)|together)|"
+        r"what\s+else\s+to\s+do\s+with\s+(?:you|u)|"
         r"what\s+(?:do|would)\s+you\s+(?:want|like)\s+to\s+do(?:\s+with\s+(?:me|you|u))?|"
         r"how\s+about\s+(?:we\s+)?(?:go|going|hang\s+out|spend\s+some\s+time)|"
         r"should\s+we\s+(?:go|hang\s+out|do\s+something)|"
