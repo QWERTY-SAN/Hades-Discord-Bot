@@ -53,8 +53,10 @@ def test_new_categories_are_detected():
 
     assert fanservice_category("Want to go on a date?") == "romantic"
     assert fanservice_category("wanna go out for an date?") == "romantic"
-    assert fanservice_category("wanna hang out with me?") == "romantic"
-    assert fanservice_category("come hang out with me") == "romantic"
+    assert fanservice_category("wanna hang out with me?") == "social_invitation"
+    assert fanservice_category("come hang out with me") == "social_invitation"
+    assert fanservice_category("wanna go out?") == "social_invitation"
+    assert fanservice_category("want to go out for a date") == "romantic"
     assert fanservice_category("Can I take you out to dinner?") == "romantic"
     assert fanservice_category("Old Hag") == "rivalry_banter"
     assert fanservice_category("Fine, you won the battle, but have yet to win the war.") == "rivalry_banter"
@@ -167,6 +169,7 @@ def test_cue_shape_distinguishes_social_moves():
     assert fanservice_cue_shape("make me blush") == "challenge"
     assert fanservice_cue_shape("give me a hug") == "affection_request"
     assert fanservice_cue_shape("say my name") == "focused_attention"
+    assert fanservice_cue_shape("wanna hang out with me?") == "social_invitation"
 
 
 def test_guidance_exposes_cue_shape_without_becoming_a_template():
