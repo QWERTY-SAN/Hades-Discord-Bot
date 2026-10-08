@@ -11,6 +11,8 @@ CASES = {
     "Ayooo": "banter",
     "💀": "banter",
     "What should I do tonight?": "advice",
+    "What else can we do together?": "social_planning",
+    "Let's hang out sometime.": "social_planning",
     "How abt somewhere else very private away from prying eyes": "flirtation",
     "It's either do it or not, but I ain't backing down to someone who's like a fine looking wine": "flirtation",
     "Don't tempt me like that.": "flirtation",
