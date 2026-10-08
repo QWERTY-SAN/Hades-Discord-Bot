@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from functools import lru_cache
 from dataclasses import dataclass
 
 from .character_data import GAME_KNOWLEDGE, HADES_DATA, HADES_REFERENCE, SOURCE_POLICY, TERMINOLOGY
@@ -87,6 +88,52 @@ def _gameplay_context() -> list[str]:
     ]
 
 
+@lru_cache(maxsize=1)
+def _structured_knowledge_entries() -> tuple[tuple[str, str], ...]:
+    entries: list[tuple[str, str]] = []
+
+    def visit(value, path: tuple[str, ...]) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                visit(child, path + (str(key),))
+            return
+        if isinstance(value, list):
+            for index, child in enumerate(value):
+                visit(child, path + (str(index),))
+            return
+        if value is None:
+            return
+        text = str(value).strip()
+        if text:
+            entries.append((" > ".join(part.replace("_", " ") for part in path), text[:900]))
+
+    visit(GAME_KNOWLEDGE, ("game knowledge",))
+    visit(HADES_REFERENCE, ("hades reference",))
+    return tuple(entries)
+
+
+def _structured_knowledge_matches(normalized: str, limit: int = 8) -> list[tuple[int, str, str]]:
+    tokens = {
+        token
+        for token in re.findall(r"[a-z0-9][a-z0-9'-]{2,}", normalized)
+        if token not in {"the", "and", "for", "with", "about", "what", "how", "are", "does", "this", "that", "from", "tell"}
+    }
+    if not tokens:
+        return []
+
+    ranked: list[tuple[int, str, str]] = []
+    for label, value in _structured_knowledge_entries():
+        label_norm = _normalize(label)
+        score = 12 if label_norm and label_norm in normalized else 0
+        label_tokens = set(re.findall(r"[a-z0-9][a-z0-9'-]{2,}", label_norm))
+        score += len(tokens & label_tokens) * 4
+        if score:
+            ranked.append((score, label, value))
+
+    ranked.sort(key=lambda item: (-item[0], item[1]))
+    return ranked[:limit]
+
+
 def build_aether_context(user_text: str, conversation_text: str = "", max_chars: int = 9000) -> str:
     source_text = " ".join(part for part in (conversation_text, user_text) if part).strip()
     normalized = _normalize(source_text)
@@ -139,7 +186,13 @@ def build_aether_context(user_text: str, conversation_text: str = "", max_chars:
         lines.append(f"Reference — heimdall: {people['heimdall']}")
     if _contains(normalized, "gengchen") and people.get("gengchen") is not None:
         lines.append(f"Reference — gengchen: {people['gengchen']}")
-    if not selected:
+    structured_matches = _structured_knowledge_matches(normalized)
+    if structured_matches:
+        lines.append("Relevant structured catalog entries:")
+        for score, label, value in structured_matches:
+            lines.append(f"- {label}: {value}")
+
+    if not selected and not structured_matches:
         lines.append("No detailed lore anchor matched. Stay in character without inventing detailed canon.")
 
     output: list[str] = []
