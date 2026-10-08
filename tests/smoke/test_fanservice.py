@@ -53,7 +53,11 @@ def test_new_categories_are_detected():
 
     assert fanservice_category("Want to go on a date?") == "romantic"
     assert fanservice_category("wanna go out for an date?") == "romantic"
+    assert fanservice_category("wanna hang out with me?") == "romantic"
+    assert fanservice_category("come hang out with me") == "romantic"
     assert fanservice_category("Can I take you out to dinner?") == "romantic"
+    assert fanservice_category("Old Hag") == "rivalry_banter"
+    assert fanservice_category("Fine, you won the battle, but have yet to win the war.") == "rivalry_banter"
     assert fanservice_category("May I take a whiff of your scent?") == "scent_and_proximity"
     assert fanservice_category("Can I sniff behind your ears?") == "scent_and_proximity"
     assert fanservice_category("why are you so hard to get?") == "teasing_challenge"
