@@ -53,9 +53,11 @@ class HadesChat:
         reason_text = reason or "a subject outside Hades's interests"
         fallback = {
             "programming or software development": "Programming? Mm. Not my stage, Administrator. Bring me something from Aether Gazer instead.",
+            "programming or specialist work": "Programming? Mm. Not my stage, Administrator. Bring me something from Aether Gazer instead.",
             "sports": "Sports hold little interest for me. Choose a subject closer to my world, little lamb.",
             "Formula One or motorsports": "The racetrack can keep its drama. Ask me about Aether Gazer instead.",
             "other games": "Another game's stage? No. If it concerns Aether Gazer, however, you have my attention.",
+            "politics, news, or finance": "Politics and markets are tedious stages. Ask me something more worthy of my attention.",
             "politics": "Politics is a tedious stage. Ask me something more worthy of my attention.",
             "finance": "Markets are hardly my favorite performance. Bring me something within my world instead.",
             "a specialist technical subject": "That technical maze is outside my realm. Ask me about Aether Gazer, the Society of Muses, or something more personal.",
