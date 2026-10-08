@@ -140,6 +140,7 @@ class HadesBot(commands.Bot):
             return
 
         record_runtime_metric("ai_requests")
+        record_runtime_metric("ai_requests")
         try:
             async with message.channel.typing():
                 reply = await self.hades_chat.ask(key, content)
@@ -181,6 +182,7 @@ class HadesBot(commands.Bot):
 
     async def on_disconnect(self) -> None:
         update_discord_state(ready=False)
+        set_runtime_error("Discord disconnected")
         set_runtime_error("Discord disconnected")
 
     async def on_resumed(self) -> None:
