@@ -21,3 +21,7 @@ def test_memory_history_and_reset():
         assert not await memory.has_history(key)
 
     asyncio.run(run())
+
+def test_memory_uses_an_even_history_limit():
+    memory = ConversationMemory(5, 3600, 10)
+    assert memory.max_history == 6
