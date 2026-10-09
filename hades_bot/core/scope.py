@@ -82,6 +82,7 @@ SOCIAL_PLANNING_PATTERNS = (
         r"what\s+else\s+to\s+do\s+with\s+(?:you|u)|"
         r"what\s+(?:do|would)\s+you\s+(?:want|like)\s+to\s+do(?:\s+with\s+(?:me|you|u))?|"
         r"how\s+about\s+(?:we\s+)?(?:go|going|hang\s+out|spend\s+some\s+time)|"
+        r"can\s+we\s+(?:go|hang\s+out|do\s+something|spend\s+some\s+time)(?:\s+together)?|"
         r"should\s+we\s+(?:go|hang\s+out|do\s+something)|"
         r"(?:let's|lets)\s+(?:go|hang\s+out|do\s+something|spend\s+some\s+time)|"
         r"(?:wanna|want\s+to)\s+(?:hang\s+out|do\s+something|go\s+somewhere)\b).*$",
