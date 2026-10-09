@@ -102,7 +102,14 @@ class HadesBot(commands.Bot):
             return False
         return referenced.author.id == self.user.id
 
-    async def handle_ai_message(self, message: discord.Message, content: str, trigger: str = "mention") -> None:
+    async def handle_ai_message(
+        self,
+        message: discord.Message,
+        content: str,
+        trigger: str = "mention",
+        *,
+        direct_reply: bool = False,
+    ) -> None:
         record_runtime_metric("messages_seen")
         content = content.strip()
         if not content:
@@ -121,7 +128,7 @@ class HadesBot(commands.Bot):
 
         key = self.conversation_key(message)
         has_history = await self.hades_chat.memory.has_history(key)
-        if not is_hades_scope_allowed(content, has_history=has_history, direct_reply=replied):
+        if not is_hades_scope_allowed(content, has_history=has_history, direct_reply=direct_reply):
             record_runtime_metric("scope_blocks")
             try:
                 refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
@@ -223,7 +230,7 @@ class HadesBot(commands.Bot):
             return
         clean_content = content.strip() if private else strip_bot_mentions(content, self.user.id if self.user else 0)
         trigger = "mention" if mentioned else "reply"
-        await self.handle_ai_message(message, clean_content, trigger=trigger)
+        await self.handle_ai_message(message, clean_content, trigger=trigger, direct_reply=replied)
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if isinstance(error, commands.CommandNotFound):
