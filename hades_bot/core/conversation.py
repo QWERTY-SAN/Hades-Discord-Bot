@@ -28,7 +28,7 @@ SHORT_FOLLOWUPS = frozenset({
     "why", "why?", "really", "really?", "how so", "how so?", "go on", "go on.",
     "and then", "and then?", "what about her", "what about her?", "what about him", "what about him?",
     "what about that", "what about that?", "and you", "and you?", "you too", "you too?", "same",
-    "same.", "fair enough", "fair enough.", "no way", "no way!", "tell me more", "continue",
+    "same.", "no way", "no way!", "tell me more", "continue",
     "continue?", "what do you mean", "what do you mean?", "how come", "how come?", "your turn",
     "your turn?", "really then", "prove it", "prove it?", "what then", "what then?",
     "wait, what", "wait what", "huh", "huh?", "seriously", "seriously?",
@@ -85,6 +85,11 @@ def conversation_mode(text: str) -> str:
         "teasing_challenge",
     }:
         return "flirtation"
+
+    # An ordinary invitation to hang out is friendly companionship, not
+    # automatically a date or a planning session.
+    if analysis.primary_category == "social_invitation":
+        return "casual"
 
     if is_short_followup(text):
         return "continuation"
