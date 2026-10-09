@@ -47,6 +47,11 @@ HADES_TERMS.update(ART_AND_CRAFT_TERMS)
 
 SOCIAL_COMPANIONSHIP_PATTERNS = (
     re.compile(
+        r"^how\s+about\s+(?:(?:some|a\s+cup\s+of)\s+)?(?:tea|coffee|a\s+drink|something\s+to\s+drink)"
+        r"(?:\s+(?:with\s+me|together))?[?!.,\s]*$",
+        re.I,
+    ),
+    re.compile(
         r"^(?:"
         r"how\s+about|how\s+abt"
         r")\s+(?:(?:we|you|u|to)\s+)?(?:"
