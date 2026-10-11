@@ -36,7 +36,16 @@ HARD_OFF_TOPIC_PATTERNS = (
 CONTEXTUAL_OFF_TOPIC_PATTERNS = (
     ("unrelated entertainment or media", re.compile(r"\b(?:movie|movies|film|films|tv|television|series|anime|manga|celebrity|actor|actress|singer|song|songs|band|concert|netflix|youtube|twitch|streamer|influencer)\b", re.I)),
     ("unrelated racing", re.compile(r"\b(?:racing|race)\b", re.I)),
-    ("unrelated cooking or recipes", re.compile(r"\b(?:recipes?|ingredients|how\s+to\s+cook|how\s+do\s+i\s+cook|cooking\s+instructions|meal\s+prep|baking\s+instructions)\b", re.I)),
+    ("unrelated cooking or recipes", re.compile(
+        r"\b(?:recipes?|ingredients|how\s+to\s+(?:cook|make|prepare|bake)|"
+        r"how\s+do\s+(?:i|you|we)\s+(?:cook|make|prepare|bake)|"
+        r"how\s+can\s+(?:i|you|we)\s+(?:cook|make|prepare|bake)|"
+        r"cooking\s+instructions|baking\s+instructions|meal\s+prep|"
+        r"steps\s+to\s+(?:cook|make|prepare|bake)|"
+        r"how\s+long\s+(?:to\s+cook|should\s+i\s+cook)|"
+        r"what\s+temperature\s+(?:to\s+cook|should\s+i\s+cook))\b",
+        re.I,
+    )),
 )
 ART_AND_CRAFT_TERMS = {
     "puppet craft", "puppet making", "puppet-making", "puppet shop", "stagecraft",
@@ -45,6 +54,46 @@ ART_AND_CRAFT_TERMS = {
     "artistry", "performance art", "dramaturgy", "choreography",
 }
 HADES_TERMS.update(ART_AND_CRAFT_TERMS)
+
+FOOD_SOCIAL_PATTERNS = (
+    re.compile(r"\b(?:i['’]?m|i\s+am)\s+(?:so\s+)?(?:hungry|starving|peckish)\b", re.I),
+    re.compile(r"\b(?:i['’]?m|i\s+am)\s+craving\s+[^.!?\n]{1,100}", re.I),
+    re.compile(
+        r"\b(?:what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)\s+"
+        r"(?:food|dish|meal|snack|dessert|cuisine|drink)|"
+        r"what\s+(?:food|dish|meal|snack|dessert|cuisine)\s+do\s+(?:you|u)\s+"
+        r"(?:like|prefer|enjoy|love)|"
+        r"what\s+do\s+(?:you|u)\s+(?:like|prefer|enjoy|want)\s+to\s+eat)\b",
+        re.I,
+    ),
+    re.compile(r"\b(?:what|where)\s+should\s+(?:we|i)\s+(?:eat|order|get)\b", re.I),
+    re.compile(
+        r"\b(?:this|that|it|the\s+[\w'-]{2,30})\s+(?:looks|smells|tastes|sounds)\s+"
+        r"(?:so\s+)?(?:good|great|delicious|amazing|tasty|yummy|awful|terrible|spicy|sweet|"
+        r"salty|bland|crispy|juicy)\b",
+        re.I,
+    ),
+    re.compile(
+        r"\b(?:food|meal|dish|snack|dessert|breakfast|brunch|lunch|dinner|ramen|sushi|pizza|"
+        r"adobo|stew|soup|chicken|tacos|noodles|pasta|burger|rice|cake|ice\s+cream)\b"
+        r".{0,120}\b(?:looks|smells|tastes|is|was|seems)\s+(?:so\s+)?"
+        r"(?:good|great|delicious|amazing|tasty|yummy|awful|terrible|spicy|sweet|salty|"
+        r"bland|crispy|juicy)\b",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"\b(?:i|we)\s+(?:love|like|hate|enjoy|prefer|can't\s+stand|cannot\s+stand)\s+"
+        r"(?:eating\s+)?(?:food|ramen|sushi|pizza|adobo|stew|soup|chicken|tacos|noodles|"
+        r"pasta|burgers?|rice|cake|ice\s+cream|desserts?|snacks?)\b",
+        re.I,
+    ),
+    re.compile(
+        r"\b(?:i|we)\s+(?:want|wanna|would\s+like|could\s+go\s+for|feel\s+like)\s+"
+        r"(?:to\s+)?(?:eat|have|grab|order)\s+(?:some\s+)?[^.!?\n]{1,100}",
+        re.I,
+    ),
+    re.compile(r"\b(?:are\s+you|you|u)\s+(?:hungry|starving|craving)\b", re.I),
+)
 
 SOCIAL_COMPANIONSHIP_PATTERNS = (
     re.compile(
@@ -90,6 +139,12 @@ SOCIAL_PLANNING_PATTERNS = (
         re.I | re.S,
     ),
 )
+
+def is_food_social_message(text: str) -> bool:
+    """Recognize casual food talk without admitting recipes or cooking instructions."""
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.search(normalized) for pattern in FOOD_SOCIAL_PATTERNS)
+
 
 def is_social_companionship_request(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
@@ -307,7 +362,7 @@ def is_personal_life_request(text: str) -> bool:
 
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
-    if is_social_gift_offer(normalized):
+    if is_social_gift_offer(normalized) or is_food_social_message(normalized):
         return True
     if is_social_planning_request(normalized) or is_social_companionship_request(normalized):
         return True
