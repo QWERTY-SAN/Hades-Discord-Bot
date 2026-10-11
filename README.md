@@ -1,6 +1,6 @@
-## 2.1.0 conversational expansion
+## 2.2.0 runtime and conversation expansion
 
-The current release further improves ordinary Discord interaction: social-planning turns such as "what else can we do together?" get their own conversational mode, acknowledgements such as "okay" stay small, relationship-status fan-service gets a dedicated cue class, Hades-adjacent art/craft questions are admitted, and the health/metrics state is protected against cross-thread races. These remain dynamic Gemini-generated interactions rather than predefined response templates.
+The current release fixes automatic media for `h!hades` command replies, commits media history only after Discord accepts a response, honors manual GIF/image cooldowns, prevents expired conversation history from being reused, and runs memory cleanup separately from cooldown cleanup. The custom Discord status displays `h!help @GitHub`. Hades's dynamic persona and strict Aether Gazer topic boundary remain intact.
 
 # Hades Discord Bot
 
@@ -279,4 +279,4 @@ Version 2.1.0 consolidates the latest Hades persona, strict scope, dynamic refus
 
 ### Automatic media
 
-When Hades is mentioned, the bot randomly chooses **one** automatic media type: a GIF **or** an image. It never sends both from the same automatic trigger. The GIF and image libraries remain separate, and the automatic media trigger uses one 5-minute per-user/channel cooldown. The selected media is placed inside the same embed as Hades' response, so no second media message is sent. The manual `h!gif` and `h!image` commands remain separate as well.
+When Hades is mentioned **or** the Administrator uses `h!hades <message>` / `h!ask <message>`, the bot may randomly attach **one** automatic media type: a GIF **or** an image. It never sends both from the same automatic trigger. Plain replies to Hades stay media-free, keeping short follow-ups less noisy. The GIF and image libraries remain separate, and automatic media uses a shared per-user/channel cooldown. The selected media is placed inside the same embed as Hades' response, so no second media message is sent. The manual `h!gif` and `h!image` commands use their own configured cooldowns. Recent-media history, metrics, and automatic cooldowns are recorded only after a successful Discord send.
