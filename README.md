@@ -1,3 +1,7 @@
+## 2.4.0 contextual emoji expansion
+
+Hades now has a broader, more character-specific emoji palette, including puppetry/art motifs, a refined night-time signature, playful/flirtatious accents, comfort, celebration, and food/tea. Emoji choices are matched to the response's meaning more often instead of relying on a single random symbol. They remain optional: serious explanations, code, long replies, and messages that already contain an emoji are left clean.
+
 ## 2.3.0 fan-service and flirtation expansion
 
 Hades now recognizes more everyday Discord flirting, short date follow-ups, direct romantic invitations, affection requests, exaggerated fandom comments, and common flustered/captivated slang. Prompt guidance now pushes her to respond to the specific social cue—accepting or teasing a date invitation, acknowledging the exact compliment, answering a request for affection, or returning a measured flirt—rather than falling back to generic rejection or repetitive stock phrasing. Replies remain dynamically generated; no fixed response bank was added. Flirtation remains playful and non-explicit, without implying a real-world relationship.
@@ -79,7 +83,7 @@ Scope decisions are deterministic, but refusal wording is generated dynamically 
 The bot includes a narrow, dynamic fan-service layer for playful admiration and affectionate banter. Examples include compliments, exaggerated requests such as "step on me," light romance, hugs/kisses/headpats, and requests for attention. Responses are generated in Hades' persona rather than selected from fixed replies. The behavior is intentionally non-explicit and does not turn unrelated conversation into flirting.
 
 ### Emojis
-`EMOJIS_ENABLED=true` enables sparse Hades-style emoji use. Usually 0-2 emojis are used; many responses use none.
+`EMOJIS_ENABLED=true` enables contextual Hades-style emoji use. The expanded palette covers puppetry/art (🎭🪡🧵🪆), signature atmosphere (🌙✨🖤🎀), teasing/flirtation (😏👀💜🌹💋), comfort (🫶💜🌷), celebration (🎉🌟🥂), and food/tea (🍰☕🫖). Hades usually uses 0-2 emojis; serious, detailed, code-heavy, or already-emoji replies are not decorated automatically.
 
 ### Expanded social interaction
 
