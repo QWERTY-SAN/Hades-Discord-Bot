@@ -31,3 +31,6 @@ assert "def should_auto_send_media" in MEDIA
 assert "def choose_auto_media_embed" in MEDIA
 assert "async def send_gif" in MEDIA
 assert "async def send_image" in MEDIA
+assert "The portrait gallery is resting" in BOT
+assert "The curtain needs a brief pause" in BOT
+assert "Auto media: `mention / {SETTINGS.bot_prefix}hades`" in BOT
