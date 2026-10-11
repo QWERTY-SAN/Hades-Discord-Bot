@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.4.0 — 2026-10-11
+
+### Contextual emoji expansion
+- Expanded Hades's emoji palette with character-signature, puppetry/art, flirtation, comfort, celebration, and food/tea accents.
+- Added context-matched emoji selection so short replies use a more relevant flourish instead of a completely random symbol.
+- Improved the Gemini persona guidance to treat emojis as optional tone markers, not mandatory message endings.
+- Preserved clean factual/serious replies, custom-emoji messages, code blocks, and longer explanations.
+- Added regression tests for contextual palette selection and duplicate/code/long-reply handling.
+
 ## 2.3.0 — 2026-10-11
 
 ### Fan-service and flirtation
