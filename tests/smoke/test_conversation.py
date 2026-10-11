@@ -103,3 +103,34 @@ def test_short_date_fragment_is_fanservice_mode_not_out_of_scope():
     assert is_hades_scope_allowed("a date?")
     assert conversation_mode("Will you be my date?") == "flirtation"
     assert is_hades_scope_allowed("Will you be my date?")
+
+
+
+def test_emoji_palette_matches_reply_context():
+    from hades_bot.ai.gemini_client import _emoji_candidates
+
+    comfort = _emoji_candidates("You've had a rough day. Take your time.")
+    celebration = _emoji_candidates("You did it! I'm proud of you.")
+    flirtation = _emoji_candidates("A date, little lamb? How bold.")
+    food = _emoji_candidates("Tea and cake sound lovely.")
+    artistry = _emoji_candidates("The Society of Muses values puppetry and craft.")
+
+    assert any(item in comfort for item in ("💜", "🫶", "🌷"))
+    assert any(item in celebration for item in ("🎉", "✨", "🌟"))
+    assert any(item in flirtation for item in ("😏", "💋", "🌹", "👀"))
+    assert any(item in food for item in ("🍰", "☕", "🫖", "🍓"))
+    assert any(item in artistry for item in ("🎭", "🪡", "🧵", "🪆"))
+
+
+def test_emoji_postprocessor_does_not_duplicate_or_decorate_code():
+    from hades_bot.ai.gemini_client import _add_natural_emoji
+
+    with_emoji = "How bold of you, little lamb. 🌙"
+    custom_emoji = "Well played <a:hades:123456789>"
+    code = chr(96) * 3 + "python\nprint('hello')\n" + chr(96) * 3
+    long_reply = "a" * 421
+
+    assert _add_natural_emoji(with_emoji) == with_emoji
+    assert _add_natural_emoji(custom_emoji) == custom_emoji
+    assert _add_natural_emoji(code) == code
+    assert _add_natural_emoji(long_reply) == long_reply
