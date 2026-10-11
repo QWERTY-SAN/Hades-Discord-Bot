@@ -1,3 +1,7 @@
+## 2.5.0 channel-specific support trigger
+
+In channel `1537979704714334238`, messages containing **"mental breakdown"** or **"mental-breakdown"** prompt Hades to respond without requiring a mention. The reply is guided toward calm, compassionate in-character support—not flirtation or teasing. The trigger is isolated to that channel and rate-limited per user to avoid repeated replies. It does not broaden Hades's normal topic scope elsewhere.
+
 ## 2.4.0 contextual emoji expansion
 
 Hades now has a broader, more character-specific emoji palette, including puppetry/art motifs, a refined night-time signature, playful/flirtatious accents, comfort, celebration, and food/tea. Emoji choices are matched to the response's meaning more often instead of relying on a single random symbol. They remain optional: serious explanations, code, long replies, and messages that already contain an emoji are left clean.

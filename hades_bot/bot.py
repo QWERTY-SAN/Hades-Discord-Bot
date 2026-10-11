@@ -13,6 +13,7 @@ from .ai.gemini_client import AIServiceError, GeminiService, UnsafeModelOutputEr
 from .config import SETTINGS
 from .core.memory import ConversationMemory
 from .core.scope import is_hades_scope_allowed, scope_block_reason
+from .core.support_trigger import is_mental_breakdown_trigger
 from .core.utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
 from .media.media import HadesMedia
 from .web import record_runtime_metric, set_runtime_error, update_discord_state
@@ -55,6 +56,7 @@ class HadesBot(commands.Bot):
             max_concurrent_requests=SETTINGS.max_concurrent_requests,
         )
         self.cooldowns = CooldownManager(SETTINGS.user_cooldown)
+        self.support_cooldowns = CooldownManager(30.0)
         self.media = HadesMedia()
         self._rng = random.SystemRandom()
 
@@ -113,6 +115,7 @@ class HadesBot(commands.Bot):
         trigger: str = "mention",
         *,
         direct_reply: bool = False,
+        support_trigger: bool = False,
     ) -> None:
         record_runtime_metric("messages_seen")
         content = content.strip()
@@ -133,7 +136,9 @@ class HadesBot(commands.Bot):
 
         key = self.conversation_key(message)
         has_history = await self.hades_chat.memory.has_history(key)
-        if not is_hades_scope_allowed(content, has_history=has_history, direct_reply=direct_reply):
+        if not support_trigger and not is_hades_scope_allowed(
+            content, has_history=has_history, direct_reply=direct_reply
+        ):
             record_runtime_metric("scope_blocks")
             try:
                 refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
@@ -142,7 +147,7 @@ class HadesBot(commands.Bot):
             await self.send_chunks(message, refusal)
             return
 
-        remaining = await self.cooldowns.try_acquire(key)
+        remaining = 0.0 if support_trigger else await self.cooldowns.try_acquire(key)
         if remaining > 0:
             await message.reply(
                 f"Patience, Administrator. Wait `{remaining:.1f}s`.",
@@ -227,6 +232,7 @@ class HadesBot(commands.Bot):
     async def cooldown_maintenance_loop(self) -> None:
         try:
             await self.cooldowns.prune()
+            await self.support_cooldowns.prune()
         except Exception:
             logger.exception("Cooldown cleanup failed; the loop will continue.")
             set_runtime_error("cooldown cleanup failed")
@@ -242,6 +248,23 @@ class HadesBot(commands.Bot):
         content = message.content or ""
         if content.startswith(SETTINGS.bot_prefix):
             return
+
+        # This one keyword trigger is intentionally limited to the requested channel.
+        # A separate cooldown prevents repeated phrase spam without using the normal
+        # chat cooldown, which could otherwise replace a supportive reply with "wait".
+        if is_mental_breakdown_trigger(getattr(message.channel, "id", None), content):
+            support_key = f"support:channel:{message.channel.id}:user:{message.author.id}"
+            if await self.support_cooldowns.try_acquire(support_key) > 0:
+                return
+            clean_content = strip_bot_mentions(content, self.user.id if self.user else 0)
+            await self.handle_ai_message(
+                message,
+                clean_content,
+                trigger="support_keyword",
+                support_trigger=True,
+            )
+            return
+
         private = isinstance(message.channel, (discord.DMChannel, discord.GroupChannel))
         mentioned = self.user is not None and self.user in message.mentions
         replied = False if private or mentioned else await self.is_reply_to_hades(message)

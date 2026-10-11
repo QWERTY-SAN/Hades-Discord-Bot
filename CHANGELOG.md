@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.5.0 — 2026-10-11
+
+### Channel-specific mental-distress support
+- Added a proactive support trigger for messages containing "mental breakdown" or "mental-breakdown" in Discord channel `1537979704714334238`.
+- Routed triggered messages through Hades's emotional conversation mode with explicit guidance to respond calmly, compassionately, and without flirtation or teasing.
+- Kept the trigger isolated to the requested channel and added a per-user 30-second repeat guard.
+- Added tests for channel isolation, phrase variations, emotional routing, and support guidance.
+
 ## 2.4.0 — 2026-10-11
 
 ### Contextual emoji expansion
