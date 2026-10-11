@@ -6,6 +6,9 @@ bot = (ROOT / "hades_bot" / "bot.py").read_text(encoding="utf-8")
 
 assert "AUTO_MEDIA_COOLDOWN_SECONDS = SETTINGS.media_auto_cooldown_seconds" in media
 assert "def should_auto_send_media" in media
+assert 'trigger not in {"mention", "command"}' in media
+assert "def record_auto_media_sent" in media
+assert "def cooldown_remaining" in media
 assert "async def send_auto_media" not in media
 assert 'kind = self.rng.choice(("gif", "image"))' in media
 assert "should_auto_send_gif(message, trigger)" not in bot
