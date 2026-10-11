@@ -21,6 +21,9 @@ CASES = {
     "Don't tempt me like that.": "flirtation",
     "Is that an invitation?": "flirtation",
     "Heimdall's shield is ridiculous.": "general",
+    "Only for u": "personal_gesture",
+    "Are you fine?": "check_in",
+    "Good morning amigo, I found ancient golem in the old world, shall I give you as a gift?": "gift_offer",
     "No, I meant the other one.": "correction",
         }
 

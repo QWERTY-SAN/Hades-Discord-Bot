@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.2.0 — 2026-10-11
+
+### Conversation and reliability
+- Expanded contextual social recognition for check-ins, short personal gestures, and unusual gift offers while retaining strict unrelated-topic boundaries.
+- Added category-specific in-character refusal wording for unrelated recipe/how-to requests.
+- Fixed automatic GIF/image attachment for `h!hades` and `h!ask` responses; the command path requested auto media but the media gate accepted only mentions.
+- Automatic media cooldowns, recent-use history, and metrics are committed after Discord accepts the response.
+- Manual `h!gif` and `h!image` commands now honor their configured cooldowns and distinguish cooldown waits from missing media configuration.
+- Expired history is dropped when opening an unlocked session so stale context cannot be resurrected.
+- Memory/media cleanup and cooldown cleanup now use their separate configured intervals.
+- Set the custom Discord status to `h!help @GitHub`.
+- Added regression tests for conversation scope, media triggers/cooldowns, and expired memory.
+
 ## 2.1.0 — 2026-10-08
 
 ### Conversation

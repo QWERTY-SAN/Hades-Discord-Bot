@@ -32,11 +32,26 @@ class HadesMedia:
 
     @staticmethod
     def _valid_urls(urls: list[str]) -> list[str]:
+        """Keep only unique, well-formed web URLs suitable for Discord embeds."""
         output: list[str] = []
-        for url in urls:
-            parsed = urlparse(url)
-            if parsed.scheme in {"http", "https"} and parsed.netloc:
+        seen: set[str] = set()
+        for raw_url in urls:
+            url = str(raw_url).strip()
+            if not url or any(char.isspace() for char in url) or url in seen:
+                continue
+            try:
+                parsed = urlparse(url)
+                valid = (
+                    parsed.scheme in {"http", "https"}
+                    and bool(parsed.hostname)
+                    and parsed.username is None
+                    and parsed.password is None
+                )
+            except ValueError:
+                valid = False
+            if valid:
                 output.append(url)
+                seen.add(url)
         return output
 
     @property
@@ -53,10 +68,26 @@ class HadesMedia:
         return f"{guild}:{message.channel.id}:user:{user}"
 
     def _cooldown_ready(self, store: dict[str, float], key: str, cooldown: float, *, force: bool) -> bool:
-        if force:
+        if force or key not in store:
             return True
-        stamp = store.get(key, 0.0)
+        stamp = store[key]
         return (time.monotonic() - stamp) >= cooldown
+
+    def cooldown_remaining(self, message: discord.Message, media_kind: str) -> float:
+        """Return the remaining cooldown for auto, GIF, or image media."""
+        stores = {
+            "auto": (self._last_auto, AUTO_MEDIA_COOLDOWN_SECONDS),
+            "gif": (self._last_gif, GIF_COOLDOWN_SECONDS),
+            "image": (self._last_image, IMAGE_COOLDOWN_SECONDS),
+        }
+        if media_kind not in stores:
+            raise ValueError("media_kind must be 'auto', 'gif', or 'image'")
+        store, cooldown = stores[media_kind]
+        key = self._key(message)
+        if key not in store:
+            return 0.0
+        elapsed = time.monotonic() - store[key]
+        return max(0.0, cooldown - elapsed)
 
     @staticmethod
     def _fresh_options(urls: tuple[str, ...], recent: deque[str]) -> list[str]:
@@ -66,7 +97,9 @@ class HadesMedia:
         return [url for url in urls if url not in recent_set] or list(urls)
 
     def should_auto_send_media(self, message: discord.Message, trigger: str) -> bool:
-        if trigger != "mention" or not self.gifs and not self.images:
+        # Commands and mentions are deliberate prompts. Plain replies to Hades
+        # remain media-free to avoid making every short follow-up visually noisy.
+        if trigger not in {"mention", "command"} or not (self.gifs or self.images):
             return False
         return self._cooldown_ready(
             self._last_auto,
@@ -92,13 +125,25 @@ class HadesMedia:
             kind, url = "image", self.rng.choice(image_options)
         embed = discord.Embed()
         embed.set_image(url=url)
-        if kind == "gif":
+        return embed
+
+    def record_auto_media_sent(self, message: discord.Message, embed: discord.Embed | None) -> None:
+        """Commit cooldown/history only after Discord accepted the response."""
+        if embed is None:
+            return
+        image = getattr(embed, "image", None)
+        url = str(getattr(image, "url", "") or "")
+        if not url:
+            return
+        key = self._key(message)
+        if url in self.gifs:
             self._recent_gif[key].append(url)
-        else:
+        elif url in self.images:
             self._recent_image[key].append(url)
+        else:
+            return
         self._last_auto[key] = time.monotonic()
         record_runtime_metric("media_sent")
-        return embed
 
     async def send_gif(self, channel, message: discord.Message, *, force: bool = False) -> bool:
         if not self.gifs:

@@ -7,6 +7,7 @@ from ..ai.fanservice import analyze_fanservice, fanservice_categories, fanservic
 from .scope import (
     is_personal_life_request,
     is_reaction_message,
+    is_social_gift_offer,
     is_social_message,
     is_social_planning_request,
     is_subjective_question,
@@ -53,6 +54,18 @@ TOPIC_PIVOT_PATTERNS = (
 )
 
 
+CHECK_IN_PATTERN = re.compile(
+    r"^(?:are\s+(?:you|u)\s+(?:okay|ok|fine|alright|all\s+right|well|good|doing\s+(?:okay|fine|alright|well)|"
+    r"feeling\s+(?:okay|fine|alright)|tired|busy|bored|happy|sad|lonely)|(?:you|u)\s+doing\s+(?:okay|fine|alright|well)|"
+    r"is\s+everything\s+(?:okay|fine|alright))\??[!. ]*$",
+    re.I,
+)
+PERSONAL_GESTURE_PATTERN = re.compile(
+    r"^(?:(?:only|just)\s+for\s+(?:you|u)|"
+    r"(?:i\s+)?(?:did\s+it|made\s+it|got\s+it|saved\s+it)\s+(?:just\s+)?for\s+(?:you|u))[!. ]*$",
+    re.I,
+)
+
 ACKNOWLEDGEMENT_WORDS = frozenset({
     "ok", "okay", "alright", "alrighty", "sure", "fine", "yep", "yeah", "yup",
     "yes", "nope", "nah", "fair enough", "makes sense", "that makes sense",
@@ -67,9 +80,16 @@ def is_simple_acknowledgement(text: str) -> bool:
 
 def conversation_mode(text: str) -> str:
 
-    # Emotional intent takes precedence over affection/fan-service cues.
+    # Emotional intent takes precedence over all playful/social classifications.
     if any(pattern.search(text) for pattern in EMOTIONAL_PATTERNS):
         return "emotional"
+
+    if is_social_gift_offer(text):
+        return "gift_offer"
+    if CHECK_IN_PATTERN.fullmatch(text.strip()):
+        return "check_in"
+    if PERSONAL_GESTURE_PATTERN.fullmatch(text.strip()):
+        return "personal_gesture"
 
     analysis = analyze_fanservice(text)
     if analysis.primary_category == "rivalry_banter":
@@ -200,6 +220,25 @@ def conversation_thread_guidance(history: list[dict[str, str]], user_message: st
             "Do not automatically turn ordinary companionship into romance."
         )
 
+    if mode == "gift_offer":
+        parts.append(
+            "GIFT OFFER: respond to the offer itself with curiosity, amusement, selective interest, or a playful condition. "
+            "Acknowledge what they say they found and ask a natural follow-up only if useful. Do not reject an unfamiliar fictional object as off-topic "
+            "and do not pretend the item is established Aether Gazer canon."
+        )
+
+    if mode == "check_in":
+        parts.append(
+            "PERSONAL CHECK-IN: answer the Administrator's question about how you are doing directly, in Hades's voice. "
+            "Do not dodge, scold them for being off-topic, or turn a simple check-in into flirtation."
+        )
+
+    if mode == "personal_gesture":
+        parts.append(
+            "PERSONAL GESTURE: acknowledge the small personal gesture itself. A concise thanks, dry tease, or restrained warmth is enough; "
+            "do not inflate it into a formal declaration or imply a deeper relationship than the conversation established."
+        )
+
     if mode == "acknowledgement":
         parts.append(
             "ACKNOWLEDGEMENT: the Administrator is simply confirming or agreeing. "
@@ -251,6 +290,12 @@ def conversation_signals(text: str) -> list[str]:
         signals.append("topic_pivot")
     if is_social_planning_request(normalized):
         signals.append("social_planning")
+    if is_social_gift_offer(normalized):
+        signals.append("gift_offer")
+    if CHECK_IN_PATTERN.fullmatch(normalized):
+        signals.append("personal_check_in")
+    if PERSONAL_GESTURE_PATTERN.fullmatch(normalized):
+        signals.append("personal_gesture")
     if is_simple_acknowledgement(normalized):
         signals.append("acknowledgement")
     if re.search(r"\b(?:finally|i did it|we did it|got it|got them|got her|got him|pulled|won|cleared|finished|completed)\b", normalized, re.I):

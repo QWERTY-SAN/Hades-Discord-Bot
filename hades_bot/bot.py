@@ -60,10 +60,13 @@ class HadesBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         self.maintenance_loop.start()
+        self.cooldown_maintenance_loop.start()
 
     async def close(self) -> None:
         if self.maintenance_loop.is_running():
             self.maintenance_loop.cancel()
+        if self.cooldown_maintenance_loop.is_running():
+            self.cooldown_maintenance_loop.cancel()
         await self.media.close()
         await self.hades_chat.close()
         await super().close()
@@ -87,6 +90,7 @@ class HadesBot(commands.Bot):
                     allowed_mentions=ALLOWED_MENTIONS,
                     embed=media_embed,
                 )
+                self.media.record_auto_media_sent(message, media_embed)
             else:
                 await message.channel.send(chunk, allowed_mentions=ALLOWED_MENTIONS)
 
@@ -116,6 +120,7 @@ class HadesBot(commands.Bot):
             response = self._rng.choice(EMPTY_CALL_RESPONSES)
             media_embed = self.media.choose_auto_media_embed(message) if self.media.should_auto_send_media(message, trigger) else None
             await message.reply(response, mention_author=False, allowed_mentions=ALLOWED_MENTIONS, embed=media_embed)
+            self.media.record_auto_media_sent(message, media_embed)
             return
 
         if len(content) > SETTINGS.max_input_chars:
@@ -188,7 +193,10 @@ class HadesBot(commands.Bot):
     async def on_ready(self) -> None:
         update_discord_state(ready=True, user=str(self.user) if self.user else None, guild_count=len(self.guilds))
         logger.info("Logged in as %s", self.user)
-        await self.change_presence(status=discord.Status.online, activity=discord.CustomActivity(name=f"{SETTINGS.bot_prefix}help"))
+        await self.change_presence(
+            status=discord.Status.online,
+            activity=discord.CustomActivity(name=f"{SETTINGS.bot_prefix}help @GitHub"),
+        )
 
     async def on_disconnect(self) -> None:
         update_discord_state(ready=False)
@@ -206,7 +214,6 @@ class HadesBot(commands.Bot):
     async def maintenance_loop(self) -> None:
         try:
             await self.hades_chat.prune_memory()
-            await self.cooldowns.prune()
             await self.media.prune()
         except Exception:
             logger.exception("Maintenance pass failed; the loop will continue.")
@@ -214,6 +221,18 @@ class HadesBot(commands.Bot):
 
     @maintenance_loop.before_loop
     async def before_maintenance(self) -> None:
+        await self.wait_until_ready()
+
+    @tasks.loop(seconds=SETTINGS.cooldown_prune_interval)
+    async def cooldown_maintenance_loop(self) -> None:
+        try:
+            await self.cooldowns.prune()
+        except Exception:
+            logger.exception("Cooldown cleanup failed; the loop will continue.")
+            set_runtime_error("cooldown cleanup failed")
+
+    @cooldown_maintenance_loop.before_loop
+    async def before_cooldown_maintenance(self) -> None:
         await self.wait_until_ready()
 
     async def on_message(self, message: discord.Message) -> None:
@@ -275,16 +294,30 @@ async def memory_command(ctx: commands.Context) -> None:
 
 @bot.command(name="image", aliases=["hadesimage"])
 async def image_command(ctx: commands.Context) -> None:
-    sent = await bot.media.send_image(ctx.channel, ctx.message, force=True)
+    if not bot.media.image_configured_count:
+        await ctx.reply("The portrait gallery is empty. Configure image URLs in the media library first.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+        return
+    remaining = bot.media.cooldown_remaining(ctx.message, "image")
+    if remaining > 0:
+        await ctx.reply(f"The portrait gallery is resting. Try again in `{remaining:.0f}s`.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+        return
+    sent = await bot.media.send_image(ctx.channel, ctx.message)
     if not sent:
-        await ctx.reply("The portrait refused to appear. Check the configured image URLs.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+        await ctx.reply("The portrait refused to appear. Check the configured image URLs and try again.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
 @bot.command(name="gif", aliases=["hadesgif"])
 async def gif_command(ctx: commands.Context) -> None:
-    sent = await bot.media.send_gif(ctx.channel, ctx.message, force=True)
+    if not bot.media.configured_count:
+        await ctx.reply("The performance library is empty. Configure GIF URLs in the media library first.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+        return
+    remaining = bot.media.cooldown_remaining(ctx.message, "gif")
+    if remaining > 0:
+        await ctx.reply(f"The curtain needs a brief pause. Try another GIF in `{remaining:.0f}s`.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+        return
+    sent = await bot.media.send_gif(ctx.channel, ctx.message)
     if not sent:
-        await ctx.reply("The performance refused to load. Check the configured GIF URLs.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+        await ctx.reply("The performance refused to load. Check the configured GIF URLs and try again.", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
 @bot.command(name="ping")
@@ -341,7 +374,7 @@ async def status_command(ctx: commands.Context) -> None:
         await ctx.reply("That information is for those managing the stage. 🎭", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
         return
     count = await bot.hades_chat.memory.conversation_count()
-    await ctx.reply(embed=info_embed("🌙 Hades Status", f"Model: `{SETTINGS.gemini_model}`\nGuilds: `{len(bot.guilds)}`\nMemory: `{count}` active conversations\nRequests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\nTotal AI requests: `{bot.hades_chat.total_requests}`\nAuto media: `mention cooldown`\nGIFs: `{bot.media.configured_count}` external URLs\nImages: `{bot.media.image_configured_count}` external URLs\nLatency: `{'unavailable' if bot.latency == float('inf') else str(round(bot.latency * 1000)) + 'ms'}`"), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+    await ctx.reply(embed=info_embed("🌙 Hades Status", f"Model: `{SETTINGS.gemini_model}`\nGuilds: `{len(bot.guilds)}`\nMemory: `{count}` active conversations\nRequests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\nTotal AI requests: `{bot.hades_chat.total_requests}`\nAuto media: `mention / {SETTINGS.bot_prefix}hades`\nGIFs: `{bot.media.configured_count}` external URLs\nImages: `{bot.media.image_configured_count}` external URLs\nLatency: `{'unavailable' if bot.latency == float('inf') else str(round(bot.latency * 1000)) + 'ms'}`"), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
 @bot.command(name="hadeshelp", aliases=["help"])
