@@ -5,6 +5,7 @@ import unicodedata
 
 from ..ai.fanservice import analyze_fanservice, fanservice_categories, fanservice_intensity
 from .scope import (
+    is_food_social_message,
     is_personal_life_request,
     is_reaction_message,
     is_social_gift_offer,
@@ -110,6 +111,9 @@ def conversation_mode(text: str) -> str:
     # automatically a date or a planning session.
     if analysis.primary_category == "social_invitation":
         return "casual"
+
+    if is_food_social_message(text):
+        return "food_chat"
 
     if is_short_followup(text):
         return "continuation"
@@ -290,6 +294,8 @@ def conversation_signals(text: str) -> list[str]:
         signals.append("topic_pivot")
     if is_social_planning_request(normalized):
         signals.append("social_planning")
+    if is_food_social_message(normalized):
+        signals.append("food_chat")
     if is_social_gift_offer(normalized):
         signals.append("gift_offer")
     if CHECK_IN_PATTERN.fullmatch(normalized):

@@ -1,6 +1,6 @@
-## 2.2.0 runtime and conversation expansion
+## 2.2.1 food conversation and runtime expansion
 
-The current release fixes automatic media for `h!hades` command replies, commits media history only after Discord accepts a response, honors manual GIF/image cooldowns, prevents expired conversation history from being reused, and runs memory cleanup separately from cooldown cleanup. The custom Discord status displays `h!help @GitHub`. Hades's dynamic persona and strict Aether Gazer topic boundary remain intact.
+Food-related social chat now has its own intent mode: hunger, cravings, favorite dishes, food preferences, reactions to meals, and deciding what to eat are allowed as natural Hades conversation. Recipes, ingredient lists, and cooking instructions remain outside scope. The existing 2.2.0 runtime fixes remain in place, including automatic media for `h!hades`, cooldown handling, expired-memory cleanup, and the custom status `h!help @GitHub`.
 
 # Hades Discord Bot
 
@@ -38,6 +38,8 @@ Gameplay totals, banner advice, tier lists and balance recommendations remain ve
 
 ### Normal conversation improvements
 Normal conversation is treated as a first-class use case while keeping the bot's Aether Gazer scope intact.
+
+Food conversation is recognized specifically. Hades can react to messages such as "I'm hungry", "what food do you like?", "this looks delicious", "I'm craving ramen", or "what should we eat?" as natural social chat. She can express an in-character preference without claiming it is confirmed canon. Recipes, ingredient lists, and cooking instructions remain blocked, so this does not make her a general cooking assistant.
 - Common short replies such as "thanks", "same", "fair enough", "you too", "really?", and "no way" are recognized as conversation instead of unrelated questions.
 - Everyday personal statements such as being tired, getting home, waking up, missing someone, or having nothing to do can continue the conversation naturally.
 - Simple personal-choice prompts such as "what should I do tonight?" are allowed without turning Hades into a general-purpose assistant.
@@ -52,6 +54,7 @@ Allowed:
 - Hades and her lore
 - Aether Gazer characters, organizations, terminology and gameplay
 - Direct personal/social conversation with the Administrator
+- Casual food conversation, hunger/cravings, food preferences, and meal invitations
 - Puppetry, theater, art, and Hades' own interests
 
 Blocked:
@@ -62,6 +65,7 @@ Blocked:
 - General entertainment/media
 - Homework and other specialist work
 - Unrelated factual questions
+- Recipes, ingredient lists, and cooking instructions
 
 Scope decisions are deterministic, but refusal wording is generated dynamically in Hades' persona and the blocked subject is not discussed in the refusal.
 
