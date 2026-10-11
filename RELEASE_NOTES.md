@@ -1,22 +1,18 @@
-# Hades Discord Bot 2.1.0
+# Hades Discord Bot 2.2.0
 
 ## Conversation quality
-- Social-planning turns now have their own intent mode.
-- Simple acknowledgements now receive brief, natural handling guidance.
-- Relationship-status fan-service has its own semantic cue class.
-- Hades-adjacent art and craft topics are more naturally admitted by scope.
+- Expanded contextual recognition for check-ins, personal gestures, and unusual gift offers.
+- Keeps unrelated recipe requests outside the strict Aether Gazer scope, with more context-specific Hades refusals.
+- Preserves dynamic Gemini replies and the contextual fan-service layer.
 
-## Persona quality
-- Added an explicit natural-closure rule to suppress overly formal responses to "okay", "fair enough", and similar turns.
-- Added social-planning guidance so Hades can answer what she would actually do with the Administrator.
-- Ordinary companionship remains distinct from automatic romance.
+## Media behavior
+- Automatic media can accompany a Hades mention or an `h!hades` / `h!ask` response.
+- Exactly one image or GIF can be attached to an automatic response; plain replies stay media-free.
+- Auto-media cooldown/history/metrics are committed only after a successful send.
+- Manual `h!gif` and `h!image` commands honor their own cooldowns and explain waits.
 
-## Runtime
-- Health and runtime metrics now use a lock because Discord and aiohttp run in separate threads.
-- Off-topic refusal wording has small category-specific variation.
-- Added regression coverage for the new behavior.
-
-## Gemini
-- Kept dynamic response generation.
-- Did not add a fixed fan-service response bank.
-- Left Gemini 3.x sampling defaults untouched.
+## Reliability
+- Expired conversation history is cleared when a fresh unlocked session opens.
+- Memory/media cleanup and user cooldown cleanup respect separate configured intervals.
+- Custom Discord status: `h!help @GitHub`.
+- Python compilation and the CI smoke/pytest suite passed for the tested changes.
