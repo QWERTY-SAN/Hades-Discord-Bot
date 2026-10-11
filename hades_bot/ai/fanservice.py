@@ -350,6 +350,38 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     ),
 }
 
+# Additional phrase-level cues widen everyday Discord wording without adding a canned reply bank.
+_EXTRA_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
+    "romantic": (
+        re.compile(r"^\s*(?:a|the|our|your|my)\s+date[?!.,\s]*$", re.I),
+        re.compile(r"\b(?:will|would|could|can)\s+you\s+(?:please\s+)?(?:be\s+my\s+date|date\s+me)\b", re.I),
+        re.compile(r"\b(?:let's|lets|wanna|want\s+to|shall\s+we|would\s+you\s+like\s+to)\s+(?:go\s+on\s+)?a?\s*date(?:\s+(?:with\s+me|together))?\b", re.I),
+        re.compile(r"\b(?:wanna|want\s+to|would\s+you\s+like\s+to)\s+be\s+my\s+date\b", re.I),
+        re.compile(r"\b(?:i'?m|i\s+am|im)\s+(?:so\s+)?down\s+bad\s+for\s+you\b|\b(?:i'?m|i\s+am|im)\s+obsessed\s+with\s+you\b", re.I),
+        re.compile(r"\b(?:i\s+want\s+you|be\s+mine|you(?:'re|\s+are)\s+my\s+weakness|i(?:'m|\s+am)\s+yours)\b", re.I),
+    ),
+    "flirtation": (
+        re.compile(r"\b(?:you(?:'re|\s+are)|ur|u\s+r)\s+making\s+it\s+hard\s+to\s+behave\b", re.I),
+        re.compile(r"\b(?:you(?:'re|\s+are)|ur|u\s+r)\s+(?:making|driving)\s+me\s+(?:weak|crazy|distracted|speechless|lose\s+my\s+composure)\b", re.I),
+        re.compile(r"\b(?:if\s+you\s+keep|keep)\s+(?:looking|smiling|talking|teasing|doing\s+that)\b", re.I),
+        re.compile(r"\b(?:you\s+have\s+no\s+idea\s+what\s+you\s+do\s+to\s+me|you\s+have\s+no\s+idea\s+what\s+you(?:'re|\s+are)\s+doing\s+to\s+me|i\s+can(?:not|'t)\s+resist\s+you|i(?:'m|\s+am|m)\s+trying\s+to\s+behave|keep\s+flirting\s+with\s+me)\b", re.I),
+        re.compile(r"\b(?:looking\s+respectfully|respectfully,?\s+(?:you(?:'re|\s+are)|ur)\s+(?:hot|gorgeous|beautiful|pretty))\b", re.I),
+    ),
+    "affection": (
+        re.compile(r"\b(?:can\s+i|could\s+i|may\s+i|let\s+me)\s+(?:steal|have|get)\s+(?:a\s+)?(?:hug|kiss|cuddle|headpat)\b", re.I),
+        re.compile(r"\b(?:need|could\s+use|would\s+love)\s+(?:a\s+)?(?:hug|cuddle|kiss)\s+(?:from\s+you|right\s+now)?\b", re.I),
+        re.compile(r"\b(?:give|send)\s+(?:me\s+)?(?:a\s+)?(?:kiss|hug|cuddle|headpat)\b", re.I),
+    ),
+    "flustered": (
+        re.compile(r"\b(?:i'?m|i\s+am|im)\s+(?:so\s+)?(?:cooked|done\s+for|folding|folded|weak\s+for\s+you)\b", re.I),
+        re.compile(r"\b(?:i'?d|i\s+would|i\s+am\s+about\s+to)\s+fold\b", re.I),
+        re.compile(r"\b(?:you(?:'ve|\s+have)\s+got\s+me|you\s+got\s+me)\s+(?:weak|folded|speechless)\b", re.I),
+    ),
+    "captivated": (
+        re.compile(r"\b(?:i\s+can't\s+get\s+enough\s+of\s+you|i\s+keep\s+thinking\s+about\s+you|you(?:'re|\s+are)\s+stuck\s+in\s+my\s+head)\b", re.I),
+    ),
+}
+
 FANSERVICE_PATTERNS = PATTERNS
 
 
@@ -496,7 +528,10 @@ def fanservice_categories(text: str) -> tuple[str, ...]:
     return tuple(
         category
         for category in _CATEGORY_PRIORITY
-        if any(pattern.search(normalized) for pattern in PATTERNS[category])
+        if any(
+            pattern.search(normalized)
+            for pattern in (*PATTERNS[category], *_EXTRA_PATTERNS.get(category, ()))
+        )
     )
 
 
@@ -665,5 +700,10 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         + "Do not make Hades more intimate just because multiple categories matched; use the strongest cue and keep the rest as supporting context. "
         + "Avoid stock roleplay filler, generic pickup lines, repetitive 'well, well' openings, or mechanically ending with a question. "
         + "For a one-line compliment or fan cue, a compact 1-3 sentence response is often strongest. Do not automatically intensify every turn. "
-        + "Social invitations are not automatically romantic; match the Administrator's wording and treat ordinary hangouts as ordinary companionship unless the user clearly makes it a date or flirtation. "+ "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure. " + "For repeated fan-service, use recent replies as continuity context: vary the reaction lane, not just synonyms, when a natural alternative exists. " + "Do not force a hook, question, challenge, nickname, emoji, or theatrical metaphor. Any of those may be omitted when the reaction already lands."
+        + "Social invitations are not automatically romantic; match the Administrator's wording and treat ordinary hangouts as ordinary companionship unless the user clearly makes it a date or flirtation. "+ "The user can be silly without Hades becoming silly, and the user can flirt without Hades losing her composure. " + "For repeated fan-service, use recent replies as continuity context: vary the reaction lane, not just synonyms, when a natural alternative exists. " + "Do not force a hook, question, challenge, nickname, emoji, or theatrical metaphor. Any of those may be omitted when the reaction already lands. "
+        + "EXPANDED FLIRTATION: A short fragment such as 'a date?' can refer to the immediately preceding proposal; use history to understand it instead of treating it as a new topic. "
+        + "For a direct date invitation, make a real in-character choice: accept, decline, tease, negotiate, or counterpropose. Do not answer a clear invitation with a scope refusal. "
+        + "For bold fandom comments, keep the response playful, poised, and non-explicit; Hades may reward the nerve, set a witty condition, or make the Administrator work for a reaction. "
+        + "For affection, respond to the requested gesture itself. For compliments, acknowledge the exact quality praised. For a flustered admission, notice the effect without becoming clingy. "
+        + "Hades may initiate a small return flirt or a specific compliment when the moment supports it, but should never escalate merely because several detector cues matched."
     )

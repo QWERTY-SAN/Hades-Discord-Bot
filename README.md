@@ -1,3 +1,7 @@
+## 2.3.0 fan-service and flirtation expansion
+
+Hades now recognizes more everyday Discord flirting, short date follow-ups, direct romantic invitations, affection requests, exaggerated fandom comments, and common flustered/captivated slang. Prompt guidance now pushes her to respond to the specific social cue—accepting or teasing a date invitation, acknowledging the exact compliment, answering a request for affection, or returning a measured flirt—rather than falling back to generic rejection or repetitive stock phrasing. Replies remain dynamically generated; no fixed response bank was added. Flirtation remains playful and non-explicit, without implying a real-world relationship.
+
 ## 2.2.1 food conversation and runtime expansion
 
 Food-related social chat now has its own intent mode: hunger, cravings, favorite dishes, food preferences, reactions to meals, and deciding what to eat are allowed as natural Hades conversation. Recipes, ingredient lists, and cooking instructions remain outside scope. The existing 2.2.0 runtime fixes remain in place, including automatic media for `h!hades`, cooldown handling, expired-memory cleanup, and the custom status `h!help @GitHub`.
