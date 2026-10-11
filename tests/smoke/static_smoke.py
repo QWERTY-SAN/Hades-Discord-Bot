@@ -21,6 +21,13 @@ assert SETTINGS.strict_aether_topic is True
 assert SETTINGS.emojis_enabled is True
 assert is_hades_scope_allowed("Tell me about Hades")
 assert is_hades_scope_allowed("How are you?")
+assert is_hades_scope_allowed("I'm hungry")
+assert is_hades_scope_allowed("What food do you like?")
+assert is_hades_scope_allowed("This ramen looks delicious")
+assert is_hades_scope_allowed("What should we eat?")
+assert not is_hades_scope_allowed("Give me a recipe for chicken stew")
+assert not is_hades_scope_allowed("How do I cook chicken stew?")
+assert not is_hades_scope_allowed("What ingredients do I need for stew?")
 assert is_hades_scope_allowed("I had a rough day.")
 assert is_hades_scope_allowed("💀")
 assert is_hades_scope_allowed("Woahhh :Pepeuwu:")
