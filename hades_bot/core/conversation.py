@@ -16,7 +16,7 @@ from .scope import (
 
 EMOTIONAL_PATTERNS = (
     re.compile(r"\b(?:i(?:'m| am)|i feel)\s+(?:so\s+)?(?:sad|happy|angry|mad|annoyed|pissed|upset|tired|exhausted|lonely|bored|excited|nervous|anxious|embarrassed|overwhelmed|proud|disappointed|confused|stressed|frustrated|drained|sleepy|restless|hurt)\b", re.I),
-    re.compile(r"\b(?:rough day|bad day|good day|long day|i need to vent|i need someone to talk to|i feel like crap|i feel awful|i feel great|i can't sleep|i cannot sleep)\b", re.I),
+    re.compile(r"\b(?:mental[\s-]+breakdown|rough day|bad day|good day|long day|i need to vent|i need someone to talk to|i feel like crap|i feel awful|i feel great|i can't sleep|i cannot sleep)\b", re.I),
 )
 STORY_PATTERNS = (
     re.compile(r"^(?:so today|today i|earlier i|yesterday i|last night i|guess what|you won't believe|you know what happened|i just (?:got|came|saw|watched|met|bought|found|heard|did|finished|received|started|ended)|i have to tell you|i need to tell you)\b", re.I),
@@ -212,6 +212,14 @@ def conversation_thread_guidance(history: list[dict[str, str]], user_message: st
             "EMOTIONAL PRIORITY: acknowledge the Administrator's emotional state before teasing, correcting, or over-explaining."
         )
 
+    if re.search(r"\bmental[\s-]+breakdown\b", normalized, re.I):
+        parts.append(
+            "MENTAL DISTRESS SUPPORT: treat this as a possible real disclosure, not an invitation to joke or flirt. "
+            "Respond calmly and compassionately in Hades's voice, without diagnosing, minimizing, demanding details, or assuming imminent danger. "
+            "Offer space to explain at their own pace and ask one gentle check-in question. "
+            "If they explicitly describe immediate danger or risk of self-harm, encourage reaching a trusted nearby person or local emergency help immediately."
+        )
+
     if "turn_back" in signals:
         parts.append(
             "TURN-BACK: the Administrator is asking for Hades's own viewpoint; answer from Hades's established perspective instead of returning the question."
@@ -306,7 +314,7 @@ def conversation_signals(text: str) -> list[str]:
         signals.append("acknowledgement")
     if re.search(r"\b(?:finally|i did it|we did it|got it|got them|got her|got him|pulled|won|cleared|finished|completed)\b", normalized, re.I):
         signals.append("achievement")
-    if re.search(r"\b(?:rough day|bad day|i feel awful|i feel like crap|i need comfort|comfort me|reassure me|i'm overwhelmed|i am overwhelmed)\b", normalized, re.I):
+    if re.search(r"\b(?:mental[\s-]+breakdown|rough day|bad day|i feel awful|i feel like crap|i need comfort|comfort me|reassure me|i'm overwhelmed|i am overwhelmed)\b", normalized, re.I):
         signals.append("needs_comfort")
     if re.search(r"[?？！]\s*$", normalized):
         signals.append("question")
