@@ -37,3 +37,11 @@ def test_more_short_followups_are_contextual():
     assert is_short_followup("wait what")
     assert is_short_followup("okay then?")
     assert is_short_followup("go ahead")
+
+
+def test_personal_social_intent_modes_are_specific_and_non_flirtatious_by_default():
+    assert conversation_mode("Are you fine?") == "check_in"
+    assert conversation_mode("Only for u") == "personal_gesture"
+    assert conversation_mode(
+        "I found an ancient golem. Shall I give it to you as a gift?"
+    ) == "gift_offer"
