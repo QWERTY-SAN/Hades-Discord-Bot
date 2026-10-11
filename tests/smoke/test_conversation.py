@@ -45,3 +45,34 @@ def test_personal_social_intent_modes_are_specific_and_non_flirtatious_by_defaul
     assert conversation_mode(
         "I found an ancient golem. Shall I give it to you as a gift?"
     ) == "gift_offer"
+
+
+def test_food_related_social_chat_uses_its_own_mode():
+    from hades_bot.core.scope import is_hades_scope_allowed
+
+    examples = (
+        "I'm hungry",
+        "What food do you like?",
+        "What's your favorite dessert?",
+        "This chicken stew looks delicious.",
+        "I'm craving ramen.",
+        "What should we eat?",
+        "I love adobo",
+    )
+    for message in examples:
+        assert conversation_mode(message) == "food_chat", (message, conversation_mode(message))
+        assert is_hades_scope_allowed(message), message
+
+
+def test_food_chat_does_not_allow_recipes_or_cooking_instructions():
+    from hades_bot.core.scope import is_hades_scope_allowed
+
+    blocked = (
+        "Give me a recipe for chicken stew",
+        "How do I cook chicken stew?",
+        "What ingredients do I need for stew?",
+        "How long should I cook chicken?",
+        "What temperature should I cook chicken at?",
+    )
+    for message in blocked:
+        assert not is_hades_scope_allowed(message), message
