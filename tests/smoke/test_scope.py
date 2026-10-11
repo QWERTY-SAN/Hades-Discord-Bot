@@ -66,6 +66,26 @@ def test_short_followup_requires_history():
     assert is_hades_scope_allowed("What else can we do together?", has_history=False)
 
 
+def test_contextual_social_messages_are_not_misclassified_as_off_topic():
+    allowed = [
+        "Only for u",
+        "Just for you.",
+        "Are you fine?",
+        "are u okay?",
+        "Is everything alright?",
+        "Good morning amigo, I found ancient golem in the old world, shall I give you as a gift?",
+        "I found something strange. Should I give it to you as a present?",
+    ]
+    for message in allowed:
+        assert is_hades_scope_allowed(message), message
+
+
+def test_unrelated_recipe_requests_remain_out_of_scope():
+    message = "Give me a recipe for chicken stew"
+    assert not is_hades_scope_allowed(message)
+    assert scope_block_reason(message) == "unrelated cooking or recipes"
+
+
 def test_hades_social_and_admiration_scope():
     assert is_hades_scope_allowed("Tell me about Mintha.")
     assert is_hades_scope_allowed("Hey Hades, how are you?")
