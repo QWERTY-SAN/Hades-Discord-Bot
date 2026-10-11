@@ -79,6 +79,9 @@ def test_common_small_talk_is_allowed() -> None:
         "Ayooo:DuduLevi:",
         "woof woof!",
         "Mommy 😭",
+        "Only for u",
+        "Are you fine?",
+        "Good morning amigo, I found ancient golem in the old world, shall I give you as a gift?",
         "If I beg for you to embrace me.....will you?",
         "Mind if I have a small allegiance here?",
 
