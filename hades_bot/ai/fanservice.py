@@ -365,7 +365,7 @@ _EXTRA_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
         re.compile(r"\b(?:you(?:'re|\s+are)|ur|u\s+r)\s+(?:making|driving)\s+me\s+(?:weak|crazy|distracted|speechless|lose\s+my\s+composure)\b", re.I),
         re.compile(r"\b(?:if\s+you\s+keep|keep)\s+(?:looking|smiling|talking|teasing|doing\s+that)\b", re.I),
         re.compile(r"\b(?:you\s+have\s+no\s+idea\s+what\s+you\s+do\s+to\s+me|you\s+have\s+no\s+idea\s+what\s+you(?:'re|\s+are)\s+doing\s+to\s+me|i\s+can(?:not|'t)\s+resist\s+you|i(?:'m|\s+am|m)\s+trying\s+to\s+behave|keep\s+flirting\s+with\s+me)\b", re.I),
-        re.compile(r"\b(?:hear\s+me\s+out|looking\s+respectfully|respectfully,?\s+(?:you(?:'re|\s+are)|ur)\s+(?:hot|gorgeous|beautiful|pretty))\b", re.I),
+        re.compile(r"\b(?:looking\s+respectfully|respectfully,?\s+(?:you(?:'re|\s+are)|ur)\s+(?:hot|gorgeous|beautiful|pretty))\b", re.I),
     ),
     "affection": (
         re.compile(r"\b(?:can\s+i|could\s+i|may\s+i|let\s+me)\s+(?:steal|have|get)\s+(?:a\s+)?(?:hug|kiss|cuddle|headpat)\b", re.I),
