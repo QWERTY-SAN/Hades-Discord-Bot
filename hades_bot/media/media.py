@@ -68,9 +68,9 @@ class HadesMedia:
         return f"{guild}:{message.channel.id}:user:{user}"
 
     def _cooldown_ready(self, store: dict[str, float], key: str, cooldown: float, *, force: bool) -> bool:
-        if force:
+        if force or key not in store:
             return True
-        stamp = store.get(key, 0.0)
+        stamp = store[key]
         return (time.monotonic() - stamp) >= cooldown
 
     def cooldown_remaining(self, message: discord.Message, media_kind: str) -> float:
@@ -83,7 +83,10 @@ class HadesMedia:
         if media_kind not in stores:
             raise ValueError("media_kind must be 'auto', 'gif', or 'image'")
         store, cooldown = stores[media_kind]
-        elapsed = time.monotonic() - store.get(self._key(message), 0.0)
+        key = self._key(message)
+        if key not in store:
+            return 0.0
+        elapsed = time.monotonic() - store[key]
         return max(0.0, cooldown - elapsed)
 
     @staticmethod
