@@ -126,7 +126,7 @@ def test_emoji_postprocessor_does_not_duplicate_or_decorate_code():
     from hades_bot.ai.gemini_client import _add_natural_emoji
 
     with_emoji = "How bold of you, little lamb. 🌙"
-    code = "\\x60\\x60\\x60python\\nprint('hello')\\n\\x60\\x60\\x60"
+    code = chr(96) * 3 + "python\nprint('hello')\n" + chr(96) * 3
     long_reply = "a" * 421
 
     assert _add_natural_emoji(with_emoji) == with_emoji
