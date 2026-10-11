@@ -76,3 +76,30 @@ def test_food_chat_does_not_allow_recipes_or_cooking_instructions():
     )
     for message in blocked:
         assert not is_hades_scope_allowed(message), message
+
+
+def test_expanded_fanservice_detects_short_dates_slang_and_fresh_flirt_cues():
+    from hades_bot.ai.fanservice import fanservice_categories
+
+    cases = {
+        "a date?": "romantic",
+        "Will you be my date?": "romantic",
+        "Let's go on a date together": "romantic",
+        "I'm so down bad for you": "romantic",
+        "You're making it hard to behave": "flirtation",
+        "If you keep looking at me like that...": "flirtation",
+        "Can I steal a kiss?": "affection",
+        "I'm so cooked for you": "flustered",
+        "I can't get enough of you": "captivated",
+    }
+    for message, expected_category in cases.items():
+        assert expected_category in fanservice_categories(message), (message, fanservice_categories(message))
+
+
+def test_short_date_fragment_is_fanservice_mode_not_out_of_scope():
+    from hades_bot.core.scope import is_hades_scope_allowed
+
+    assert conversation_mode("a date?") == "flirtation"
+    assert is_hades_scope_allowed("a date?")
+    assert conversation_mode("Will you be my date?") == "flirtation"
+    assert is_hades_scope_allowed("Will you be my date?")
