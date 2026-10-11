@@ -36,6 +36,7 @@ HARD_OFF_TOPIC_PATTERNS = (
 CONTEXTUAL_OFF_TOPIC_PATTERNS = (
     ("unrelated entertainment or media", re.compile(r"\b(?:movie|movies|film|films|tv|television|series|anime|manga|celebrity|actor|actress|singer|song|songs|band|concert|netflix|youtube|twitch|streamer|influencer)\b", re.I)),
     ("unrelated racing", re.compile(r"\b(?:racing|race)\b", re.I)),
+    ("unrelated cooking or recipes", re.compile(r"\b(?:recipes?|ingredients|how\s+to\s+cook|how\s+do\s+i\s+cook|cooking\s+instructions|meal\s+prep|baking\s+instructions)\b", re.I)),
 )
 ART_AND_CRAFT_TERMS = {
     "puppet craft", "puppet making", "puppet-making", "puppet shop", "stagecraft",
@@ -99,6 +100,30 @@ def is_social_planning_request(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
     return any(pattern.search(normalized) for pattern in SOCIAL_PLANNING_PATTERNS)
 
+SOCIAL_GIFT_PATTERNS = (
+    re.compile(
+        r"\b(?:i\s+)?(?:found|discovered|came\s+across|picked\s+up|obtained|rescued|made|brought|got)\b"
+        r".{0,240}\b(?:shall|should|can|could|may)\s+i\s+(?:give|offer|bring|gift)\b"
+        r".{0,120}\b(?:as\s+a\s+gift|as\s+a\s+present|for\s+(?:you|u)|to\s+(?:you|u)|you\s+as\s+a\s+gift)\b",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"\b(?:shall|should|can|could|may)\s+i\s+(?:give|offer|bring)\s+(?:it|this|that|them|you|u)\b"
+        r".{0,100}\b(?:gift|present|for\s+(?:you|u))\b",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"^(?:i\s+)?(?:have|got|made|brought|found|saved)\s+(?:a\s+)?"
+        r"(?:gift|present|surprise|something)\s+for\s+(?:you|u)\b.{0,100}$",
+        re.I | re.S,
+    ),
+)
+
+def is_social_gift_offer(text: str) -> bool:
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.search(normalized) for pattern in SOCIAL_GIFT_PATTERNS)
+
+
 CORRECTION_PATTERN = re.compile(
     r"^(?:no[,! ]+|nah[,! ]+|wait[,! ]+|actually[,! ]+|correction[,! ]+|wrong[,! ]+|"
     r"not\s+(?:exactly|quite)[,! ]+|that's\s+not\s+what\s+i\s+meant[,.! ]*|"
@@ -137,6 +162,9 @@ STORYTELLING_PATTERNS = (
 )
 
 SOCIAL_PATTERNS = (
+    re.compile(r"^(?:are\s+(?:you|u)\s+(?:okay|ok|fine|alright|all\s+right|well|good|doing\s+(?:okay|fine|alright|well)|feeling\s+(?:okay|fine|alright)|tired|busy|bored|happy|sad|lonely)|(?:you|u)\s+doing\s+(?:okay|fine|alright|well)|is\s+everything\s+(?:okay|fine|alright))\??[!. ]*$", re.I),
+    re.compile(r"^(?:only|just)\s+for\s+(?:you|u)[!. ]*$", re.I),
+    re.compile(r"^(?:i\s+)?(?:did\s+it|made\s+it|got\s+it|saved\s+it)\s+(?:just\s+)?for\s+(?:you|u)[!. ]*$", re.I),
     re.compile(r"^(?:there\s+you\s+are|glad\s+(?:you'?re|you\s+are)\s+here|i\s+(?:wanted|want)\s+to\s+(?:see|talk\s+to|hear\s+from)\s+you|i(?:'ve|\s+have)\s+been\s+(?:thinking\s+about|looking\s+for)\s+you)[!. ]*$", re.I),
     re.compile(r"^(?:you'?re|you\s+are)\s+(?:funny|hilarious|sweet|kind|nice|charming|amusing|interesting|adorable|lovely|something\s+else)\b.{0,250}$", re.I | re.S),
     re.compile(r"^(?:hi|hello|hey|hiya|yo+|ayo+|sup|morning|evening|night|good\s+(?:morning|afternoon|evening|night)|welcome\s+back|good\s+to\s+see\s+you|nice\s+to\s+see\s+you|long\s+time\s+no\s+see)[!. ]*(?::[A-Za-z0-9_~+-]+:|<a?:[A-Za-z0-9_~+-]+:\d+>)*[!. ]*$", re.I),
@@ -279,6 +307,8 @@ def is_personal_life_request(text: str) -> bool:
 
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
+    if is_social_gift_offer(normalized):
+        return True
     if is_social_planning_request(normalized) or is_social_companionship_request(normalized):
         return True
     if fanservice_category(normalized) is not None:
@@ -377,6 +407,7 @@ def scope_block_reason(text: str) -> str:
             "politics, news, or finance": "politics, news, or finance",
             "unrelated entertainment or media": "unrelated entertainment or media",
             "unrelated racing": "F1 or motorsport",
+            "unrelated cooking or recipes": "unrelated cooking or recipes",
         }
         return aliases.get(category, category)
     if is_specialist_request(text):
