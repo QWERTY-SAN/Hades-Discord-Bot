@@ -59,6 +59,16 @@ class ConversationMemory:
             now = time.monotonic()
             self._prune_locked(now, exclude_key=key)
             conversation = self._conversations.get(key)
+            # _prune_locked excludes this key so an in-flight session cannot be
+            # evicted under its caller. A later unlocked session must still
+            # discard expired history instead of resurrecting stale context.
+            if (
+                conversation is not None
+                and self._expired(conversation, now)
+                and not conversation.lock.locked()
+            ):
+                self._conversations.pop(key, None)
+                conversation = None
             if conversation is None:
                 conversation = Conversation(turns=deque(maxlen=self.max_history))
                 self._conversations[key] = conversation
