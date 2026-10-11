@@ -134,3 +134,31 @@ def test_emoji_postprocessor_does_not_duplicate_or_decorate_code():
     assert _add_natural_emoji(custom_emoji) == custom_emoji
     assert _add_natural_emoji(code) == code
     assert _add_natural_emoji(long_reply) == long_reply
+
+
+
+def test_mental_breakdown_keyword_uses_emotional_support_guidance():
+    from hades_bot.core.conversation import conversation_thread_guidance
+
+    examples = (
+        "mental breakdown",
+        "I'm having a mental breakdown",
+        "this is a mental-breakdown kind of day",
+    )
+    for message in examples:
+        assert conversation_mode(message) == "emotional", (message, conversation_mode(message))
+        guidance = conversation_thread_guidance([], message)
+        assert "MENTAL DISTRESS SUPPORT" in guidance
+
+
+def test_mental_breakdown_auto_trigger_is_channel_specific():
+    from hades_bot.core.support_trigger import (
+        MENTAL_BREAKDOWN_CHANNEL_ID,
+        is_mental_breakdown_trigger,
+    )
+
+    assert is_mental_breakdown_trigger(MENTAL_BREAKDOWN_CHANNEL_ID, "I'm having a mental breakdown")
+    assert is_mental_breakdown_trigger(MENTAL_BREAKDOWN_CHANNEL_ID, "MENTAL BREAKDOWN 😭")
+    assert is_mental_breakdown_trigger(MENTAL_BREAKDOWN_CHANNEL_ID, "mental-breakdown")
+    assert not is_mental_breakdown_trigger(123456789, "I'm having a mental breakdown")
+    assert not is_mental_breakdown_trigger(MENTAL_BREAKDOWN_CHANNEL_ID, "I'm having a rough day")
