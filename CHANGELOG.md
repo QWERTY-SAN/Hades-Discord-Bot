@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.1 — 2026-10-11
+
+### Food-related conversation
+- Added a dedicated food-chat mode for hunger, cravings, personal food preferences, favorite dishes, meal reactions, and deciding what to eat.
+- Allowed everyday food conversation without weakening the strict Aether Gazer scope.
+- Kept recipes, ingredient lists, and cooking instructions outside scope, with wider detection for common cooking-how-to wording.
+- Added regression tests for allowed food conversation and blocked recipe/instruction requests.
+
 ## 2.2.0 — 2026-10-11
 
 ### Conversation and reliability
