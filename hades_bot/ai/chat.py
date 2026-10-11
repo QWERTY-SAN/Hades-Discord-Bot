@@ -93,7 +93,7 @@ class HadesChat:
             ),
             "unrelated cooking or recipes": (
                 "A recipe? You are trying to appoint me head of the kitchen now, little lamb. I shall leave the cooking to someone better suited to it; bring me something from Aether Gazer instead.",
-                "Chicken stew is a curious assignment for the Puppet Master. My talents are better spent elsewhere, Administrator—try me on something from Omorfies.",
+                "Cooking is a curious assignment for the Puppet Master. My talents are better spent elsewhere, Administrator—try me on something from Omorfies.",
                 "You would entrust the kitchen to me? An ambitious choice. I will not pretend to be a recipe book, but I may entertain a question about my own world.",
             ),
             "F1 or motorsport": ("The racetrack can keep its drama. Ask me about Aether Gazer instead.",),
