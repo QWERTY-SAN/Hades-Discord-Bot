@@ -271,6 +271,26 @@ SUBJECTIVE_QUESTION = re.compile(
     r"^(?:what\s+do\s+you\s+(?:think|like|prefer|want|feel)|what(?:'s|\s+is)\s+your\s+(?:favorite|favourite)|do\s+you\s+(?:like|enjoy|prefer|want|remember|mind|care|agree)|would\s+you\s+rather|how(?:'re|\s+are)\s+you(?:\s+doing|\s+holding\s+up)?|how\s+do\s+you\s+feel|are\s+you\s+(?:okay|tired|happy|sad|bored|busy|lonely))\b",
     re.I,
 )
+
+# Brief either/or choices are ordinary character conversation, not general factual
+# questions. Hard off-topic and specialist filters still run before this is checked.
+PERSONAL_PREFERENCE_PATTERNS = (
+    re.compile(
+        r"^(?:would\s+you\s+rather|which\s+(?:do|would)\s+you\s+(?:choose|pick|prefer)|"
+        r"what\s+would\s+you\s+(?:choose|pick|prefer)|do\s+you\s+prefer|"
+        r"are\s+you\s+more\s+of\s+a)\b.{1,180}[?.! ]*$",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"^[a-z][a-z0-9'’ -]{0,35}\s+or\s+[a-z][a-z0-9'’ -]{0,35}[?.! ]*$",
+        re.I,
+    ),
+    re.compile(
+        r"^[a-z][a-z0-9'’ -]{0,35},\s*[a-z][a-z0-9'’ -]{0,35},?\s+or\s+"
+        r"[a-z][a-z0-9'’ -]{0,35}[?.! ]*$",
+        re.I,
+    ),
+)
 SHORT_FOLLOWUPS = frozenset({
     "why", "why?", "really", "really?", "how so", "how so?", "go on", "go on.", "and then", "and then?",
     "what about her", "what about her?", "what about him", "what about him?", "what about that", "what about that?",
@@ -405,7 +425,7 @@ def is_social_message(text: str) -> bool:
         return True
     if is_short_followup(normalized):
         return True
-    if is_personal_life_request(normalized):
+    if is_personal_life_request(normalized) or is_personal_preference_question(normalized):
         return True
     if any(pattern.search(normalized) for pattern in STORYTELLING_PATTERNS):
         return True
@@ -414,9 +434,15 @@ def is_social_message(text: str) -> bool:
     return any(pattern.search(normalized) for pattern in SOCIAL_PATTERNS)
 
 
+def is_personal_preference_question(text: str) -> bool:
+    """Recognize concise, everyday preference choices such as 'beer or wine?'."""
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.fullmatch(normalized) for pattern in PERSONAL_PREFERENCE_PATTERNS)
+
+
 def is_subjective_question(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
-    return bool(SUBJECTIVE_QUESTION.search(normalized))
+    return bool(SUBJECTIVE_QUESTION.search(normalized) or is_personal_preference_question(normalized))
 
 
 def is_short_followup(text: str) -> bool:

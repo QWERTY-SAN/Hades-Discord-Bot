@@ -47,6 +47,24 @@ def test_personal_social_intent_modes_are_specific_and_non_flirtatious_by_defaul
     ) == "gift_offer"
 
 
+def test_everyday_either_or_preferences_are_personal_questions():
+    from hades_bot.core.scope import is_hades_scope_allowed, is_personal_preference_question
+
+    examples = (
+        "Beer or wine?",
+        "Tea or coffee?",
+        "Cats or dogs?",
+        "Beach or mountains?",
+        "Sweet, savory, or spicy?",
+        "Would you rather have wine or beer?",
+        "Are you more of a night owl or an early bird?",
+    )
+    for message in examples:
+        assert is_personal_preference_question(message), message
+        assert conversation_mode(message) == "personal_question", (message, conversation_mode(message))
+        assert is_hades_scope_allowed(message), message
+
+
 def test_food_related_social_chat_uses_its_own_mode():
     from hades_bot.core.scope import is_hades_scope_allowed
 

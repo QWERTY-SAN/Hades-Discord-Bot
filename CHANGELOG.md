@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.6.0 — 2026-10-14
+
+### Everyday preference conversation
+- Expanded strict-scope social routing for short personal either/or prompts such as "beer or wine?", "tea or coffee?", "cats or dogs?", and similar low-stakes choices.
+- Added dedicated conversation guidance so Hades gives a clear in-character preference first instead of refusing or needlessly returning the question.
+- Made explicit that preferences not established in Aether Gazer canon are roleplay opinions, not verified lore.
+- Preserved hard blocks for unrelated specialist, sports, finance, and other-game questions, with regression tests on both allowed and blocked examples.
+
 ## 2.5.0 — 2026-10-11
 
 ### Channel-specific mental-distress support

@@ -30,3 +30,10 @@ Simple confirmations such as "okay", "sure", "alright", and "fair enough" now re
 Relationship-status fan-service cues such as "what are we?", "do I have a chance?", and "where do I stand with you?" have their own classifier lane. This remains a cue for Gemini, not a predefined response.
 
 Hades-adjacent art and craft terms are admitted more naturally by scope, while hard unrelated categories remain blocked.
+
+
+## 2.6.0 — Everyday preference chat
+
+Hades now recognizes short, low-stakes personal choices such as "beer or wine?", "tea or coffee?", "cats or dogs?", "beach or mountains?", and "sweet, savory, or spicy?" as social conversation. The prompt guidance tells her to choose directly and give a brief in-character reason, rather than treating a preference as unrelated factual information.
+
+When official Aether Gazer material does not establish a preference, the response is explicitly framed as Hades's conversational roleplay opinion—not as canon. The strict filter still runs first, so comparisons about programming, other sports, finance, or unrelated games remain blocked.
