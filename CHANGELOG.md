@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.7.0 — 2026-10-14
+
+### Gemini model failover and request deadlines
+- Added a configurable model hierarchy that tries the configured primary first, then Gemini 3.6 Flash and Gemini 3.8 Flash by default.
+- Added per-model request deadlines and capped SDK-internal retries so transient 503/504 errors move to the next model sooner.
+- Kept failover limited to transient errors, timeouts, rate limits, and unavailable model IDs; invalid API credentials fail fast.
+- Preserved the same Hades prompt and context across model fallbacks, including a same-model retry without URL Context when that optional tool is rejected.
+- Added logs and diagnostics for the selected model and successful fallback count.
+- Clarified that a Discord gateway reconnect is separate from Gemini API availability.
+
 ## 2.6.0 — 2026-10-14
 
 ### Everyday preference conversation
