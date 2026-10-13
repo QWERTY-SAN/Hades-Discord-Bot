@@ -1,3 +1,4 @@
+from hades_bot.core.conversation import conversation_mode
 from hades_bot.core.scope import (
     is_hades_scope_allowed,
     is_personal_life_request,
@@ -94,6 +95,9 @@ def test_common_small_talk_is_allowed() -> None:
     for message in allowed:
         assert is_social_message(message), message
         assert is_hades_scope_allowed(message), message
+
+    assert conversation_mode("Are you still sulky?") == "banter"
+    assert conversation_mode("You're changing the goalpost lady") == "banter"
 
 
 def test_personal_choice_requests_are_allowed() -> None:
