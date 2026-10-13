@@ -55,7 +55,32 @@ ART_AND_CRAFT_TERMS = {
 }
 HADES_TERMS.update(ART_AND_CRAFT_TERMS)
 
-FOOD_SOCIAL_PATTERNS = (
+FOOD_INTERPERSONAL_BANTER_PATTERNS = (
+    # Personal remarks and teasing questions should not be mistaken for factual
+    # questions merely because they begin with "are", "were", or "what".
+    re.compile(
+        r"\\b(?:are|were|have|has|do|did)\\s+(?:you|u)\\b.{0,220}\\b"
+        r"(?:sulky|sulk(?:ing)?|grumpy|moody|pouting|mad|angry|upset|annoyed|irritated|cross|"
+        r"cold|distant|quiet|ignoring|avoiding|dodging|backing\\s+out|running\\s+away|"
+        r"hard\\s+to\\s+get|playing\\s+hard\\s+to\\s+get|changing\\s+the\\s+goalposts?|"
+        r"moving\\s+the\\s+goalposts?)\\b",
+        re.I,
+    ),
+    re.compile(
+        r"\\b(?:you(?:'re| are| were| have been| keep| seem to be| act(?:ing)? like)|"
+        r"u(?:'re| are| were| keep))\\b.{0,220}\\b"
+        r"(?:sulky|sulk(?:ing)?|grumpy|moody|pouting|mad|angry|upset|annoyed|irritated|cross|"
+        r"cold|distant|quiet|ignoring|avoiding|dodging|backing\\s+out|running\\s+away|"
+        r"hard\\s+to\\s+get|playing\\s+hard\\s+to\\s+get|changing\\s+the\\s+goalposts?|"
+        r"moving\\s+the\\s+goalposts?)\\b",
+        re.I,
+    ),
+    # An unfinished accusation such as "See! You are..." is meaningful in banter.
+    re.compile(r"^(?:see[!, ]+)?you(?:'re| are)\\s*$", re.I),
+)
+
+
+SOCIAL_PATTERNS = (
     re.compile(r"\b(?:i['’]?m|i\s+am)\s+(?:so\s+)?(?:hungry|starving|peckish)\b", re.I),
     re.compile(r"\b(?:i['’]?m|i\s+am)\s+craving\s+[^.!?\n]{1,100}", re.I),
     re.compile(
@@ -358,6 +383,12 @@ def is_reaction_message(text: str) -> bool:
 def is_personal_life_request(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
     return any(pattern.search(normalized) for pattern in PERSONAL_LIFE_PATTERNS)
+
+
+def is_interpersonal_banter(text: str) -> bool:
+    """Recognize personal teasing without allowing unrelated factual topics."""
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.search(normalized) for pattern in INTERPERSONAL_BANTER_PATTERNS)
 
 
 def is_social_message(text: str) -> bool:
