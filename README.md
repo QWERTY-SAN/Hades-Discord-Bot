@@ -172,7 +172,7 @@ Copy `.env.example` for local development. Render should contain the same config
 DISCORD_TOKEN=your_discord_bot_token
 GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-3.5-flash-lite
-GEMINI_FALLBACK_MODELS=gemini-3.6-flash,gemini-3.8-flash
+GEMINI_FALLBACK_MODELS=gemini-3.1-flash-lite
 GEMINI_THINKING_LEVEL=minimal
 GEMINI_MODEL_TIMEOUT_SECONDS=20
 BOT_PREFIX=h!
@@ -196,7 +196,7 @@ COOLDOWN_PRUNE_INTERVAL=3600
 
 ### Automatic Gemini model failover
 
-Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list when a model times out, is temporarily unavailable, is rate-limited, or returns an unavailable-model error. The default hierarchy is Gemini 3.5 Flash-Lite → Gemini 3.6 Flash → Gemini 3.8 Flash. Model IDs are configurable; keep only models enabled for your Google AI project.
+Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list when a model times out, is temporarily unavailable, is rate-limited, or returns an unavailable-model error. The default hierarchy is Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite. Configuration is restricted to these two Lite model IDs, which Google's pricing page lists with Gemini API Free Tier pricing. The allowlist prevents accidentally configuring a different model ID. Important: the model allowlist does not control your Google project's billing tier—the same model IDs can have paid-tier rates if the API key belongs to a project on the Paid Tier. Keep the project on Gemini API Free Tier and respect its request quotas to keep API usage at $0.
 
 `GEMINI_MODEL_TIMEOUT_SECONDS=20` bounds each model attempt, and SDK retries are capped at one retry before the bot moves to the next model. Invalid credentials or permissions fail fast rather than wasting time on every model. The fallback count and last successful model appear in staff diagnostics.
 
