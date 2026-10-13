@@ -8,12 +8,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# Keep model selection limited to the Lite models listed with Free Tier pricing.
+# This allowlist controls model IDs; Google project billing tier is configured separately.
+FREE_TIER_ELIGIBLE_GEMINI_MODELS = frozenset({
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+})
+
+
 @dataclass(frozen=True, slots=True)
 class Settings:
     discord_token: str
     gemini_api_key: str
     gemini_model: str = "gemini-3.5-flash-lite"
-    gemini_fallback_models: tuple[str, ...] = ("gemini-3.6-flash", "gemini-3.8-flash")
+    gemini_fallback_models: tuple[str, ...] = ("gemini-3.1-flash-lite",)
     gemini_thinking_level: str = "minimal"
     gemini_model_timeout_seconds: float = 20.0
     bot_prefix: str = "h!"
@@ -72,9 +80,9 @@ _configured_fallback_models = tuple(
         item.strip()
         for item in os.getenv(
             "GEMINI_FALLBACK_MODELS",
-            "gemini-3.6-flash,gemini-3.8-flash",
+            "gemini-3.1-flash-lite",
         ).split(",")
-        if item.strip()
+        if item.strip() and item.strip() in FREE_TIER_ELIGIBLE_GEMINI_MODELS
     )
 )
 
@@ -122,6 +130,9 @@ def validate_settings() -> None:
         raise RuntimeError("Missing DISCORD_TOKEN environment variable.")
     if not SETTINGS.gemini_api_key:
         raise RuntimeError("Missing GEMINI_API_KEY environment variable.")
+    if SETTINGS.gemini_model not in FREE_TIER_ELIGIBLE_GEMINI_MODELS:
+        allowed = ", ".join(sorted(FREE_TIER_ELIGIBLE_GEMINI_MODELS))
+        raise RuntimeError(f"GEMINI_MODEL must be one of the approved Free Tier Lite models: {allowed}.")
     if SETTINGS.gemini_thinking_level not in {"minimal", "low", "medium", "high"}:
         raise RuntimeError(
             "GEMINI_THINKING_LEVEL must be one of: minimal, low, medium, high."
