@@ -8,6 +8,7 @@ from .scope import (
     is_food_social_message,
     is_interpersonal_banter,
     is_personal_life_request,
+    is_personal_preference_question,
     is_reaction_message,
     is_social_gift_offer,
     is_social_message,
@@ -228,6 +229,13 @@ def conversation_thread_guidance(history: list[dict[str, str]], user_message: st
     if "turn_back" in signals:
         parts.append(
             "TURN-BACK: the Administrator is asking for Hades's own viewpoint; answer from Hades's established perspective instead of returning the question."
+        )
+
+    if mode == "personal_question" and is_personal_preference_question(user_message):
+        parts.append(
+            "PERSONAL PREFERENCE CHOICE: answer the either/or choice directly before adding any flourish. "
+            "Give Hades a clear, plausible preference and a brief reason; when official canon is silent, present it as her in-character opinion, not verified lore. "
+            "Do not dodge with 'it depends' or turn the choice back on the Administrator unless the message genuinely calls for clarification."
         )
 
     if mode == "banter" and is_interpersonal_banter(user_message):
