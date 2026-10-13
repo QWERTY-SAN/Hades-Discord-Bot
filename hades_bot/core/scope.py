@@ -393,6 +393,8 @@ def is_interpersonal_banter(text: str) -> bool:
 
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
+    if is_interpersonal_banter(normalized):
+        return True
     if is_social_gift_offer(normalized) or is_food_social_message(normalized):
         return True
     if is_social_planning_request(normalized) or is_social_companionship_request(normalized):
