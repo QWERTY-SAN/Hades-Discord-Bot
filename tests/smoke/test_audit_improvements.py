@@ -73,3 +73,59 @@ def test_nested_knowledge_lookup_surfaces_named_catalog_entries():
     context = build_aether_context("Explain service lifecycle and Ancient Shadow.")
     assert "service lifecycle" in context.lower()
     assert "ancient shadow" in context.lower()
+
+
+def test_gemini_model_hierarchy_deduplicates_primary_and_fallbacks(monkeypatch):
+    from types import SimpleNamespace
+    from hades_bot.ai import gemini_client
+
+    monkeypatch.setattr(
+        gemini_client,
+        "SETTINGS",
+        SimpleNamespace(
+            gemini_model="primary",
+            gemini_fallback_models=("backup", "primary", "backup"),
+        ),
+    )
+    service = gemini_client.GeminiService.__new__(gemini_client.GeminiService)
+    assert service.model_hierarchy() == ("primary", "backup")
+
+
+def test_gemini_temporarily_fails_over_to_next_model(monkeypatch):
+    from types import SimpleNamespace
+    from hades_bot.ai import gemini_client
+
+    class FakeModels:
+        def __init__(self):
+            self.calls = []
+
+        async def generate_content(self, *, model, contents, config):
+            self.calls.append(model)
+            if model == "primary":
+                raise asyncio.TimeoutError("simulated model timeout")
+            return SimpleNamespace(text="Hades is back.")
+
+    fake_models = FakeModels()
+    monkeypatch.setattr(
+        gemini_client,
+        "SETTINGS",
+        SimpleNamespace(
+            gemini_model="primary",
+            gemini_fallback_models=("backup",),
+            request_timeout=10.0,
+            gemini_model_timeout_seconds=5.0,
+        ),
+    )
+    service = gemini_client.GeminiService.__new__(gemini_client.GeminiService)
+    service.client = SimpleNamespace(aio=SimpleNamespace(models=fake_models))
+    service.last_successful_model = None
+    service.fallback_count = 0
+
+    response = asyncio.run(
+        service._generate_with_model_hierarchy(contents=[], config=object())
+    )
+
+    assert response.text == "Hades is back."
+    assert fake_models.calls == ["primary", "backup"]
+    assert service.last_successful_model == "backup"
+    assert service.fallback_count == 1
