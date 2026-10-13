@@ -1,3 +1,57 @@
+# Hades Discord Bot
+
+An in-character Discord chatbot for **Hades from Aether Gazer**, powered by the Gemini Developer API. Hades supports Aether Gazer lore/gameplay questions and bounded everyday conversation while retaining her character and topic boundaries.
+
+**Current release: 2.7.1**
+
+## Gemini models and Free Tier setup
+
+The default model hierarchy is deliberately restricted to two Lite models:
+
+| Priority | Model ID | Use |
+|---|---|---|
+| Primary | `gemini-3.5-flash-lite` | Normal responses |
+| Fallback | `gemini-3.1-flash-lite` | Used after a retryable error or timeout on the primary |
+
+Google lists both models with **Free Tier** token pricing in its [Gemini API pricing table](https://ai.google.dev/gemini-api/docs/pricing). The bot's configuration allowlist rejects other primary model IDs and filters fallback entries that are not approved.
+
+**Model choice does not set the Google project's billing tier.** To keep Gemini API usage at $0, use an API key belonging to a project on Gemini API Free Tier and remain within the project's free quotas. The same model IDs are billed at Paid Tier rates when used through a paid-tier project. Review the current [pricing and free-tier terms](https://ai.google.dev/gemini-api/docs/pricing) in Google AI Studio before using the bot.
+
+The bot uses URL Context for configured live-source lookups; Google currently lists URL Context as free of charge. Model availability, quotas, and tool support can change, so consult Google's current documentation rather than treating free access as guaranteed indefinitely.
+
+### Environment model settings
+
+Keep these values in your local `.env` file or Render environment settings:
+
+```env
+GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_FALLBACK_MODELS=gemini-3.1-flash-lite
+GEMINI_MODEL_TIMEOUT_SECONDS=20
+GEMINI_THINKING_LEVEL=minimal
+```
+
+Do not put `DISCORD_TOKEN` or `GEMINI_API_KEY` in source control. Render should store both as secret environment variables. The approved model names are enforced at startup/configuration; they do not override the billing plan or quota attached to the Google project.
+
+---
+
+## 2.7.1 — 2026-10-14: Free Tier Lite model restriction
+
+- Kept Gemini 3.5 Flash-Lite as the primary model and changed the sole default fallback to Gemini 3.1 Flash-Lite.
+- Restricted the model allowlist to these two Lite IDs; an unapproved primary model ID fails configuration validation, and unapproved fallback entries are ignored.
+- Updated Render's Blueprint, `.env.example`, the environment examples below, and regression tests to keep the defaults aligned.
+- Clarified that Free Tier pricing requires the Google project to be on Gemini API Free Tier; a model ID alone cannot prevent charges on a Paid Tier project.
+
+## 2.7.0 — 2026-10-14: Automatic model failover
+
+- Added a configurable model hierarchy, per-model deadlines, bounded SDK retries, and automatic failover for retryable API errors and timeouts.
+- Added diagnostics for the last successful model and fallback count.
+- Clarified that Gemini API failures and Discord gateway disconnects are separate problems.
+
+## 2.6.0 — 2026-10-14: Everyday preference conversation
+
+- Expanded Hades's normal social routing for casual either/or prompts, such as tea or coffee, and other low-stakes personal preferences.
+- Kept unsupported character preferences framed as roleplay opinion rather than confirmed game canon.
+
 ## 2.5.0 channel-specific support trigger
 
 In channel `1537979704714334238`, messages containing **"mental breakdown"** or **"mental-breakdown"** prompt Hades to respond without requiring a mention. The reply is guided toward calm, compassionate in-character support—not flirtation or teasing. The trigger is isolated to that channel and rate-limited per user to avoid repeated replies. It does not broaden Hades's normal topic scope elsewhere.
@@ -14,7 +68,7 @@ Hades now recognizes more everyday Discord flirting, short date follow-ups, dire
 
 Food-related social chat now has its own intent mode: hunger, cravings, favorite dishes, food preferences, reactions to meals, and deciding what to eat are allowed as natural Hades conversation. Recipes, ingredient lists, and cooking instructions remain outside scope. The existing 2.2.0 runtime fixes remain in place, including automatic media for `h!hades`, cooldown handling, expired-memory cleanup, and the custom status `h!help @GitHub`.
 
-# Hades Discord Bot
+## Bot overview
 
 A modular Discord AI bot that roleplays as Hades from *Aether Gazer* using Gemini.
 
@@ -196,7 +250,7 @@ COOLDOWN_PRUNE_INTERVAL=3600
 
 ### Automatic Gemini model failover
 
-Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list when a model times out, is temporarily unavailable, is rate-limited, or returns an unavailable-model error. The default hierarchy is Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite. Configuration is restricted to these two Lite model IDs, which Google's pricing page lists with Gemini API Free Tier pricing. The allowlist prevents accidentally configuring a different model ID. Important: the model allowlist does not control your Google project's billing tier—the same model IDs can have paid-tier rates if the API key belongs to a project on the Paid Tier. Keep the project on Gemini API Free Tier and respect its request quotas to keep API usage at $0.
+Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list when a model times out, is temporarily unavailable, is rate-limited, or returns an unavailable-model error. The only approved IDs are `gemini-3.5-flash-lite` (primary) and `gemini-3.1-flash-lite` (fallback). Both are listed with Free Tier token pricing in [Google's official pricing table](https://ai.google.dev/gemini-api/docs/pricing). The allowlist restricts model selection, but it does **not** set the Google project's billing tier; to keep API usage at $0, use a project on Gemini API Free Tier and stay within its quotas. Google's URL Context tool is currently listed as free of charge, but always check the current pricing and tool availability documentation.
 
 `GEMINI_MODEL_TIMEOUT_SECONDS=20` bounds each model attempt, and SDK retries are capped at one retry before the bot moves to the next model. Invalid credentials or permissions fail fast rather than wasting time on every model. The fallback count and last successful model appear in staff diagnostics.
 
@@ -290,7 +344,7 @@ Hades-Discord-Bot/
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Release
-Version 2.1.0 consolidates the latest Hades persona, strict scope, dynamic refusals, confidence-aware fan-service, canonical Hades reference loading, safer memory commits, Aether Gazer knowledge, Scan/Gacha knowledge, F2P/spender terminology, endgame/event/lifecycle data, emoji handling, external GIF embedding, and improved normal conversation behavior.
+Version 2.7.1 includes the free-tier Lite model allowlist, Gemini model failover with bounded request deadlines, Hades persona and fan-service refinements, expanded Aether Gazer knowledge, normal-conversation handling, contextual emoji, automatic media, and Render startup/health checks.
 
 
 ### 2.0.0 hardening and expansion
