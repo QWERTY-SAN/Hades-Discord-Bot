@@ -372,7 +372,7 @@ async def diagnose_command(ctx: commands.Context) -> None:
         return
     memory_count = await bot.hades_chat.memory.conversation_count()
     ready = bot.is_ready()
-    latency_ms = round(bot.latency * 1000) if bot.latency < float("inf") else "unavailable"
+    latency_ms = f"{round(bot.latency * 1000)}ms" if bot.latency < float("inf") else "unavailable"
     discord_state = "OK" if ready else "NOT READY"
     gemini_state = "configured" if SETTINGS.gemini_api_key else "MISSING"
     token_state = "configured" if SETTINGS.discord_token else "MISSING"
@@ -387,7 +387,7 @@ async def diagnose_command(ctx: commands.Context) -> None:
         "Hades scope: `enforced`",
         f"Memory: `{memory_count}` active conversations",
         f"AI requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active",
-        f"Latency: `{latency_ms}ms`",
+        f"Latency: `{latency_ms}`",
         f"Version: `{__version__}`",
         "No Gemini test request was sent.",
     ])
