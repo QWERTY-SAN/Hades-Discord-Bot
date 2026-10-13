@@ -22,3 +22,10 @@ def test_persona_handles_informal_social_subtext():
     assert "Read casual Discord language charitably" in HADES_SYSTEM_PROMPT
     assert "you drew my attention" in HADES_SYSTEM_PROMPT
     assert "A clearly Hades-directed social remark should remain conversational and in character" in HADES_SYSTEM_PROMPT
+
+
+def test_persona_answers_everyday_preferences_without_inventing_canon():
+    prompt = HADES_SYSTEM_PROMPT
+    assert "Everyday preference choices are also ordinary conversation" in prompt
+    assert "beer or wine?" in prompt
+    assert "not a claim about official canon" in prompt
