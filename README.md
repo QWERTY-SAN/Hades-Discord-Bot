@@ -172,7 +172,9 @@ Copy `.env.example` for local development. Render should contain the same config
 DISCORD_TOKEN=your_discord_bot_token
 GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_FALLBACK_MODELS=gemini-3.6-flash,gemini-3.8-flash
 GEMINI_THINKING_LEVEL=minimal
+GEMINI_MODEL_TIMEOUT_SECONDS=20
 BOT_PREFIX=h!
 STRICT_AETHER_TOPIC=true
 EMOJIS_ENABLED=true
@@ -191,6 +193,14 @@ MAX_RETRIES=3
 MEMORY_PRUNE_INTERVAL=900
 COOLDOWN_PRUNE_INTERVAL=3600
 ```
+
+### Automatic Gemini model failover
+
+Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list when a model times out, is temporarily unavailable, is rate-limited, or returns an unavailable-model error. The default hierarchy is Gemini 3.5 Flash-Lite → Gemini 3.6 Flash → Gemini 3.8 Flash. Model IDs are configurable; keep only models enabled for your Google AI project.
+
+`GEMINI_MODEL_TIMEOUT_SECONDS=20` bounds each model attempt, and SDK retries are capped at one retry before the bot moves to the next model. Invalid credentials or permissions fail fast rather than wasting time on every model. The fallback count and last successful model appear in staff diagnostics.
+
+A Gemini outage and a Discord gateway disconnect are separate failure domains. Model failover helps responses survive Gemini errors; it cannot fix a Discord/network outage. discord.py reconnects the gateway, while repeated heartbeat failures should prompt a check for blocked synchronous work, CPU saturation, or unstable network connectivity.
 
 ### Render
 
