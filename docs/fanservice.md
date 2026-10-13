@@ -92,3 +92,7 @@ New coverage includes gentle physical-affection cues such as playing with or str
 The detector now exposes a small **cue shape** hint such as **bold_request**, **compliment**, **affection_request**, **challenge**, **focused_attention**, or **flustered_admission**. This is guidance for Gemini rather than a response selector, so the same category can still produce different Hades reactions depending on the exact wording and recent replies.
 
 The purpose is better character presence: a request for a hug should feel different from a bold command, a compliment should feel different from an admission of being flustered, and focused eye contact should not automatically become a stronger flirtation. All of these remain non-explicit and dynamically generated.
+
+## Direct intimate invitations
+
+Bed, bedroom, and sleeping-together phrasing is classified as an intimate invitation rather than generic banter. The model is instructed to answer the invitation in character: accept a non-explicit moment, negotiate playfully, or decline clearly and offer an alternative. A teasing challenge should not replace the answer indefinitely. All such roleplay remains consensual and non-graphic.

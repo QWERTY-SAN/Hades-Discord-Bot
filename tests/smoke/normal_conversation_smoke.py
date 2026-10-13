@@ -1,3 +1,4 @@
+from hades_bot.core.conversation import conversation_mode
 from hades_bot.core.scope import (
     is_hades_scope_allowed,
     is_personal_life_request,
@@ -81,6 +82,10 @@ def test_common_small_talk_is_allowed() -> None:
         "Mommy 😭",
         "Only for u",
         "Are you fine?",
+        "Are you still sulky?",
+        "What? But you were sulky for the past day though?",
+        "You're changing the goalpost lady",
+        "See! You are",
         "Good morning amigo, I found ancient golem in the old world, shall I give you as a gift?",
         "If I beg for you to embrace me.....will you?",
         "Mind if I have a small allegiance here?",
@@ -90,6 +95,9 @@ def test_common_small_talk_is_allowed() -> None:
     for message in allowed:
         assert is_social_message(message), message
         assert is_hades_scope_allowed(message), message
+
+    assert conversation_mode("Are you still sulky?") == "banter"
+    assert conversation_mode("You're changing the goalpost lady") == "banter"
 
 
 def test_personal_choice_requests_are_allowed() -> None:

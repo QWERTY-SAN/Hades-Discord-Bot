@@ -39,6 +39,9 @@ def test_fan_teasing_scope() -> None:
         "Prove it, Hades.",
         "How abt somewhere else very private away from prying eyes",
         "It's either do it or not, but I ain't backing down to someone who's like a fine looking wine",
+        "Yeah but you back out when I start inviting you into bed",
+        "How about we settle it on the bed then, milady",
+        "Let's GO. To. Bed if you are true to your word",
     )
     blocked = (
         "Hades, what is Formula One?",
@@ -72,6 +75,10 @@ def test_fanservice_categories() -> None:
     assert fanservice_category("make me your puppet") == "puppet_fantasy"
     assert fanservice_category("stop making me blush") == "flustered"
     assert fanservice_category("don't tempt me like that") == "flirtation"
+    assert fanservice_category("Yeah but you back out when I start inviting you into bed") == "intimacy_invitation"
+    assert fanservice_category("How about we settle it on the bed then, milady") == "intimacy_invitation"
+    assert fanservice_category("Let's GO. To. Bed if you are true to your word") == "intimacy_invitation"
+    assert fanservice_intensity("Let's GO. To. Bed if you are true to your word") == "flirty"
     assert fanservice_category("prove it") == "teasing_challenge"
     assert fanservice_category("How abt somewhere else very private away from prying eyes") == "flirtation"
     assert fanservice_category("It's either do it or not, but I ain't backing down to someone who's like a fine looking wine") == "flirtation"
@@ -93,3 +100,6 @@ def test_guidance_is_dynamic_and_not_a_stock_reply() -> None:
     assert "fresh response" in guidance
     assert "fixed response list" in guidance
     assert "one dominant reaction style" in guidance
+    intimate = fanservice_guidance("Let's GO. To. Bed if you are true to your word")
+    assert "intimacy_invitation" in intimate
+    assert "Answer the invitation directly" in intimate

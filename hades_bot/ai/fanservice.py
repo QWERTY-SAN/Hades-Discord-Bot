@@ -56,6 +56,16 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
             re.I,
         ),
     ),
+    "intimacy_invitation": (
+        re.compile(
+            r"\b(?:let'?s|let\s+us)\W{0,8}(?:go|head)\W{0,8}(?:to|into)\W{0,8}(?:the\s+)?bed\b|"
+            r"\b(?:come|go|get|head|join\s+me|settle\s+it|take\s+it)\b.{0,90}\b(?:to|into|on|in)\s+(?:(?:the|my|your)\s+)?bed\b|"
+            r"\b(?:inviting|invite|invitation)\b.{0,70}\b(?:to|into|in)\s+(?:(?:the|my|your)\s+)?bed\b|"
+            r"\b(?:sleep|spend\s+the\s+night)\b.{0,60}\b(?:with\s+me|together|in\s+(?:my|your)\s+bed)\b|"
+            r"\b(?:come|join\s+me|follow\s+me|take\s+me)\b.{0,70}\b(?:to|into)\s+(?:(?:the|my|your)\s+)?bedroom\b",
+            re.I | re.S,
+        ),
+    ),
     "relationship_banter": (
         re.compile(
             r"\b(?:what\s+are\s+we|so\s+what\s+are\s+we|are\s+we\s+(?:dating|a\s+thing|official)|what(?:'s|\s+is)\s+our\s+(?:status|relationship)|where\s+do\s+i\s+stand\s+with\s+you|what\s+am\s+i\s+to\s+you|do\s+i\s+have\s+(?:a\s+chance|a\s+shot)|any\s+chance\s+for\s+me|are\s+you\s+(?:into|interested\s+in)\s+me|is\s+there\s+something\s+between\s+us|do\s+you\s+like\s+me)\b",
@@ -397,6 +407,7 @@ _CATEGORY_PRIORITY = (
     "fan_command",
     "playful_dominance",
     "romantic",
+    "intimacy_invitation",
     "relationship_banter",
     "social_invitation",
     "affection",
@@ -430,6 +441,12 @@ _CATEGORY_GUIDANCE = {
     "romantic": (
         "Treat the user's romantic declaration as light fictional affection. Hades may flirt back, tease them, "
         "or playfully question how serious they are without promising a literal real-world relationship."
+    ),
+    "intimacy_invitation": (
+        "The Administrator is making a more intimate fictional invitation, using bed, bedroom, or sleeping-together language. "
+        "Answer the invitation directly with Hades's own choice: she may accept a non-explicit close moment, tease and negotiate, or decline with a clear in-character boundary and a fitting alternative. "
+        "Do not endlessly call it a bluff, turn it into a contest, or issue another challenge instead of answering. "
+        "Keep the exchange mutual, consensual, and non-graphic; do not invent what happens next."
     ),
     "relationship_banter": (
         "The Administrator is probing the relationship dynamic itself. Answer the social question instead of dodging it. "
@@ -520,7 +537,7 @@ _REACTION_REPERTOIRE = (
 
 _WARM_CATEGORIES = frozenset({"social_invitation", "affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "voice_and_eye_contact", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
-_FLIRTY_CATEGORIES = frozenset({"romantic", "relationship_banter", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
+_FLIRTY_CATEGORIES = frozenset({"romantic", "intimacy_invitation", "relationship_banter", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
 
 def fanservice_categories(text: str) -> tuple[str, ...]:
@@ -551,6 +568,7 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         "fan_command",
         "playful_dominance",
         "romantic",
+        "intimacy_invitation",
         "relationship_banter",
         "captivated",
         "devotion",
@@ -619,6 +637,8 @@ def fanservice_cue_shape(text: str) -> str:
         return "devotion"
     if "social_invitation" in categories:
         return "social_invitation"
+    if "intimacy_invitation" in categories:
+        return "intimacy_invitation"
     if "romantic" in categories:
         return "romantic_admission"
     if "relationship_banter" in categories:
@@ -658,6 +678,7 @@ def fanservice_guidance(category_or_text: str | None) -> str:
         "fan_command": "bold_request",
         "playful_dominance": "bold_request",
         "romantic": "romantic_admission",
+        "intimacy_invitation": "intimacy_invitation",
         "relationship_banter": "relationship_banter",
         "social_invitation": "social_invitation",
         "affection": "affection_request",
