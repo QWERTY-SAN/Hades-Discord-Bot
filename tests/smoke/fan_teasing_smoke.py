@@ -78,6 +78,7 @@ def test_fanservice_categories() -> None:
     assert fanservice_category("Yeah but you back out when I start inviting you into bed") == "intimacy_invitation"
     assert fanservice_category("How about we settle it on the bed then, milady") == "intimacy_invitation"
     assert fanservice_category("Let's GO. To. Bed if you are true to your word") == "intimacy_invitation"
+    assert fanservice_intensity("Let's GO. To. Bed if you are true to your word") == "flirty"
     assert fanservice_category("prove it") == "teasing_challenge"
     assert fanservice_category("How abt somewhere else very private away from prying eyes") == "flirtation"
     assert fanservice_category("It's either do it or not, but I ain't backing down to someone who's like a fine looking wine") == "flirtation"
