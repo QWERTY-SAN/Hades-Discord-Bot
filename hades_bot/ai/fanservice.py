@@ -537,7 +537,7 @@ _REACTION_REPERTOIRE = (
 
 _WARM_CATEGORIES = frozenset({"social_invitation", "affection", "scent_and_proximity", "captivated", "devotion", "playful_jealousy", "admiration", "voice_and_eye_contact", "attention_seek", "playful_fandom", "praise"})
 _BOLD_CATEGORIES = frozenset({"fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
-_FLIRTY_CATEGORIES = frozenset({"romantic", "relationship_banter", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
+_FLIRTY_CATEGORIES = frozenset({"romantic", "intimacy_invitation", "relationship_banter", "flirtation", "flustered", "captivated", "devotion", "playful_jealousy", "fan_command", "playful_dominance", "puppet_fantasy", "teasing_challenge"})
 
 
 def fanservice_categories(text: str) -> tuple[str, ...]:
@@ -568,6 +568,7 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         "fan_command",
         "playful_dominance",
         "romantic",
+        "intimacy_invitation",
         "relationship_banter",
         "captivated",
         "devotion",
