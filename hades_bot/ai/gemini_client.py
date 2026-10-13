@@ -178,6 +178,148 @@ class GeminiService:
             ),
         )
 
+
+        self.last_successful_model: str | None = None
+        self.fallback_count = 0
+
+    def model_hierarchy(self) -> tuple[str, ...]:
+        """Return the configured primary followed by unique fallback models."""
+        return tuple(dict.fromkeys(
+            model.strip()
+            for model in (SETTINGS.gemini_model, *SETTINGS.gemini_fallback_models)
+            if model and model.strip()
+        ))
+
+    @staticmethod
+    def _status_code(exc: Exception) -> int | None:
+        value = getattr(exc, "status_code", None)
+        if value is None:
+            value = getattr(exc, "code", None)
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    @classmethod
+    def _can_fail_over(cls, exc: Exception) -> bool:
+        status = cls._status_code(exc)
+        return (
+            isinstance(exc, (errors.ServerError, asyncio.TimeoutError, TimeoutError))
+            or status in {404, 408, 429, 500, 502, 503, 504}
+        )
+
+    async def _request_once(
+        self,
+        model: str,
+        contents: list[types.Content],
+        config: types.GenerateContentConfig,
+    ):
+        timeout = min(SETTINGS.request_timeout, SETTINGS.gemini_model_timeout_seconds)
+        return await asyncio.wait_for(
+            self.client.aio.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config,
+            ),
+            timeout=timeout,
+        )
+
+    async def _request_model(
+        self,
+        model: str,
+        contents: list[types.Content],
+        config: types.GenerateContentConfig,
+        fallback_contents: list[types.Content] | None,
+        fallback_config: types.GenerateContentConfig | None,
+    ):
+        try:
+            return await self._request_once(model, contents, config)
+        except errors.ClientError as exc:
+            if (
+                self._status_code(exc) == 400
+                and fallback_contents is not None
+                and fallback_config is not None
+            ):
+                logger.warning(
+                    "Gemini rejected URL Context on model %s; retrying without tools.",
+                    model,
+                )
+                return await self._request_once(
+                    model, fallback_contents, fallback_config
+                )
+            raise
+
+    async def _generate_with_model_hierarchy(
+        self,
+        *,
+        contents: list[types.Content],
+        config: types.GenerateContentConfig,
+        fallback_contents: list[types.Content] | None = None,
+        fallback_config: types.GenerateContentConfig | None = None,
+    ):
+        models = self.model_hierarchy()
+        failures: list[Exception] = []
+        failure_statuses: list[int | None] = []
+
+        for index, model in enumerate(models):
+            try:
+                response = await self._request_model(
+                    model, contents, config, fallback_contents, fallback_config
+                )
+            except Exception as exc:
+                status = self._status_code(exc)
+                if status in {401, 403}:
+                    raise AIServiceError(
+                        "The Gemini API key or model permissions are not valid.",
+                        status,
+                    ) from exc
+                if not self._can_fail_over(exc):
+                    if status == 400:
+                        raise AIServiceError(
+                            "Gemini rejected the request. Try again shortly.",
+                            status,
+                        ) from exc
+                    logger.exception("Unexpected Gemini request failure on %s", model)
+                    raise AIServiceError(
+                        "Something went wrong with the AI service."
+                    ) from exc
+
+                failures.append(exc)
+                failure_statuses.append(status)
+                if index + 1 < len(models):
+                    logger.warning(
+                        "Gemini model %s failed (%s); trying fallback model %s.",
+                        model,
+                        status or type(exc).__name__,
+                        models[index + 1],
+                    )
+            else:
+                if model != SETTINGS.gemini_model:
+                    self.fallback_count += 1
+                    logger.warning(
+                        "Gemini fallback succeeded: primary=%s selected=%s",
+                        SETTINGS.gemini_model,
+                        model,
+                    )
+                self.last_successful_model = model
+                return response
+
+        last_error = failures[-1] if failures else None
+        last_status = failure_statuses[-1] if failure_statuses else None
+        if failure_statuses and all(status == 404 for status in failure_statuses):
+            message = (
+                "None of the configured Gemini models is available. "
+                "Check GEMINI_MODEL and GEMINI_FALLBACK_MODELS."
+            )
+        elif last_status == 429:
+            message = "Gemini is rate-limiting the configured models. Try again shortly."
+        else:
+            message = (
+                "Gemini is temporarily unavailable across the configured models. "
+                "Try again shortly."
+            )
+        raise AIServiceError(message, last_status) from last_error
+
     @staticmethod
     def _speaker_labeled(history: Iterable[dict[str, str]], limit: int = 8) -> str:
         turns = list(history)[-limit:]
