@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.1 — 2026-10-14
+
+### Free Tier Lite model restriction
+- Restricted the primary/fallback allowlist to Gemini 3.5 Flash-Lite and Gemini 3.1 Flash-Lite, both listed with Free Tier pricing in Google's Gemini API pricing table.
+- Replaced the default Gemini 3.6 Flash / Gemini 3.8 Flash fallbacks with Gemini 3.1 Flash-Lite in Render and local environment examples.
+- Reject unapproved primary model IDs at startup and filter unapproved fallback IDs.
+- Clarified that model selection does not switch a Google project from Paid Tier to Free Tier; the project's API billing tier must remain Free Tier for $0 model usage.
+
 ## 2.7.0 — 2026-10-14
 
 ### Gemini model failover and request deadlines
