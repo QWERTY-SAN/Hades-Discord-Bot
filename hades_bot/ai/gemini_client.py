@@ -514,83 +514,37 @@ class GeminiService:
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
             tools=tools,
         )
-        try:
-            response = await self.client.aio.models.generate_content(
-                model=SETTINGS.gemini_model,
-                contents=contents,
-                config=config,
+
+        fallback_contents: list[types.Content] | None = None
+        fallback_config: types.GenerateContentConfig | None = None
+        if tools:
+            # If URL Context is rejected, retry this model without the optional tool
+            # before moving down the configured model hierarchy.
+            fallback_prompt = self._build_prompt_context(history, user_message, None)
+            fallback_contents = []
+            for item in history[-8:]:
+                role = "model" if item.get("role") in {"assistant", "model"} else "user"
+                content = item.get("content", "").strip()
+                if content:
+                    fallback_contents.append(
+                        types.Content(role=role, parts=[types.Part.from_text(text=content)])
+                    )
+            fallback_contents.append(
+                types.Content(role="user", parts=[types.Part.from_text(text=fallback_prompt)])
             )
-        except errors.ClientError as exc:
-            status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
-            if live_source_instruction and status == 400:
-                logger.warning("URL Context request was rejected; retrying without live-source tooling.")
-                fallback_prompt = self._build_prompt_context(history, user_message, None)
-                fallback_contents: list[types.Content] = []
-                for item in history[-8:]:
-                    role = "model" if item.get("role") in {"assistant", "model"} else "user"
-                    content = item.get("content", "").strip()
-                    if content:
-                        fallback_contents.append(
-                            types.Content(
-                                role=role,
-                                parts=[types.Part.from_text(text=content)],
-                            )
-                        )
-                fallback_contents.append(
-                    types.Content(
-                        role="user",
-                        parts=[types.Part.from_text(text=fallback_prompt)],
-                    )
-                )
-                fallback_config = types.GenerateContentConfig(
-                    system_instruction=system_text,
-                    max_output_tokens=SETTINGS.max_output_tokens,
-                    thinking_config=types.ThinkingConfig(
-                        thinking_level=SETTINGS.gemini_thinking_level
-                    ),
-                    automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                        disable=True
-                    ),
-                )
-                try:
-                    response = await self.client.aio.models.generate_content(
-                        model=SETTINGS.gemini_model,
-                        contents=fallback_contents,
-                        config=fallback_config,
-                    )
-                except Exception as fallback_exc:
-                    logger.exception("Gemini fallback request failed")
-                    raise AIServiceError(
-                        "Gemini could not complete that request. Try again shortly."
-                    ) from fallback_exc
-            elif status == 429:
-                raise AIServiceError(
-                    "Gemini is rate-limiting the bot. Try again shortly.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-            elif status in (401, 403):
-                raise AIServiceError(
-                    "The Gemini API key is not working right now.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-            elif status == 404:
-                raise AIServiceError(
-                    "That Gemini model is not available right now.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-            else:
-                raise AIServiceError(
-                    "Gemini rejected the request. Try again shortly.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-        except errors.ServerError as exc:
-            logger.warning("Gemini server error: %s", exc)
-            raise AIServiceError("Gemini is having trouble right now. Try again shortly.") from exc
-        except (TimeoutError, asyncio.TimeoutError) as exc:
-            raise AIServiceError("That response took too long. Try again in a moment.") from exc
-        except Exception as exc:
-            logger.exception("Unexpected Gemini error")
-            raise AIServiceError("Something went wrong with the AI service.") from exc
+            fallback_config = types.GenerateContentConfig(
+                system_instruction=system_text,
+                max_output_tokens=SETTINGS.max_output_tokens,
+                thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            )
+
+        response = await self._generate_with_model_hierarchy(
+            contents=contents,
+            config=config,
+            fallback_contents=fallback_contents,
+            fallback_config=fallback_config,
+        )
         text = sanitize_model_output(response.text or "")
         if not text:
             raise AIServiceError("Gemini returned an empty response. Try again.")
