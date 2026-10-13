@@ -163,11 +163,11 @@ class AIServiceError(RuntimeError):
 class GeminiService:
     def __init__(self) -> None:
         retry_options = types.HttpRetryOptions(
-            attempts=SETTINGS.max_retries + 1,
-            initial_delay=1.0,
-            max_delay=8.0,
+            attempts=max(1, min(2, SETTINGS.max_retries + 1)),
+            initial_delay=0.5,
+            max_delay=2.0,
             exp_base=2.0,
-            jitter=1.0,
+            jitter=0.5,
             http_status_codes=[408, 429, 500, 502, 503, 504],
         )
         self.client = genai.Client(
