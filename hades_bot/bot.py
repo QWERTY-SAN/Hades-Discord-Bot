@@ -381,7 +381,7 @@ async def diagnose_command(ctx: commands.Context) -> None:
         f"Gemini API key: `{gemini_state}`",
         f"Discord token: `{token_state}`",
         f"Gemini model: `{SETTINGS.gemini_model}`",
-        f"Gemini model hierarchy: `{" → ".join(bot.hades_chat.gemini.model_hierarchy())}`",
+        f"Gemini model hierarchy: `{' → '.join(bot.hades_chat.gemini.model_hierarchy())}`",
         f"Last successful model: `{bot.hades_chat.gemini.last_successful_model or 'not yet used'}`",
         f"Successful model fallbacks: `{bot.hades_chat.gemini.fallback_count}`",
         "Hades scope: `enforced`",
@@ -403,18 +403,18 @@ async def status_command(ctx: commands.Context) -> None:
     hierarchy = " → ".join(bot.hades_chat.gemini.model_hierarchy())
     last_model = bot.hades_chat.gemini.last_successful_model or "not yet used"
     status_text = (
-        f"Model: `{SETTINGS.gemini_model}`\\n"
-        f"Hierarchy: `{hierarchy}`\\n"
-        f"Last successful model: `{last_model}`\\n"
-        f"Fallbacks used: `{bot.hades_chat.gemini.fallback_count}`\\n"
-        f"Guilds: `{len(bot.guilds)}`\\n"
-        f"Memory: `{count}` active conversations\\n"
-        f"Requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\\n"
-        f"Total AI requests: `{bot.hades_chat.total_requests}`\\n"
-        f"Auto media: `mention / {SETTINGS.bot_prefix}hades`\\n"
-        f"GIFs: `{bot.media.configured_count}` external URLs\\n"
-        f"Images: `{bot.media.image_configured_count}` external URLs\\n"
-        f"Latency: `{"unavailable" if bot.latency == float("inf") else str(round(bot.latency * 1000)) + "ms"}`"
+        f"Model: `{SETTINGS.gemini_model}`\n"
+        f"Hierarchy: `{hierarchy}`\n"
+        f"Last successful model: `{last_model}`\n"
+        f"Fallbacks used: `{bot.hades_chat.gemini.fallback_count}`\n"
+        f"Guilds: `{len(bot.guilds)}`\n"
+        f"Memory: `{count}` active conversations\n"
+        f"Requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\n"
+        f"Total AI requests: `{bot.hades_chat.total_requests}`\n"
+        f"Auto media: `mention / {SETTINGS.bot_prefix}hades`\n"
+        f"GIFs: `{bot.media.configured_count}` external URLs\n"
+        f"Images: `{bot.media.image_configured_count}` external URLs\n"
+        f"Latency: `{'unavailable' if bot.latency == float('inf') else str(round(bot.latency * 1000)) + 'ms'}`"
     )
     await ctx.reply(embed=info_embed("🌙 Hades Status", status_text), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
