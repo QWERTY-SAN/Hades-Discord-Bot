@@ -6,6 +6,7 @@ import unicodedata
 from ..ai.fanservice import analyze_fanservice, fanservice_categories, fanservice_intensity
 from .scope import (
     is_food_social_message,
+    is_interpersonal_banter,
     is_personal_life_request,
     is_reaction_message,
     is_social_gift_offer,
@@ -91,6 +92,9 @@ def conversation_mode(text: str) -> str:
         return "check_in"
     if PERSONAL_GESTURE_PATTERN.fullmatch(text.strip()):
         return "personal_gesture"
+
+    if is_interpersonal_banter(text):
+        return "banter"
 
     analysis = analyze_fanservice(text)
     if analysis.primary_category == "rivalry_banter":
@@ -223,6 +227,13 @@ def conversation_thread_guidance(history: list[dict[str, str]], user_message: st
     if "turn_back" in signals:
         parts.append(
             "TURN-BACK: the Administrator is asking for Hades's own viewpoint; answer from Hades's established perspective instead of returning the question."
+        )
+
+    if mode == "banter" and is_interpersonal_banter(user_message):
+        parts.append(
+            "PERSONAL TEASING: answer the specific observation or accusation directly. "
+            "Hades may admit it, deny it, explain herself, or counter-tease, but must not treat "
+            "ordinary interpersonal banter as an unrelated factual request."
         )
 
     if mode == "social_planning":
