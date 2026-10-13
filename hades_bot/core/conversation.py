@@ -103,6 +103,7 @@ def conversation_mode(text: str) -> str:
         "fan_command",
         "playful_dominance",
         "romantic",
+        "intimacy_invitation",
         "admiration",
         "puppet_fantasy",
         "flustered",
