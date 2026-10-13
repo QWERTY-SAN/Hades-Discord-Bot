@@ -13,7 +13,9 @@ class Settings:
     discord_token: str
     gemini_api_key: str
     gemini_model: str = "gemini-3.5-flash-lite"
+    gemini_fallback_models: tuple[str, ...] = ("gemini-3.6-flash", "gemini-3.8-flash")
     gemini_thinking_level: str = "minimal"
+    gemini_model_timeout_seconds: float = 20.0
     bot_prefix: str = "h!"
     strict_aether_topic: bool = True
     emojis_enabled: bool = True
@@ -65,6 +67,17 @@ def _float(name: str, default: float) -> float:
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 
+_configured_fallback_models = tuple(
+    dict.fromkeys(
+        item.strip()
+        for item in os.getenv(
+            "GEMINI_FALLBACK_MODELS",
+            "gemini-3.6-flash,gemini-3.8-flash",
+        ).split(",")
+        if item.strip()
+    )
+)
+
 _configured_history = max(4, _int("MAX_HISTORY", 16))
 if _configured_history % 2:
     _configured_history += 1
@@ -73,7 +86,9 @@ SETTINGS = Settings(
     discord_token=DISCORD_TOKEN,
     gemini_api_key=GEMINI_API_KEY,
     gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip() or "gemini-3.5-flash-lite",
+    gemini_fallback_models=_configured_fallback_models,
     gemini_thinking_level=os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().casefold() or "minimal",
+    gemini_model_timeout_seconds=min(60.0, max(5.0, _float("GEMINI_MODEL_TIMEOUT_SECONDS", 20.0))),
     bot_prefix=os.getenv("BOT_PREFIX", "h!").strip() or "h!",
     strict_aether_topic=_bool("STRICT_AETHER_TOPIC", True),
     emojis_enabled=_bool("EMOJIS_ENABLED", True),

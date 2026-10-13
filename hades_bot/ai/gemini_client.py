@@ -163,11 +163,11 @@ class AIServiceError(RuntimeError):
 class GeminiService:
     def __init__(self) -> None:
         retry_options = types.HttpRetryOptions(
-            attempts=SETTINGS.max_retries + 1,
-            initial_delay=1.0,
-            max_delay=8.0,
+            attempts=max(1, min(2, SETTINGS.max_retries + 1)),
+            initial_delay=0.5,
+            max_delay=2.0,
             exp_base=2.0,
-            jitter=1.0,
+            jitter=0.5,
             http_status_codes=[408, 429, 500, 502, 503, 504],
         )
         self.client = genai.Client(
@@ -177,6 +177,148 @@ class GeminiService:
                 retry_options=retry_options,
             ),
         )
+
+
+        self.last_successful_model: str | None = None
+        self.fallback_count = 0
+
+    def model_hierarchy(self) -> tuple[str, ...]:
+        """Return the configured primary followed by unique fallback models."""
+        return tuple(dict.fromkeys(
+            model.strip()
+            for model in (SETTINGS.gemini_model, *SETTINGS.gemini_fallback_models)
+            if model and model.strip()
+        ))
+
+    @staticmethod
+    def _status_code(exc: Exception) -> int | None:
+        value = getattr(exc, "status_code", None)
+        if value is None:
+            value = getattr(exc, "code", None)
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    @classmethod
+    def _can_fail_over(cls, exc: Exception) -> bool:
+        status = cls._status_code(exc)
+        return (
+            isinstance(exc, (errors.ServerError, asyncio.TimeoutError, TimeoutError))
+            or status in {404, 408, 429, 500, 502, 503, 504}
+        )
+
+    async def _request_once(
+        self,
+        model: str,
+        contents: list[types.Content],
+        config: types.GenerateContentConfig,
+    ):
+        timeout = min(SETTINGS.request_timeout, SETTINGS.gemini_model_timeout_seconds)
+        return await asyncio.wait_for(
+            self.client.aio.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config,
+            ),
+            timeout=timeout,
+        )
+
+    async def _request_model(
+        self,
+        model: str,
+        contents: list[types.Content],
+        config: types.GenerateContentConfig,
+        fallback_contents: list[types.Content] | None,
+        fallback_config: types.GenerateContentConfig | None,
+    ):
+        try:
+            return await self._request_once(model, contents, config)
+        except errors.ClientError as exc:
+            if (
+                self._status_code(exc) == 400
+                and fallback_contents is not None
+                and fallback_config is not None
+            ):
+                logger.warning(
+                    "Gemini rejected URL Context on model %s; retrying without tools.",
+                    model,
+                )
+                return await self._request_once(
+                    model, fallback_contents, fallback_config
+                )
+            raise
+
+    async def _generate_with_model_hierarchy(
+        self,
+        *,
+        contents: list[types.Content],
+        config: types.GenerateContentConfig,
+        fallback_contents: list[types.Content] | None = None,
+        fallback_config: types.GenerateContentConfig | None = None,
+    ):
+        models = self.model_hierarchy()
+        failures: list[Exception] = []
+        failure_statuses: list[int | None] = []
+
+        for index, model in enumerate(models):
+            try:
+                response = await self._request_model(
+                    model, contents, config, fallback_contents, fallback_config
+                )
+            except Exception as exc:
+                status = self._status_code(exc)
+                if status in {401, 403}:
+                    raise AIServiceError(
+                        "The Gemini API key or model permissions are not valid.",
+                        status,
+                    ) from exc
+                if not self._can_fail_over(exc):
+                    if status == 400:
+                        raise AIServiceError(
+                            "Gemini rejected the request. Try again shortly.",
+                            status,
+                        ) from exc
+                    logger.exception("Unexpected Gemini request failure on %s", model)
+                    raise AIServiceError(
+                        "Something went wrong with the AI service."
+                    ) from exc
+
+                failures.append(exc)
+                failure_statuses.append(status)
+                if index + 1 < len(models):
+                    logger.warning(
+                        "Gemini model %s failed (%s); trying fallback model %s.",
+                        model,
+                        status or type(exc).__name__,
+                        models[index + 1],
+                    )
+            else:
+                if model != SETTINGS.gemini_model:
+                    self.fallback_count += 1
+                    logger.warning(
+                        "Gemini fallback succeeded: primary=%s selected=%s",
+                        SETTINGS.gemini_model,
+                        model,
+                    )
+                self.last_successful_model = model
+                return response
+
+        last_error = failures[-1] if failures else None
+        last_status = failure_statuses[-1] if failure_statuses else None
+        if failure_statuses and all(status == 404 for status in failure_statuses):
+            message = (
+                "None of the configured Gemini models is available. "
+                "Check GEMINI_MODEL and GEMINI_FALLBACK_MODELS."
+            )
+        elif last_status == 429:
+            message = "Gemini is rate-limiting the configured models. Try again shortly."
+        else:
+            message = (
+                "Gemini is temporarily unavailable across the configured models. "
+                "Try again shortly."
+            )
+        raise AIServiceError(message, last_status) from last_error
 
     @staticmethod
     def _speaker_labeled(history: Iterable[dict[str, str]], limit: int = 8) -> str:
@@ -372,83 +514,37 @@ class GeminiService:
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
             tools=tools,
         )
-        try:
-            response = await self.client.aio.models.generate_content(
-                model=SETTINGS.gemini_model,
-                contents=contents,
-                config=config,
+
+        fallback_contents: list[types.Content] | None = None
+        fallback_config: types.GenerateContentConfig | None = None
+        if tools:
+            # If URL Context is rejected, retry this model without the optional tool
+            # before moving down the configured model hierarchy.
+            fallback_prompt = self._build_prompt_context(history, user_message, None)
+            fallback_contents = []
+            for item in history[-8:]:
+                role = "model" if item.get("role") in {"assistant", "model"} else "user"
+                content = item.get("content", "").strip()
+                if content:
+                    fallback_contents.append(
+                        types.Content(role=role, parts=[types.Part.from_text(text=content)])
+                    )
+            fallback_contents.append(
+                types.Content(role="user", parts=[types.Part.from_text(text=fallback_prompt)])
             )
-        except errors.ClientError as exc:
-            status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
-            if live_source_instruction and status == 400:
-                logger.warning("URL Context request was rejected; retrying without live-source tooling.")
-                fallback_prompt = self._build_prompt_context(history, user_message, None)
-                fallback_contents: list[types.Content] = []
-                for item in history[-8:]:
-                    role = "model" if item.get("role") in {"assistant", "model"} else "user"
-                    content = item.get("content", "").strip()
-                    if content:
-                        fallback_contents.append(
-                            types.Content(
-                                role=role,
-                                parts=[types.Part.from_text(text=content)],
-                            )
-                        )
-                fallback_contents.append(
-                    types.Content(
-                        role="user",
-                        parts=[types.Part.from_text(text=fallback_prompt)],
-                    )
-                )
-                fallback_config = types.GenerateContentConfig(
-                    system_instruction=system_text,
-                    max_output_tokens=SETTINGS.max_output_tokens,
-                    thinking_config=types.ThinkingConfig(
-                        thinking_level=SETTINGS.gemini_thinking_level
-                    ),
-                    automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                        disable=True
-                    ),
-                )
-                try:
-                    response = await self.client.aio.models.generate_content(
-                        model=SETTINGS.gemini_model,
-                        contents=fallback_contents,
-                        config=fallback_config,
-                    )
-                except Exception as fallback_exc:
-                    logger.exception("Gemini fallback request failed")
-                    raise AIServiceError(
-                        "Gemini could not complete that request. Try again shortly."
-                    ) from fallback_exc
-            elif status == 429:
-                raise AIServiceError(
-                    "Gemini is rate-limiting the bot. Try again shortly.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-            elif status in (401, 403):
-                raise AIServiceError(
-                    "The Gemini API key is not working right now.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-            elif status == 404:
-                raise AIServiceError(
-                    "That Gemini model is not available right now.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-            else:
-                raise AIServiceError(
-                    "Gemini rejected the request. Try again shortly.",
-                    status if isinstance(status, int) else None,
-                ) from exc
-        except errors.ServerError as exc:
-            logger.warning("Gemini server error: %s", exc)
-            raise AIServiceError("Gemini is having trouble right now. Try again shortly.") from exc
-        except (TimeoutError, asyncio.TimeoutError) as exc:
-            raise AIServiceError("That response took too long. Try again in a moment.") from exc
-        except Exception as exc:
-            logger.exception("Unexpected Gemini error")
-            raise AIServiceError("Something went wrong with the AI service.") from exc
+            fallback_config = types.GenerateContentConfig(
+                system_instruction=system_text,
+                max_output_tokens=SETTINGS.max_output_tokens,
+                thinking_config=types.ThinkingConfig(thinking_level=SETTINGS.gemini_thinking_level),
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            )
+
+        response = await self._generate_with_model_hierarchy(
+            contents=contents,
+            config=config,
+            fallback_contents=fallback_contents,
+            fallback_config=fallback_config,
+        )
         text = sanitize_model_output(response.text or "")
         if not text:
             raise AIServiceError("Gemini returned an empty response. Try again.")
