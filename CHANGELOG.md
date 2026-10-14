@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.7.3 — 2026-10-14
+
+### In-character vocal requests and contextual game follow-ups
+- Recognized direct requests to say playful phrases such as "ara-ara" and routed them through Hades's voice/fan-service guidance instead of the generic scope refusal.
+- Added a narrow continuation detector for unfinished clauses such as "Can be pierced though for tanky gears", allowing Hades to use active conversation context or ask a concise clarification when the missing subject is unknown.
+- Improved prompt guidance to answer requested vocal performances directly and continue Aether Gazer gameplay/build discussion without inventing mechanics.
+- Preserved hard blocks for unrelated specialist work, sports, other games, politics/news/finance, and unrelated how-to requests.
+- Added regression tests for both reported failures.
+
 ## 2.7.2 — 2026-10-14
 
 ### Natural food-choice conversation
