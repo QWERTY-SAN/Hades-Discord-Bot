@@ -55,6 +55,35 @@ ART_AND_CRAFT_TERMS = {
 }
 HADES_TERMS.update(ART_AND_CRAFT_TERMS)
 
+# Tiny, harmless anime-style delivery requests are social roleplay, not a request
+# to discuss anime or media. Keep this deliberately narrow.
+PLAYFUL_PHRASE_PATTERNS = (
+    re.compile(
+        r"^(?:(?:can|could|would)\s+(?:u|you)\s+)?say\s+ara[\s-]*ara"
+        r"(?:\s+(?:please|for\s+me))?[?!.,\s]*$",
+        re.I,
+    ),
+    re.compile(r"^ara[\s-]*ara[?!.,\s]*$", re.I),
+)
+
+# This is deliberately limited to compact game-mechanics phrasing seen in chat.
+# It lets the model use context or ask for clarification without opening the
+# general factual-information gate.
+GAMEPLAY_MECHANIC_PATTERNS = (
+    re.compile(
+        r"\b(?:pierce(?:d|s|ing)?|penetrat(?:e|es|ed|ing|ion))\b.{0,100}"
+        r"\b(?:tank(?:y|ier|iest)?|gears?|enemies|enemy|boss(?:es)?|shields?|"
+        r"armou?r|defen[cs]e|resistance)\b",
+        re.I,
+    ),
+    re.compile(
+        r"\b(?:tank(?:y|ier|iest)?|gears?|enemies|enemy|boss(?:es)?|shields?|"
+        r"armou?r|defen[cs]e|resistance)\b.{0,100}"
+        r"\b(?:pierce(?:d|s|ing)?|penetrat(?:e|es|ed|ing|ion))\b",
+        re.I,
+    ),
+)
+
 INTERPERSONAL_BANTER_PATTERNS = (
     # Personal remarks and teasing questions should not be mistaken for factual
     # questions merely because they begin with "are", "were", or "what".
@@ -464,8 +493,20 @@ def is_interpersonal_banter(text: str) -> bool:
     return any(pattern.search(normalized) for pattern in INTERPERSONAL_BANTER_PATTERNS)
 
 
+def is_playful_phrase_request(text: str) -> bool:
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.fullmatch(normalized) for pattern in PLAYFUL_PHRASE_PATTERNS)
+
+
+def is_gameplay_mechanics_message(text: str) -> bool:
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.search(normalized) for pattern in GAMEPLAY_MECHANIC_PATTERNS)
+
+
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
+    if is_playful_phrase_request(normalized):
+        return True
     if is_interpersonal_banter(normalized):
         return True
     if is_social_gift_offer(normalized) or is_food_social_message(normalized):
@@ -519,6 +560,12 @@ def is_hades_scope_allowed(
         return False
     if is_specialist_request(normalized):
         return False
+
+    # Specific gameplay shorthand is allowed through the strict-topic gate.
+    # The prompt still requires context-aware interpretation rather than guessed
+    # facts when the missing subject cannot be recovered.
+    if is_gameplay_mechanics_message(normalized):
+        return True
 
     # A direct Discord reply to Hades is already anchored to her current
     # conversation, even when the replying user has no private memory entry.
