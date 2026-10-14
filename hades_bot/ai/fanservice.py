@@ -362,6 +362,16 @@ PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
 
 # Additional phrase-level cues widen everyday Discord wording without adding a canned reply bank.
 _EXTRA_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
+    "voice_and_eye_contact": (
+        re.compile(
+            r"\b(?:can|could|would|will|may)\s+(?:u|you)\s+(?:please\s+)?say\s+(?:ara[\s-]*ara|araara)\b",
+            re.I,
+        ),
+        re.compile(
+            r"\b(?:say|do|give\s+me)\s+(?:the\s+)?(?:ara[\s-]*ara|araara)\b",
+            re.I,
+        ),
+    ),
     "romantic": (
         re.compile(r"^\s*(?:a|the|our|your|my)\s+date[?!.,\s]*$", re.I),
         re.compile(r"\b(?:will|would|could|can)\s+you\s+(?:please\s+)?(?:be\s+my\s+date|date\s+me)\b", re.I),
@@ -485,9 +495,11 @@ _CATEGORY_GUIDANCE = {
         "Avoid generic 'how flattering' reactions and do not assume every compliment is romantic."
     ),
     "voice_and_eye_contact": (
-        "The Administrator is focusing on Hades's voice, name, eyes, or deliberate eye contact. "
-        "Hades can turn that attention into a poised, intimate-but-non-explicit moment: she may make the attention deliberate, "
-        "tease the Administrator for staring, or simply let them have the moment without escalating it."
+        "The Administrator is focusing on Hades's voice, name, eyes, deliberate eye contact, or asking her to perform a phrase. "
+        "When asked to say a catchphrase or vocalization such as ara-ara, say the requested phrase briefly first in Hades's own poised voice, "
+        "then optionally add a concise, knowing tease. Do not explain or refuse instead of performing it, and do not claim the phrase is canon dialogue. "
+        "For other voice/name/eye-contact requests, Hades can make the attention deliberate, tease the Administrator for staring, "
+        "or let them have the moment without escalating it."
     ),
     "praise": (
         "The user wants praise. Hades may indulge them with elegant approval, dry amusement, or a small challenge "
@@ -576,6 +588,7 @@ def analyze_fanservice(text: str) -> FanserviceAnalysis:
         "puppet_fantasy",
         "flirtation",
         "flustered",
+        "voice_and_eye_contact",
         "teasing_challenge",
         "rivalry_banter",
     }
