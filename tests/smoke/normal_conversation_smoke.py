@@ -78,6 +78,8 @@ def test_common_small_talk_is_allowed() -> None:
         "What about steak or pasta for dinner?",
         "Pizza or sushi?",
         "Ramen versus adobo?",
+        "Can u say ara-ara?",
+        "Can be pierced though for tanky gears",
         "nahhh",
         "ikr",
         "idk",
