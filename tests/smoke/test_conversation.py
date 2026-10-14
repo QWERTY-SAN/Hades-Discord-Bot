@@ -13,6 +13,25 @@ def test_signals():
     assert "correction" in conversation_signals("Actually, I meant the other one.")
 
 
+def test_playful_vocal_performance_request_uses_fanservice_mode():
+    from hades_bot.ai.fanservice import fanservice_categories
+    from hades_bot.core.scope import is_hades_scope_allowed
+
+    message = "Can u say ara-ara?"
+    assert "voice_and_eye_contact" in fanservice_categories(message)
+    assert conversation_mode(message) == "flirtation"
+    assert is_hades_scope_allowed(message)
+
+
+def test_clipped_gameplay_clause_uses_continuation_mode():
+    from hades_bot.core.scope import is_hades_scope_allowed
+
+    message = "Can be pierced though for tanky gears"
+    assert conversation_mode(message) == "continuation"
+    assert "continuation" in conversation_signals(message)
+    assert is_hades_scope_allowed(message)
+
+
 def test_flirtation_mode():
     assert conversation_mode("You drew my attention.") == "flirtation"
     assert conversation_mode("wanna go out for an date?") == "flirtation"

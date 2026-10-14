@@ -279,6 +279,13 @@ GENERAL_FACTUAL_QUESTION = re.compile(
     r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define|is|are|can|could|do|does|did|should|would|will|have|has|may|might)\b",
     re.I,
 )
+# A modal/passive clause with a contrast marker often omits its subject because
+# it is continuing a thought already under discussion.
+CONTEXTUAL_CLAUSE_FRAGMENT = re.compile(
+    r"^(?:can|could|may|might|should|would)\s+be\s+[\w'-]+\b.{0,220}\b"
+    r"(?:though|but|still|also|too|instead)\b.{0,160}$",
+    re.I,
+)
 REACTION_ONLY_PATTERN = re.compile(
     r"^(?:(?:[\U0001F300-\U0001FAFF\u2600-\u27BF]|<a?:[A-Za-z0-9_~+-]+:\d+>|:[A-Za-z0-9_~+-]+:|:3c?|x3|xd)[\s.!?]*)+$",
     re.I,
@@ -466,6 +473,8 @@ def is_interpersonal_banter(text: str) -> bool:
 
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
+    if is_contextual_factual_followup(normalized):
+        return True
     if is_interpersonal_banter(normalized):
         return True
     if is_social_gift_offer(normalized) or is_food_social_message(normalized):
@@ -502,6 +511,12 @@ def is_short_followup(text: str) -> bool:
     return _normalize(text) in SHORT_FOLLOWUPS
 
 
+def is_contextual_factual_followup(text: str) -> bool:
+    """Recognize a clipped clause that clearly continues an earlier thought."""
+    normalized = _conversation_candidate(_normalize(text))
+    return bool(CONTEXTUAL_CLAUSE_FRAGMENT.fullmatch(normalized))
+
+
 def is_hades_scope_allowed(
     text: str,
     *,
@@ -519,6 +534,12 @@ def is_hades_scope_allowed(
         return False
     if is_specialist_request(normalized):
         return False
+
+    # Example: "Can be pierced though for tanky gears." The subject is omitted,
+    # and "though" marks a continuation rather than a fresh standalone query.
+    # Use context when available; if it is absent, the model can ask for one clarification.
+    if is_contextual_factual_followup(normalized):
+        return True
 
     # A direct Discord reply to Hades is already anchored to her current
     # conversation, even when the replying user has no private memory entry.
@@ -585,6 +606,7 @@ def scope_block_reason(text: str) -> str:
         or is_social_companionship_request(text)
         or is_social_message(text)
         or is_subjective_question(text)
+        or is_contextual_factual_followup(text)
         or CORRECTION_PATTERN.search(_normalize(text))
     ):
         return ""

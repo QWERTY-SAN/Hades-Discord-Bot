@@ -1,7 +1,7 @@
 """Build and runtime version information for the Hades bot."""
 
 APP_NAME = "Hades Discord Bot"
-APP_VERSION = "2.7.2"
+APP_VERSION = "2.7.3"
 
 
 def short_commit() -> str:

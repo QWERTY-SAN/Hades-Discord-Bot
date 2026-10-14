@@ -5,6 +5,7 @@ import unicodedata
 
 from ..ai.fanservice import analyze_fanservice, fanservice_categories, fanservice_intensity
 from .scope import (
+    is_contextual_factual_followup,
     is_food_social_message,
     is_interpersonal_banter,
     is_personal_life_request,
@@ -110,6 +111,7 @@ def conversation_mode(text: str) -> str:
         "flustered",
         "flirtation",
         "teasing_challenge",
+        "voice_and_eye_contact",
     }:
         return "flirtation"
 
@@ -121,7 +123,7 @@ def conversation_mode(text: str) -> str:
     if is_food_social_message(text):
         return "food_chat"
 
-    if is_short_followup(text):
+    if is_short_followup(text) or is_contextual_factual_followup(text):
         return "continuation"
     if CORRECTION_PREFIXES.search(text):
         return "correction"
@@ -153,7 +155,8 @@ def is_short_followup(text: str) -> bool:
 def conversation_continuity_guidance(history: list[dict[str, str]], user_message: str) -> str:
     """Explain how a short follow-up should inherit the active conversational thread."""
     is_correction = bool(CORRECTION_PREFIXES.search(user_message.strip()))
-    if not history or (not is_short_followup(user_message) and not is_correction):
+    is_contextual_fragment = is_contextual_factual_followup(user_message)
+    if not history or (not is_short_followup(user_message) and not is_contextual_fragment and not is_correction):
         return "No special continuity handoff is needed."
 
     previous_user = next((item.get("content", "").strip() for item in reversed(history) if item.get("role") == "user" and item.get("content")), "")
@@ -173,6 +176,8 @@ def conversation_continuity_guidance(history: list[dict[str, str]], user_message
         parts.append("CLARIFICATION RULE: explain what Hades meant in the immediately preceding reply before adding any tease. Do not repeat the old line verbatim.")
     if is_correction:
         parts.append("CORRECTION RULE: accept the Administrator's correction without defensiveness. Reinterpret the message according to what they meant, then continue naturally.")
+    if is_contextual_fragment:
+        parts.append("INCOMPLETE-CLAUSE RULE: treat the missing subject as a likely reference to the active topic. Resolve it from recent dialogue and answer the gameplay/mechanics point directly without inventing details. If no relevant subject is available, ask one concise clarification instead of giving an unrelated-topic refusal.")
     return " ".join(parts)
 
 
@@ -312,7 +317,7 @@ def conversation_signals(text: str) -> list[str]:
     if categories:
         signals.append("fanservice:" + ",".join(categories[:4]))
         signals.append("fanservice_intensity:" + fanservice_intensity(normalized))
-    if is_short_followup(normalized):
+    if is_short_followup(normalized) or is_contextual_factual_followup(normalized):
         signals.append("continuation")
     if CORRECTION_PREFIXES.search(normalized):
         signals.append("correction")
