@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.7.2 — 2026-10-14
+
+### Natural food-choice conversation
+- Added explicit detection for short food either/or questions, including "steak or pasta?", "pizza or sushi?", and "ramen versus adobo?".
+- Routed meal choices through Hades's food-chat mode instead of leaving them in the generic personal-question lane.
+- Strengthened prompt guidance to choose one option with a brief in-character reason rather than returning an unrelated-topic refusal or bouncing the decision back.
+- Kept recipes, ingredient lists, cooking instructions, and existing hard off-topic boundaries blocked.
+- Added regression tests for food-choice classification, conversation mode, and scope behavior.
+
 ## 2.7.1 — 2026-10-14
 
 ### Free Tier Lite model restriction

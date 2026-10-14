@@ -2,7 +2,7 @@
 
 An in-character Discord chatbot for **Hades from Aether Gazer**, powered by the Gemini Developer API. Hades supports Aether Gazer lore/gameplay questions and bounded everyday conversation while retaining her character and topic boundaries.
 
-**Current release: 2.7.1**
+**Current release: 2.7.2**
 
 ## Gemini models and Free Tier setup
 
@@ -36,7 +36,7 @@ Do not put `DISCORD_TOKEN` or `GEMINI_API_KEY` in source control. Render should 
 
 ## Recent updates
 
-The current release is **2.7.1**. The model configuration, failover behavior, and Free Tier billing caveats are documented above. The complete release-by-release history—including earlier conversation, fan-service, memory, media, knowledge, safety, and deployment changes—is preserved in [Full version history](#full-version-history).
+The current release is **2.7.2**. Food-choice banter such as "steak or pasta?" is now recognized as casual food conversation, and Hades is instructed to pick an option in character instead of giving a generic off-topic refusal. The model configuration, failover behavior, and Free Tier billing caveats are documented above. The complete release-by-release history—including earlier conversation, fan-service, memory, media, knowledge, safety, and deployment changes—is preserved in [Full version history](#full-version-history).
 
 ## Bot overview
 
@@ -332,6 +332,13 @@ When Hades is mentioned **or** the Administrator uses `h!hades <message>` / `h!a
 ## Full version history
 
 The entries below preserve the detailed release notes from the project's `CHANGELOG.md`, including versions that were not described in the earlier README. Entries reflect each version as it shipped; newer releases can supersede prior defaults. **For the current model configuration, use the Free Tier Lite setup documented near the top of this README.**
+
+## 2.7.2 — 2026-10-14: Natural food-choice conversation
+
+- Added detection for concise meal choices such as "steak or pasta?", "pizza or sushi?", and "ramen versus adobo?".
+- Routed these messages into Hades's food-chat mode and instructed her to choose one option with a brief, in-character reason.
+- Kept recipe/how-to requests and hard unrelated-topic restrictions unchanged.
+- Added regression tests for food-choice classification and routing.
 
 ## 2.7.1 — 2026-10-14
 

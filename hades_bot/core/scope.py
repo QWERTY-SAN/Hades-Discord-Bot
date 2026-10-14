@@ -165,10 +165,63 @@ SOCIAL_PLANNING_PATTERNS = (
     ),
 )
 
+FOOD_CHOICE_TERMS = (
+    "mac and cheese", "ice cream", "fried rice", "grilled cheese", "chicken wings",
+    "mashed potatoes", "fish and chips", "steak", "pasta", "spaghetti", "lasagna",
+    "pizza", "burger", "hamburger", "sandwich", "taco", "tacos", "sushi", "sashimi",
+    "ramen", "noodles", "rice", "adobo", "sisig", "lechon", "chicken", "beef",
+    "pork", "lamb", "fish", "salmon", "tuna", "shrimp", "seafood", "salad", "soup",
+    "stew", "curry", "fries", "potato", "potatoes", "bread", "dumplings", "dim sum",
+    "spring rolls", "lumpia", "pancit", "kare-kare", "sinigang", "halo-halo", "cake",
+    "pie", "donut", "cookie", "dessert", "fruit", "vegetables", "egg", "omelette",
+    "pancakes", "waffles", "breakfast", "lunch", "dinner", "snack", "meal", "food",
+)
+FOOD_CHOICE_SPLIT_PATTERN = re.compile(
+    r"^(?P<left>[^.!?]{1,100}?)\s+(?:or|versus|vs\.?)\s+"
+    r"(?P<right>[^.!?]{1,100}?)[?!.,\s]*$",
+    re.I,
+)
+FOOD_CHOICE_PREFIX_PATTERNS = (
+    re.compile(
+        r"^(?:what\s+about|how\s+about|what\s+do\s+you\s+prefer|"
+        r"what\s+would\s+you\s+prefer|what\s+would\s+you\s+rather|"
+        r"would\s+you\s+rather|do\s+you\s+prefer|which\s+would\s+you\s+choose|"
+        r"which\s+would\s+you\s+pick|which\s+one|pick\s+one|choose\s+one|pick\s+between)"
+        r"\b\s*(?:[:,]\s*)?",
+        re.I,
+    ),
+    re.compile(r"^(?:(?:to\s+)?(?:eat|have|order|choose|pick|go\s+for)\s+)", re.I),
+)
+
+
+def is_food_choice_question(text: str) -> bool:
+    """Recognize simple food either/or questions such as 'steak or pasta?'."""
+    normalized = _conversation_candidate(_normalize(text)).strip()
+    normalized = re.sub(r"^(?:hey\s+)?hades\s*[,!:]\s*", "", normalized, flags=re.I)
+    for pattern in FOOD_CHOICE_PREFIX_PATTERNS:
+        normalized = pattern.sub("", normalized, count=1).strip()
+    match = FOOD_CHOICE_SPLIT_PATTERN.fullmatch(normalized)
+    if not match:
+        return False
+
+    left = match.group("left").strip(" \t,:;!?._'\"")
+    right = match.group("right").strip(" \t,:;!?._'\"")
+
+    def has_food_term(option: str) -> bool:
+        return any(
+            re.search(rf"(?<!\w){re.escape(term)}(?!\w)", option, re.I)
+            for term in FOOD_CHOICE_TERMS
+        )
+
+    return has_food_term(left) and has_food_term(right)
+
+
 def is_food_social_message(text: str) -> bool:
-    """Recognize casual food talk without admitting recipes or cooking instructions."""
+    """Recognize casual food talk and simple meal choices, but not recipes."""
     normalized = _conversation_candidate(_normalize(text))
-    return any(pattern.search(normalized) for pattern in FOOD_SOCIAL_PATTERNS)
+    return is_food_choice_question(normalized) or any(
+        pattern.search(normalized) for pattern in FOOD_SOCIAL_PATTERNS
+    )
 
 
 def is_social_companionship_request(text: str) -> bool:

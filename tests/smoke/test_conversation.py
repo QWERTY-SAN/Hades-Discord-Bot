@@ -76,8 +76,27 @@ def test_food_related_social_chat_uses_its_own_mode():
         "I'm craving ramen.",
         "What should we eat?",
         "I love adobo",
+        "Steak or pasta?",
+        "steak or pasta",
+        "Would you rather have steak or pasta?",
+        "What about steak or pasta for dinner?",
+        "Pizza or sushi?",
+        "Ramen versus adobo?",
     )
     for message in examples:
+        assert conversation_mode(message) == "food_chat", (message, conversation_mode(message))
+        assert is_hades_scope_allowed(message), message
+
+    from hades_bot.core.scope import is_food_choice_question
+    for message in (
+        "Steak or pasta?",
+        "steak or pasta",
+        "Would you rather have steak or pasta?",
+        "What about steak or pasta for dinner?",
+        "Pizza or sushi?",
+        "Ramen versus adobo?",
+    ):
+        assert is_food_choice_question(message), message
         assert conversation_mode(message) == "food_chat", (message, conversation_mode(message))
         assert is_hades_scope_allowed(message), message
 
