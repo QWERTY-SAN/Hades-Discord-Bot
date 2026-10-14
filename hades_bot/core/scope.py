@@ -55,6 +55,17 @@ ART_AND_CRAFT_TERMS = {
 }
 HADES_TERMS.update(ART_AND_CRAFT_TERMS)
 
+# Narrow vocal-performance requests are playful roleplay, not a request to
+# discuss anime or unrelated media.
+PLAYFUL_PHRASE_PATTERNS = (
+    re.compile(
+        r"^(?:(?:can|could|would)\s+(?:u|you)\s+)?say\s+ara[\s-]*ara"
+        r"(?:\s+(?:please|for\s+me))?[?!.,\s]*$",
+        re.I,
+    ),
+    re.compile(r"^ara[\s-]*ara[?!.,\s]*$", re.I),
+)
+
 INTERPERSONAL_BANTER_PATTERNS = (
     # Personal remarks and teasing questions should not be mistaken for factual
     # questions merely because they begin with "are", "were", or "what".
@@ -275,6 +286,22 @@ SPECIALIST_REQUESTS = (
     re.compile(r"\b(?:write|do|finish|solve|answer|complete|help\s+with|help\s+me\s+with)\b.{0,80}\b(?:my|this|the)\b.{0,50}\b(?:homework|assignment|essay|thesis|report|worksheet|exam|test)\b", re.I | re.S),
     re.compile(r"\b(?:fix|troubleshoot|configure|set\s+up|diagnose|repair)\b.{0,80}\b(?:windows|linux|router|printer|network|pc|computer|server|database|driver)\b", re.I | re.S),
 )
+# Compact gameplay shorthand can omit its subject when continuing a discussion.
+GAMEPLAY_MECHANIC_PATTERNS = (
+    re.compile(
+        r"\b(?:pierce(?:d|s|ing)?|penetrat(?:e|es|ed|ing|ion))\b.{0,100}"
+        r"\b(?:tank(?:y|ier|iest)?|gears?|enemies|enemy|boss(?:es)?|shields?|"
+        r"armou?r|defen[cs]e|resistance)\b",
+        re.I,
+    ),
+    re.compile(
+        r"\b(?:tank(?:y|ier|iest)?|gears?|enemies|enemy|boss(?:es)?|shields?|"
+        r"armou?r|defen[cs]e|resistance)\b.{0,100}"
+        r"\b(?:pierce(?:d|s|ing)?|penetrat(?:e|es|ed|ing|ion))\b",
+        re.I,
+    ),
+)
+
 GENERAL_FACTUAL_QUESTION = re.compile(
     r"^(?:who|what|when|where|why|how|which|tell\s+me\s+about|explain|define|is|are|can|could|do|does|did|should|would|will|have|has|may|might)\b",
     re.I,
@@ -471,8 +498,22 @@ def is_interpersonal_banter(text: str) -> bool:
     return any(pattern.search(normalized) for pattern in INTERPERSONAL_BANTER_PATTERNS)
 
 
+def is_playful_phrase_request(text: str) -> bool:
+    """Recognize brief ara-ara vocal-performance requests."""
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.fullmatch(normalized) for pattern in PLAYFUL_PHRASE_PATTERNS)
+
+
+def is_gameplay_mechanics_message(text: str) -> bool:
+    """Recognize concise gameplay discussion about piercing and tankiness."""
+    normalized = _conversation_candidate(_normalize(text))
+    return any(pattern.search(normalized) for pattern in GAMEPLAY_MECHANIC_PATTERNS)
+
+
 def is_social_message(text: str) -> bool:
     normalized = _conversation_candidate(_normalize(text))
+    if is_playful_phrase_request(normalized):
+        return True
     if is_contextual_factual_followup(normalized):
         return True
     if is_interpersonal_banter(normalized):
@@ -534,6 +575,12 @@ def is_hades_scope_allowed(
         return False
     if is_specialist_request(normalized):
         return False
+
+    # Specific gameplay shorthand is allowed through the strict-topic gate.
+    # Use conversation context when possible; ask for clarification instead of
+    # inventing a missing subject or game mechanic.
+    if is_gameplay_mechanics_message(normalized):
+        return True
 
     # Example: "Can be pierced though for tanky gears." The subject is omitted,
     # and "though" marks a continuation rather than a fresh standalone query.
