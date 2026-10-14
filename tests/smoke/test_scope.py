@@ -83,7 +83,8 @@ def test_contextual_social_messages_are_not_misclassified_as_off_topic():
 def test_personal_preference_choices_are_allowed_but_unrelated_specialist_choices_are_not():
     from hades_bot.core.scope import is_social_message
 
-    for message in ("Beer or wine?", "Tea or coffee?", "Cats or dogs?", "Beach or mountains?"):
+    for message in ("Beer or wine?", "Tea or coffee?", "Cats or dogs?", "Beach or mountains?",
+                    "Steak or pasta?", "steak or pasta", "Pizza or sushi?", "Ramen versus adobo?"):
         assert is_social_message(message), message
         assert is_hades_scope_allowed(message), message
 
