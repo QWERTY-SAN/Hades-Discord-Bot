@@ -1,4 +1,22 @@
-from hades_bot.core.scope import is_hades_scope_allowed, scope_block_reason
+from hades_bot.core.scope import is_contextual_factual_followup, is_hades_scope_allowed, scope_block_reason
+
+
+def test_playful_vocal_requests_and_clipped_gameplay_followups_are_allowed():
+    from hades_bot.ai.fanservice import fanservice_categories
+    from hades_bot.core.conversation import conversation_mode, conversation_signals
+
+    for message in ("Can u say ara-ara?", "Can you say ara ara?", "say ara-ara"):
+        assert "voice_and_eye_contact" in fanservice_categories(message), message
+        assert is_hades_scope_allowed(message), message
+        assert conversation_mode(message) == "flirtation", (message, conversation_mode(message))
+
+    fragment = "Can be pierced though for tanky gears"
+    assert is_contextual_factual_followup(fragment)
+    assert is_hades_scope_allowed(fragment), fragment
+    assert is_hades_scope_allowed(fragment, has_history=True), fragment
+    assert conversation_mode(fragment) == "continuation"
+    assert "continuation" in conversation_signals(fragment)
+    assert scope_block_reason(fragment) == ""
 
 
 def test_hard_off_topic_stays_blocked():
