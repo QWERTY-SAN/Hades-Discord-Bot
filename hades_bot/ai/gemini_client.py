@@ -395,7 +395,8 @@ class GeminiService:
             f"CONTINUITY GUIDANCE: {continuity_guidance}\n"
             f"THREAD GUIDANCE: {thread_guidance}\n"
             f"FAN-SERVICE GUIDANCE: {guidance}\n"
-            f"MODE GUIDANCE: {mode_guidance}\n"            f"{_SPECIAL_ACKNOWLEDGEMENT_GUIDANCE + chr(10) if acknowledgement_reaction else ''}"
+            f"MODE GUIDANCE: {mode_guidance}\n"
+            f"{_SPECIAL_ACKNOWLEDGEMENT_GUIDANCE + chr(10) if acknowledgement_reaction else ''}"
 
             f"{_CHARACTER_CALIBRATION}\n"
             "CONVERSATIONAL PRIORITY: The newest message is a turn in an ongoing dialogue. Use speaker labels and recent context to resolve pronouns, slang follow-ups, short clarifications, corrections, callbacks, and topic pivots.\n"
