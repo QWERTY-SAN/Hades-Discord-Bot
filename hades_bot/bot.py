@@ -21,9 +21,82 @@ from .web import record_runtime_metric, set_runtime_error, update_discord_state
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
 
-# Auto-react to a simple "ok" from this specific user without requiring a mention.
+# Automatically react to short acknowledgements from this specific user.
+# Only exact acknowledgement messages match; ordinary sentences are left alone.
 SPECIAL_OK_USER_ID = 1387001030797164618
-SPECIAL_OK_RESPONSE = "Mm? Just ‘ok’? How terribly stingy of you, little lamb. I was hoping for a little more attention than that. 🌙"
+SPECIAL_ACKNOWLEDGEMENT_RESPONSES = {
+    "ok": (
+        "Mm? Just ‘ok’? How terribly stingy of you, little lamb. I was hoping for a little more attention than that. 🌙",
+        "One tiny ‘ok’ and you think you may leave me hanging? How cruel. Come, give me a little more than that. 😏",
+        "How concise. Are you being obedient, or are you simply trying to make me curious? ✨",
+        "That is all? Hm. I suppose I shall have to coax a proper answer out of you myself. 🎭",
+        "Very well, little lamb. I shall accept that little crumb of a reply—for now. 🖤",
+    ),
+    "okay": (
+        "‘Okay,’ is it? Good. Then stay a little longer and keep me company. 🌙",
+        "How agreeable. I do like it when you make things easy for me, little lamb. 😌",
+        "Mm, accepted. Though I still think you could spare me a few more words. ✨",
+        "There we are. See? You can be charming when you try. 💋",
+    ),
+    "okey": (
+        "Okey? How cute. I shall pretend that was deliberate, little lamb. 😏",
+        "Accepted—with that curious little spelling and all. Now, don't vanish on me. 🌙",
+    ),
+    "k": (
+        "Oh, how eloquent. One whole letter? You are spoiling me. 🙄🌙",
+        "A single ‘k.’ Truly, you leave me breathless. Try again, little lamb. 😏",
+        "So miserly with your words. Am I going to have to earn a longer reply? 🎭",
+    ),
+    "kk": (
+        "Two whole letters! Such generosity. I am positively overwhelmed, little lamb. ✨",
+        "Kk, then. I'll let you get away with that—for now. 🖤",
+    ),
+    "alright": (
+        "Good. Then we understand each other, little lamb. Stay close. 🌙",
+        "Alright, alright. No need to look so serious; I was only teasing you. 😌",
+        "Excellent. I shall remember that agreement. Don't make me ask twice. 😉",
+    ),
+    "all right": (
+        "All right, then. I knew you would come around eventually. 🌙",
+        "Accepted. Now, let us see whether you can keep that same energy, little lamb. 😏",
+    ),
+    "fine": (
+        "‘Fine’? What a terribly unconvincing little answer. You can do better than that. 🙃",
+        "Fine, hm? I'll take it—but I reserve the right to tease you about that tone. 🌙",
+        "Very well. I won't pry… this time. You know where to find me, little lamb. 🖤",
+    ),
+    "sure": (
+        "I'll take that as a yes, little lamb. You do make agreement look rather adorable. 😏",
+        "Sure? How mysterious. I shall consider that a promise. 🌙",
+        "Excellent. I do enjoy having your cooperation. ✨",
+    ),
+    "yes": (
+        "Oh? A direct answer. How refreshing—and rather pleasing. 💋",
+        "Good. I like that confidence, little lamb. Don't lose it now. 🌙",
+        "Then it's settled. Come, don't keep me waiting. 😉",
+    ),
+    "yep": (
+        "That will do. Short, sweet, and finally a little convincing. ✨",
+        "Yep, indeed. Look at you, agreeing with me so readily. 😏",
+    ),
+    "yup": (
+        "Yup? Cute. I'll allow it, little lamb. 🌙",
+        "Very well. I shall count that as your official answer. 🎭",
+    ),
+    "got it": (
+        "Good. I knew you could keep up. Now, don't make me repeat myself. 😉",
+        "Excellent. Then we're on the same page, little lamb. 🌙",
+        "As long as you remember, that's all I ask. Well… almost all. 😏",
+    ),
+    "understood": (
+        "Splendid. A diligent little lamb after all. ✨",
+        "Good. I appreciate someone who understands the first time. 🌙",
+    ),
+    "noted": (
+        "Noted? How formal. Must I address you as ‘Administrator’ in return? 🎭",
+        "Very well—filed away in that clever head of yours, I hope. 🌙",
+    ),
+}
 
 SCOPE_FALLBACKS = (
     "Mm. That is not quite a subject I care to entertain, Administrator. Bring me something from Aether Gazer—or simply talk to me.",
@@ -253,15 +326,18 @@ class HadesBot(commands.Bot):
         if content.startswith(SETTINGS.bot_prefix):
             return
 
-        # Special case: this user can prompt a Hades reaction by saying exactly "ok".
-        # casefold() makes it case-insensitive; other users and other messages are unaffected.
-        if message.author.id == SPECIAL_OK_USER_ID and content.strip().casefold() == "ok":
-            await message.reply(
-                SPECIAL_OK_RESPONSE,
-                mention_author=False,
-                allowed_mentions=ALLOWED_MENTIONS,
-            )
-            return
+        # Special case: react to this user's short acknowledgements without a mention.
+        # Ignore case and trailing punctuation, but require the entire message to match.
+        if message.author.id == SPECIAL_OK_USER_ID:
+            acknowledgement = content.strip().casefold().strip(" \\t\\r\\n.!?…")
+            response_pool = SPECIAL_ACKNOWLEDGEMENT_RESPONSES.get(acknowledgement)
+            if response_pool:
+                await message.reply(
+                    self._rng.choice(response_pool),
+                    mention_author=False,
+                    allowed_mentions=ALLOWED_MENTIONS,
+                )
+                return
 
         # This one keyword trigger is intentionally limited to the requested channel.
         # A separate cooldown prevents repeated phrase spam without using the normal
