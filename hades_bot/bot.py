@@ -21,29 +21,9 @@ from .web import record_runtime_metric, set_runtime_error, update_discord_state
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
 
-# Automatically react to short acknowledgements from this specific user.
-# Only exact acknowledgement messages match; ordinary sentences are left alone.
+# Automatically react to short acknowledgements from this specific user using Gemini.
 SPECIAL_OK_USER_ID = 1387001030797164618
-SPECIAL_ACKNOWLEDGEMENT_RESPONSES = {
-    "ok": (
-        "Mm? Just ‘ok’? How terribly stingy of you, little lamb. I was hoping for a little more attention than that. 🌙",
-        "One tiny ‘ok’ and you think you may leave me hanging? How cruel. Come, give me a little more than that. 😏",
-        "How concise. Are you being obedient, or are you simply trying to make me curious? ✨",
-        "That is all? Hm. I suppose I shall have to coax a proper answer out of you myself. 🎭",
-        "Very well, little lamb. I shall accept that little crumb of a reply—for now. 🖤",
-    ),
-    "k": (
-        "Oh, how eloquent. One whole letter? You are spoiling me. 🙄🌙",
-        "A single ‘k.’ Truly, you leave me breathless. Try again, little lamb. 😏",
-        "So miserly with your words. Am I going to have to earn a longer reply? 🎭",
-    ),
-    "okay": (
-        "‘Okay,’ is it? Good. Then stay a little longer and keep me company. 🌙",
-        "How agreeable. I do like it when you make things easy for me, little lamb. 😌",
-        "Mm, accepted. Though I still think you could spare me a few more words. ✨",
-        "There we are. See? You can be charming when you try. 💋",
-    ),
-}
+SPECIAL_ACKNOWLEDGEMENTS = frozenset({"ok", "k", "okay"})
 
 SCOPE_FALLBACKS = (
     "Mm. That is not quite a subject I care to entertain, Administrator. Bring me something from Aether Gazer—or simply talk to me.",
@@ -140,6 +120,7 @@ class HadesBot(commands.Bot):
         *,
         direct_reply: bool = False,
         support_trigger: bool = False,
+        acknowledgement_trigger: bool = False,
     ) -> None:
         record_runtime_metric("messages_seen")
         content = content.strip()
@@ -160,7 +141,7 @@ class HadesBot(commands.Bot):
 
         key = self.conversation_key(message)
         has_history = await self.hades_chat.memory.has_history(key)
-        if not support_trigger and not is_hades_scope_allowed(
+        if not (support_trigger or acknowledgement_trigger) and not is_hades_scope_allowed(
             content, has_history=has_history, direct_reply=direct_reply
         ):
             record_runtime_metric("scope_blocks")
@@ -183,7 +164,12 @@ class HadesBot(commands.Bot):
         record_runtime_metric("ai_requests")
         try:
             async with message.channel.typing():
-                reply = await self.hades_chat.ask(key, content)
+                if acknowledgement_trigger:
+                    reply = await self.hades_chat.ask(
+                        key, content, acknowledgement_reaction=True
+                    )
+                else:
+                    reply = await self.hades_chat.ask(key, content)
             reply = sanitize_model_output(reply)
             if not reply:
                 record_runtime_metric("ai_failures")
@@ -273,16 +259,16 @@ class HadesBot(commands.Bot):
         if content.startswith(SETTINGS.bot_prefix):
             return
 
-        # Special case: react to this user's short acknowledgements without a mention.
-        # Ignore case and trailing punctuation, but require the entire message to match.
+        # Special case: let Gemini react to this user's short acknowledgements.
+        # Only exact "ok", "k", and "okay" messages match after normalization.
         if message.author.id == SPECIAL_OK_USER_ID:
-            acknowledgement = content.strip().casefold().strip(" \t\r\n.!?…")
-            response_pool = SPECIAL_ACKNOWLEDGEMENT_RESPONSES.get(acknowledgement)
-            if response_pool:
-                await message.reply(
-                    self._rng.choice(response_pool),
-                    mention_author=False,
-                    allowed_mentions=ALLOWED_MENTIONS,
+            acknowledgement = content.strip().casefold().strip(" \\t\\r\\n.!?…")
+            if acknowledgement in SPECIAL_ACKNOWLEDGEMENTS:
+                await self.handle_ai_message(
+                    message,
+                    content.strip(),
+                    trigger="special_acknowledgement",
+                    acknowledgement_trigger=True,
                 )
                 return
 
