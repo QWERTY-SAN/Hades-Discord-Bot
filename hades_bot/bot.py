@@ -340,6 +340,33 @@ async def reset_command(ctx: commands.Context) -> None:
     await ctx.reply("*Hades calmly gathers the strings.* There. Your conversation is forgotten. 🪢", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
+@bot.command(name="clearall", aliases=["resetall"])
+async def clear_all_memory_command(ctx: commands.Context) -> None:
+    # This clears memory across every server and DM, so only the bot owner may run it.
+    if ctx.guild is None:
+        await ctx.reply(
+            "Use this command in a server, not in DMs.",
+            mention_author=False,
+            allowed_mentions=ALLOWED_MENTIONS,
+        )
+        return
+    if not await bot.is_owner(ctx.author):
+        await ctx.reply(
+            "Only the bot owner may clear Hades's global conversation memory.",
+            mention_author=False,
+            allowed_mentions=ALLOWED_MENTIONS,
+        )
+        return
+
+    await bot.hades_chat.memory.clear_all()
+    await ctx.reply(
+        "Global conversation memory cleared. Hades's active chat history across all servers and DMs has been erased. "
+        "Cooldowns and configuration were not changed.",
+        mention_author=False,
+        allowed_mentions=ALLOWED_MENTIONS,
+    )
+
+
 @bot.command(name="memory")
 async def memory_command(ctx: commands.Context) -> None:
     count = await bot.hades_chat.memory.message_count(bot.conversation_key(ctx.message))
@@ -456,7 +483,8 @@ async def help_command(ctx: commands.Context) -> None:
     text = (
         f"`{p}hades <message>` — Talk to Hades\n"
         f"`{p}ask <message>` — Same as hades\n"
-        f"`{p}reset` / `{p}forget` / `{p}clear` — Clear conversation\n"
+        f"`{p}reset` / `{p}forget` / `{p}clear` — Clear your conversation\n"
+        f"`{p}clearall` / `{p}resetall` — Bot owner: clear all conversation memory globally\n"
         f"`{p}memory` — Show memory count\n"
         f"`{p}gif` — Send a Hades GIF\n"
         f"`{p}image` — Send a Hades image\n"
