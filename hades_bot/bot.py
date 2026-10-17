@@ -21,6 +21,10 @@ from .web import record_runtime_metric, set_runtime_error, update_discord_state
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
 
+# Auto-react to a simple "ok" from this specific user without requiring a mention.
+SPECIAL_OK_USER_ID = 1387001030797164618
+SPECIAL_OK_RESPONSE = "Mm? Just ‘ok’? How terribly stingy of you, little lamb. I was hoping for a little more attention than that. 🌙"
+
 SCOPE_FALLBACKS = (
     "Mm. That is not quite a subject I care to entertain, Administrator. Bring me something from Aether Gazer—or simply talk to me.",
     "That topic is not one I intend to pursue, little lamb. Try an Aether Gazer question, or ask me something more personal.",
@@ -247,6 +251,16 @@ class HadesBot(commands.Bot):
         await self.process_commands(message)
         content = message.content or ""
         if content.startswith(SETTINGS.bot_prefix):
+            return
+
+        # Special case: this user can prompt a Hades reaction by saying exactly "ok".
+        # casefold() makes it case-insensitive; other users and other messages are unaffected.
+        if message.author.id == SPECIAL_OK_USER_ID and content.strip().casefold() == "ok":
+            await message.reply(
+                SPECIAL_OK_RESPONSE,
+                mention_author=False,
+                allowed_mentions=ALLOWED_MENTIONS,
+            )
             return
 
         # This one keyword trigger is intentionally limited to the requested channel.
