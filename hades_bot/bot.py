@@ -276,7 +276,7 @@ class HadesBot(commands.Bot):
         # Special case: react to this user's short acknowledgements without a mention.
         # Ignore case and trailing punctuation, but require the entire message to match.
         if message.author.id == SPECIAL_OK_USER_ID:
-            acknowledgement = content.strip().casefold().strip(" \\t\\r\\n.!?…")
+            acknowledgement = content.strip().casefold().strip(" \t\r\n.!?…")
             response_pool = SPECIAL_ACKNOWLEDGEMENT_RESPONSES.get(acknowledgement)
             if response_pool:
                 await message.reply(
