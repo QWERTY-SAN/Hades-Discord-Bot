@@ -25,7 +25,13 @@ class HadesChat:
     def max_concurrent_requests(self) -> int:
         return self._max_concurrent_requests
 
-    async def ask(self, key: str, user_message: str) -> str:
+    async def ask(
+        self,
+        key: str,
+        user_message: str,
+        *,
+        acknowledgement_reaction: bool = False,
+    ) -> str:
         try:
             await asyncio.wait_for(self._semaphore.acquire(), timeout=SETTINGS.max_queue_wait)
         except asyncio.TimeoutError as exc:
@@ -36,7 +42,12 @@ class HadesChat:
         try:
             async with self.memory.session(key) as session:
                 history = session.history
-                reply = await self.gemini.generate(history, user_message)
+                if acknowledgement_reaction:
+                    reply = await self.gemini.generate(
+                        history, user_message, acknowledgement_reaction=True
+                    )
+                else:
+                    reply = await self.gemini.generate(history, user_message)
                 context_text = "\n".join(
                     item.get("content", "")
                     for item in history
