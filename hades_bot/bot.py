@@ -262,7 +262,7 @@ class HadesBot(commands.Bot):
         # Special case: let Gemini react to this user's short acknowledgements.
         # Only exact "ok", "k", and "okay" messages match after normalization.
         if message.author.id == SPECIAL_OK_USER_ID:
-            acknowledgement = content.strip().casefold().strip(" \\t\\r\\n.!?…")
+            acknowledgement = content.strip().casefold().strip(" \t\r\n.!?…")
             if acknowledgement in SPECIAL_ACKNOWLEDGEMENTS:
                 await self.handle_ai_message(
                     message,
