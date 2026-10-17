@@ -90,5 +90,28 @@ class PersonaContinuityTests(unittest.TestCase):
         self.assertIn("little lamb", HADES_SYSTEM_PROMPT)
 
 
+class SpecialAcknowledgementPromptTests(unittest.TestCase):
+    def test_targeted_acknowledgements_use_fresh_gemini_guidance(self):
+        from hades_bot.ai.gemini_client import GeminiService
+
+        for message in ("ok", "k", "okay"):
+            with self.subTest(message=message):
+                prompt = GeminiService._build_prompt_context(
+                    [],
+                    message,
+                    acknowledgement_reaction=True,
+                )
+                self.assertIn("CONVERSATION MODE: acknowledgement", prompt)
+                self.assertIn("SPECIAL ACKNOWLEDGEMENT REACTION", prompt)
+                self.assertIn("Generate a fresh response in Hades's own voice", prompt)
+                self.assertIn("Keep it brief", prompt)
+
+    def test_special_guidance_is_not_added_to_ordinary_ai_turns(self):
+        from hades_bot.ai.gemini_client import GeminiService
+
+        prompt = GeminiService._build_prompt_context([], "ok")
+        self.assertNotIn("SPECIAL ACKNOWLEDGEMENT REACTION", prompt)
+
+
 if __name__ == "__main__":
     unittest.main()
