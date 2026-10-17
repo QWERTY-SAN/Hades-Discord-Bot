@@ -254,6 +254,14 @@ class HadesBot(commands.Bot):
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
+
+        # This account must interact with Hades in server channels, not DMs.
+        # Ignore its DMs entirely, including prefix commands.
+        if message.author.id == SPECIAL_OK_USER_ID and isinstance(
+            message.channel, (discord.DMChannel, discord.GroupChannel)
+        ):
+            return
+
         await self.process_commands(message)
         content = message.content or ""
         if content.startswith(SETTINGS.bot_prefix):
