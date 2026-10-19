@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-import asyncio
-import logging
 import random
 import re
-from types import SimpleNamespace
 from typing import Iterable
 
-from groq import AsyncGroq
-
-from google import genai
-from google.genai import errors, types
+from google.genai import types
 
 from ..config import SETTINGS
 from ..core.conversation import (
@@ -27,7 +21,7 @@ from .fanservice import fanservice_guidance
 from .persona import HADES_SYSTEM_PROMPT
 
 
-logger = logging.getLogger("hades-bot.gemini")
+from .providers import AIProviderRouter, ProviderChainError
 
 # Keep the visual language recognizably Hades, while selecting accents by the
 # meaning and tone of the reply instead of appending a random signature every time.
@@ -174,100 +168,33 @@ class AIServiceError(RuntimeError):
 
 
 class GeminiService:
+    """Build Hades prompts and delegate network calls to isolated provider adapters.
+
+    The historical class name is kept for compatibility with existing imports.
+    """
+
     def __init__(self) -> None:
-        retry_options = types.HttpRetryOptions(
-            attempts=max(1, min(2, SETTINGS.max_retries + 1)),
-            initial_delay=0.5,
-            max_delay=2.0,
-            exp_base=2.0,
-            jitter=0.5,
-            http_status_codes=[408, 429, 500, 502, 503, 504],
-        )
-        self.client = genai.Client(
-            api_key=SETTINGS.gemini_api_key,
-            http_options=types.HttpOptions(
-                timeout=int(SETTINGS.request_timeout * 1000),
-                retry_options=retry_options,
-            ),
-        )
-
-
-        # Groq is required by configuration and is always available as the final provider.
-        self.groq_client = AsyncGroq(
-            api_key=SETTINGS.groq_api_key,
-            timeout=SETTINGS.request_timeout,
-            max_retries=1,
-        )
-        self.last_successful_model: str | None = None
-        self.fallback_count = 0
-        self.groq_fallback_count = 0
+        self.provider_router = AIProviderRouter()
 
     def model_hierarchy(self) -> tuple[str, ...]:
-        """Return the configured primary followed by unique fallback models."""
-        return tuple(dict.fromkeys(
-            model.strip()
-            for model in (SETTINGS.gemini_model, *SETTINGS.gemini_fallback_models)
-            if model and model.strip()
-        ))
+        """Return the Google model IDs only."""
+        return self.provider_router.model_hierarchy()
 
-    @staticmethod
-    def _status_code(exc: Exception) -> int | None:
-        value = getattr(exc, "status_code", None)
-        if value is None:
-            value = getattr(exc, "code", None)
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return None
+    def provider_chain(self) -> tuple[str, ...]:
+        """Return Gemini models followed by the Groq fallback."""
+        return self.provider_router.provider_chain()
 
-    @classmethod
-    def _can_fail_over(cls, exc: Exception) -> bool:
-        status = cls._status_code(exc)
-        return (
-            isinstance(exc, (errors.ServerError, asyncio.TimeoutError, TimeoutError))
-            or status in {404, 408, 429, 500, 502, 503, 504}
-        )
+    @property
+    def last_successful_model(self) -> str | None:
+        return self.provider_router.last_successful_model
 
-    async def _request_once(
-        self,
-        model: str,
-        contents: list[types.Content],
-        config: types.GenerateContentConfig,
-    ):
-        timeout = min(SETTINGS.request_timeout, SETTINGS.gemini_model_timeout_seconds)
-        return await asyncio.wait_for(
-            self.client.aio.models.generate_content(
-                model=model,
-                contents=contents,
-                config=config,
-            ),
-            timeout=timeout,
-        )
+    @property
+    def fallback_count(self) -> int:
+        return self.provider_router.fallback_count
 
-    async def _request_model(
-        self,
-        model: str,
-        contents: list[types.Content],
-        config: types.GenerateContentConfig,
-        fallback_contents: list[types.Content] | None,
-        fallback_config: types.GenerateContentConfig | None,
-    ):
-        try:
-            return await self._request_once(model, contents, config)
-        except errors.ClientError as exc:
-            if (
-                self._status_code(exc) == 400
-                and fallback_contents is not None
-                and fallback_config is not None
-            ):
-                logger.warning(
-                    "Gemini rejected URL Context on model %s; retrying without tools.",
-                    model,
-                )
-                return await self._request_once(
-                    model, fallback_contents, fallback_config
-                )
-            raise
+    @property
+    def groq_fallback_count(self) -> int:
+        return self.provider_router.groq_fallback_count
 
     async def _generate_with_model_hierarchy(
         self,
@@ -277,111 +204,15 @@ class GeminiService:
         fallback_contents: list[types.Content] | None = None,
         fallback_config: types.GenerateContentConfig | None = None,
     ):
-        models = self.model_hierarchy()
-        failures: list[Exception] = []
-        failure_statuses: list[int | None] = []
-
-        for index, model in enumerate(models):
-            try:
-                response = await self._request_model(
-                    model, contents, config, fallback_contents, fallback_config
-                )
-            except Exception as exc:
-                status = self._status_code(exc)
-                failures.append(exc)
-                failure_statuses.append(status)
-
-                # The same Gemini credential is shared by both models, so an
-                # authentication failure goes straight to the separate Groq provider.
-                if status in {401, 403}:
-                    logger.warning(
-                        "Gemini credentials were rejected (%s); switching to required Groq fallback.",
-                        status,
-                    )
-                    break
-
-                if self._can_fail_over(exc):
-                    error_kind = status or type(exc).__name__
-                else:
-                    error_kind = f"non-retryable {status or type(exc).__name__}"
-                if index + 1 < len(models):
-                    logger.warning(
-                        "Gemini model %s failed (%s); trying fallback model %s.",
-                        model,
-                        error_kind,
-                        models[index + 1],
-                    )
-                else:
-                    logger.warning(
-                        "Gemini model %s failed (%s); proceeding to required Groq fallback.",
-                        model,
-                        error_kind,
-                    )
-            else:
-                if model != SETTINGS.gemini_model:
-                    self.fallback_count += 1
-                    logger.warning(
-                        "Gemini fallback succeeded: primary=%s selected=%s",
-                        SETTINGS.gemini_model,
-                        model,
-                    )
-                self.last_successful_model = model
-                return response
-
-        last_error = failures[-1] if failures else None
-        last_status = failure_statuses[-1] if failure_statuses else None
-        if failure_statuses and all(status == 404 for status in failure_statuses):
-            message = (
-                "None of the configured Gemini models is available. "
-                "Check GEMINI_MODEL and GEMINI_FALLBACK_MODELS."
-            )
-        elif last_status == 429:
-            message = "Gemini is rate-limiting the configured models. Try again shortly."
-        else:
-            message = (
-                "Gemini is temporarily unavailable across the configured models. "
-                "Try again shortly."
-            )
-        # Gemini remains primary. If its model hierarchy cannot answer, use Groq
-        # with the same Hades system prompt and conversation context.
         try:
-            groq_messages = [
-                {"role": "system", "content": config.system_instruction or ""},
-            ]
-            for item in contents:
-                role = "assistant" if getattr(item, "role", "user") == "model" else "user"
-                body = "\n".join(
-                    part.text for part in (getattr(item, "parts", None) or [])
-                    if getattr(part, "text", None)
-                ).strip()
-                if body:
-                    groq_messages.append({"role": role, "content": body})
-            groq_response = await asyncio.wait_for(
-                self.groq_client.chat.completions.create(
-                    model=SETTINGS.groq_model,
-                    messages=groq_messages,
-                    max_tokens=SETTINGS.max_output_tokens,
-                    temperature=0.8,
-                ),
-                timeout=SETTINGS.gemini_model_timeout_seconds,
+            return await self.provider_router.generate(
+                contents=contents,
+                config=config,
+                fallback_contents=fallback_contents,
+                fallback_config=fallback_config,
             )
-            groq_text = (
-                groq_response.choices[0].message.content
-                if groq_response.choices
-                else None
-            )
-            if groq_text and groq_text.strip():
-                self.groq_fallback_count += 1
-                self.last_successful_model = f"groq:{SETTINGS.groq_model}"
-                logger.warning(
-                    "Groq fallback succeeded after Gemini failure: model=%s",
-                    SETTINGS.groq_model,
-                )
-                return SimpleNamespace(text=groq_text)
-            logger.warning("Groq fallback returned an empty response.")
-        except Exception as exc:
-            logger.warning("Groq fallback failed: %s", type(exc).__name__)
-        raise AIServiceError(message, last_status) from last_error
+        except ProviderChainError as exc:
+            raise AIServiceError(exc.user_message, exc.status_code) from exc
 
     @staticmethod
     def _speaker_labeled(history: Iterable[dict[str, str]], limit: int = 8) -> str:
@@ -629,4 +460,4 @@ class GeminiService:
         return _add_natural_emoji(text) if SETTINGS.emojis_enabled else text
 
     async def close(self) -> None:
-        await self.client.aio.aclose()
+        await self.provider_router.close()
