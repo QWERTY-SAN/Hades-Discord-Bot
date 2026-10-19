@@ -294,42 +294,13 @@ The knowledge layer distinguishes stable lore from dated gameplay data. It does 
 - Ancient Shadow and Crisis Analysis are represented as version-sensitive event/challenge content.
 
 
-## Repository structure
+## Code organization
 
-The repository is split by responsibility so knowledge updates and runtime changes stay isolated:
-
-```text
-Hades-Discord-Bot/
-├── hades_bot/
-│   ├── bot.py
-│   ├── config.py
-│   ├── core/       # memory, scope, shared utilities
-│   ├── ai/         # Gemini, chat orchestration, persona
-│   ├── knowledge/  # local knowledge loading and retrieval
-│   └── media/      # external GIF list and media handling
-├── data/aether_gazer/
-│   ├── game_knowledge.json
-│   ├── terminology.json
-│   ├── source_policy.json
-│   ├── sources.json
-│   └── characters/
-├── docs/
-└── tests/smoke/
-```
+The runtime is split by responsibility rather than kept in one large script: Discord routing lives in `hades_bot/bot.py`; AI and persona logic in `hades_bot/ai/`; memory, scope, and conversation utilities in `hades_bot/core/`; lore retrieval in `hades_bot/knowledge/`; and media handling in `hades_bot/media/`. Structured game facts stay under `data/aether_gazer/`. See the [architecture guide](docs/architecture.md) for the full layout.
 
 The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
-## Automatic media
 
-- Bumped the application release to `2.0.0` so the runtime version, README, and release state stay aligned.
-- Hardened Render deployment with an explicit free plan and a build filter so documentation-only changes do not unnecessarily rebuild the bot.
-- Kept After CI Checks Pass deployment enabled so failed GitHub Actions checks do not reach Render.
-- Removed duplicate disconnect-state handling and improved command-error wording.
-- Sanitized generated GIF URLs and raw Discord mention markup so model output cannot accidentally expose media links or mention markup as visible text.
-- Kept the Gemini 3.5 Flash-Lite model as the default; it is currently a GA model and remains the low-cost/high-throughput choice for this bot.
-- Preserved dynamic fan-service behavior: reaction lanes are generated from the current message and recent context rather than a fixed response bank.
-
-### Automatic media
 
 When Hades is mentioned **or** the Administrator uses `h!hades <message>` / `h!ask <message>`, the bot may randomly attach **one** automatic media type: a GIF **or** an image. It never sends both from the same automatic trigger. Plain replies to Hades stay media-free, keeping short follow-ups less noisy. The GIF and image libraries remain separate, and automatic media uses a shared per-user/channel cooldown. The selected media is placed inside the same embed as Hades' response, so no second media message is sent. The manual `h!gif` and `h!image` commands use their own configured cooldowns. Recent-media history, metrics, and automatic cooldowns are recorded only after a successful Discord send.
 

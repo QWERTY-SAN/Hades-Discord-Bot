@@ -20,3 +20,12 @@ assert "content=entry.url" not in text
 assert "embed.set_image(url=url)" in text
 
 print("Structure smoke checks passed")
+
+TESTS = ROOT / "tests"
+assert (ROOT / "docs" / "README.md").exists(), "documentation index is missing"
+assert (TESTS / "smoke").is_dir(), "executable smoke checks directory is missing"
+assert (TESTS / "unit").is_dir(), "pytest suite directory is missing"
+assert list((TESTS / "unit").glob("test_*.py")), "pytest tests are missing"
+misplaced_pytest = list((TESTS / "smoke").glob("test_*.py"))
+assert not misplaced_pytest, f"pytest tests should live under tests/unit: {misplaced_pytest}"
+
