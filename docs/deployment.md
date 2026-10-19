@@ -1,142 +1,91 @@
-# Deployment
+# Deployment and local development
 
-## Render
+## Render deployment
 
-This repository deploys as a Render Web Service because the bot also exposes lightweight HTTP health endpoints.
+This project runs as a Render Web Service because it exposes lightweight health endpoints in addition to maintaining the Discord gateway connection.
 
-Build command:
+| Setting | Value |
+|---|---|
+| Build command | `pip install -r requirements.txt` |
+| Start command | `python main.py` |
+| Health check | `/health` |
+| Readiness check | `/ready` |
+| Deploy policy | `autoDeployTrigger: checksPass` |
 
-```text
-pip install -r requirements.txt
-```
+The existing Render service must be connected to and synced with this repository's `render.yaml` for Blueprint changes to apply.
 
-Start command:
+## Required secrets
 
-```text
-python main.py
-```
+Configure all three as secret environment variables in Render and in a local `.env` file:
 
-Health check:
+- `DISCORD_TOKEN` — Discord bot token.
+- `GEMINI_API_KEY` — primary and secondary Gemini model access.
+- `GROQ_API_KEY` — required final provider if Gemini 3.5 and Gemini 3.1 fail.
 
-```text
-/health
-```
+The bot deliberately fails startup if one of these required keys is missing. Do not commit real tokens or API keys. `.env.example` contains placeholders only.
 
-Readiness check:
-
-```text
-/ready
-```
-
-The Blueprint uses:
-
-```yaml
-autoDeployTrigger: checksPass
-```
-
-That means Render can deploy the commit after the GitHub Actions checks pass. The existing Render service must be attached to/synced with this Blueprint for changes in `render.yaml` to take effect.
-
-## Required Render variables
-
-Store these as Render environment secrets:
+## AI model order
 
 ```text
-DISCORD_TOKEN
-GEMINI_API_KEY
+1. gemini-3.5-flash-lite
+2. gemini-3.1-flash-lite
+3. Groq: llama-3.3-70b-versatile
 ```
 
-The recommended runtime configuration is:
+Relevant settings:
 
-```text
+```dotenv
 GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_FALLBACK_MODELS=gemini-3.1-flash-lite
+GEMINI_MODEL_TIMEOUT_SECONDS=20
 GEMINI_THINKING_LEVEL=minimal
-BOT_PREFIX=h!
-STRICT_AETHER_TOPIC=true
-EMOJIS_ENABLED=true
-LIVE_SOURCE_REFRESH=true
-LIVE_SOURCE_MAX_URLS=3
-MAX_HISTORY=16
-MAX_OUTPUT_TOKENS=768
-MAX_INPUT_CHARS=6000
-KNOWLEDGE_CONTEXT_MAX_CHARS=9000
-USER_COOLDOWN=2.0
-MAX_CONCURRENT_REQUESTS=3
-MAX_QUEUE_WAIT=20
-REQUEST_TIMEOUT=45
-MAX_RETRIES=3
-MEMORY_TTL_SECONDS=21600
-MAX_CONVERSATIONS=500
-MEMORY_PRUNE_INTERVAL=900
-COOLDOWN_PRUNE_INTERVAL=3600
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
-Do not put real tokens or API keys in GitHub. `.env.example` contains placeholders only.
+The Gemini model allowlist does not determine a Google project's billing tier. Check the project's billing tier and quotas separately.
+
+## Local development (Windows)
+
+From the repository root, open Command Prompt or PowerShell and run:
+
+```bat
+py -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt pytest
+copy .env.example .env
+```
+
+Edit `.env` and replace the placeholder values for `DISCORD_TOKEN`, `GEMINI_API_KEY`, and `GROQ_API_KEY`. Then launch the bot:
+
+```bat
+.venv\Scripts\python.exe main.py
+```
+
+To run the checks locally:
+
+```bat
+.venv\Scripts\python.exe -m compileall -q .
+.venv\Scripts\python.exe tests\smoke\render_startup_smoke.py
+.venv\Scripts\python.exe -m pytest -q tests\unit
+```
 
 ## Discord configuration
 
-Enable **Message Content Intent** for the Discord application. Without it, prefix commands and message text processing will not work reliably.
-
-The bot responds through:
-- `h!hades <message>`
-- `h!ask <message>`
-- direct mentions
-- DMs
-- replies to Hades messages
+Enable **Message Content Intent** in the Discord Developer Portal. The bot responds to `h!hades <message>`, `h!ask <message>`, direct mentions, DMs, and replies to Hades messages.
 
 ## Troubleshooting
 
-### Render builds successfully but exits immediately
+### The process exits during startup
 
-Check the start command first:
+Check that all three required environment secrets are present and non-empty, and that the Gemini model setting is on the approved model allowlist. A missing `GROQ_API_KEY` now causes a clear startup error because Groq is mandatory as the final fallback.
 
-```text
-python main.py
-```
+### The bot is online but does not read messages
 
-`main.py` validates secrets, starts the HTTP server, and then starts Discord.
-
-### Render health check fails
-
-Open:
-
-```text
-/health
-```
-
-A successful liveness response should return HTTP 200.
-
-`/ready` is intentionally stricter: it returns HTTP 503 until Discord has connected. Use it for diagnostics rather than the Render health check.
-
-### Bot is online but does not read messages
-
-Verify:
-1. Message Content Intent is enabled in the Discord Developer Portal.
-2. `DISCORD_TOKEN` is the current bot token.
-3. The command prefix remains `h!`.
-4. The bot has permission to View Channel, Send Messages, Embed Links, and Read Message History.
+Verify Message Content Intent is enabled, `DISCORD_TOKEN` is current, the command prefix remains `h!`, and the bot has View Channel, Send Messages, Embed Links, and Read Message History permissions.
 
 ### Gemini requests fail
 
-Verify:
-1. `GEMINI_API_KEY` is valid.
-2. `GEMINI_MODEL` matches a model available to that API key/project.
-3. The service is not being rate-limited.
-4. The Render logs do not show 401/403/404/429 errors.
+Check the Gemini API key, model availability, quota/rate limits, and Render logs for 401/403/404/429 responses. The bot attempts the next provider in the configured chain. If Gemini credentials are rejected, it does not waste time repeating the same failed credential with Gemini 3.1; it proceeds to Groq.
 
-Current/live questions can use Gemini URL Context when `LIVE_SOURCE_REFRESH=true`. If URL Context is rejected, the bot falls back to a normal Gemini request instead of crashing.
+### Render health check fails
 
-## Local run
-
-Install:
-
-```text
-python -m pip install -r requirements.txt pytest
-```
-
-Set `DISCORD_TOKEN` and `GEMINI_API_KEY`, then:
-
-```text
-python main.py
-```
-
-Local default HTTP port is 10000 unless `PORT` is set.
+Open `/health`; it should return HTTP 200. The `/ready` endpoint is stricter and returns HTTP 503 until Discord is connected, so use it for diagnostics rather than as the Render health check.

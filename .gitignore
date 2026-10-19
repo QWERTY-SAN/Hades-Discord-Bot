@@ -9,3 +9,12 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+
+# Additional local tooling / build output
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+build/
+dist/
+*.egg-info/

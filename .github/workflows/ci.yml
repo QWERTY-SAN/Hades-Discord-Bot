@@ -30,11 +30,12 @@ jobs:
       - name: Compile Python
         run: python -m compileall -q .
 
-      - name: Run smoke tests
+      - name: Run smoke and unit tests
         env:
           PYTHONPATH: .
           DISCORD_TOKEN: ci-test-token
           GEMINI_API_KEY: ci-test-key
+          GROQ_API_KEY: ci-test-groq-key
         run: |
           python tests/smoke/commands_smoke.py
           python tests/smoke/conversation_mode_smoke.py
@@ -49,4 +50,4 @@ jobs:
           python tests/smoke/scope_smoke.py
           python tests/smoke/static_smoke.py
           python tests/smoke/structure_smoke.py
-          python -m pytest -q tests/smoke/test_*.py
+          python -m pytest -q tests/unit

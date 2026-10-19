@@ -1,101 +1,89 @@
 # Architecture
 
+## Repository layout
+
 ```text
 Hades-Discord-Bot/
-├── main.py
-├── render.yaml
+├── .github/workflows/ci.yml   # compile, smoke checks, and pytest
+├── data/aether_gazer/         # versioned lore and gameplay snapshots
+├── docs/                      # architecture, deployment, and behavior guides
 ├── hades_bot/
-│   ├── bot.py
-│   ├── config.py
-│   ├── web.py
-│   ├── ai/
-│   │   ├── chat.py
-│   │   ├── fanservice.py
-│   │   ├── gemini_client.py
-│   │   └── persona.py
-│   ├── core/
-│   │   ├── conversation.py
-│   │   ├── memory.py
-│   │   ├── scope.py
-│   │   └── utils.py
-│   ├── knowledge/
-│   │   ├── character_data.py
-│   │   ├── live_sources.py
-│   │   └── lore.py
-│   └── media/
-│       ├── gifs.py
-│       ├── images.py
-│       └── media.py
-├── data/aether_gazer/
-└── tests/smoke/
+│   ├── ai/                    # provider calls, chat orchestration, persona
+│   ├── core/                  # conversation modes, scope, memory, utilities
+│   ├── knowledge/             # lore retrieval and live-source selection
+│   ├── media/                 # GIF/image catalogs and sending logic
+│   ├── bot.py                 # Discord commands and message event routing
+│   ├── config.py              # typed environment settings and validation
+│   ├── web.py                 # Render health/readiness endpoints
+│   └── version.py             # runtime/build metadata
+├── tests/
+│   ├── smoke/                 # executable contract and startup checks
+│   └── unit/                  # pytest unit and regression tests
+├── main.py                    # process entry point
+├── render.yaml                # Render Web Service blueprint
+├── requirements.txt           # runtime dependencies
+├── .env.example               # safe environment template (no real secrets)
+├── README.md                  # user setup and command guide
+└── CHANGELOG.md               # release history
 ```
+
+## Module responsibilities
+
+| Area | Responsibility |
+|---|---|
+| `hades_bot/bot.py` | Discord lifecycle, command dispatch, message/mention routing, output delivery |
+| `hades_bot/config.py` | Reads environment values once and validates required secrets/settings |
+| `hades_bot/ai/chat.py` | Coordinates conversation context and response generation |
+| `hades_bot/ai/gemini_client.py` | Calls AI providers and handles provider failover |
+| `hades_bot/ai/persona.py` | Hades system prompt and character contract |
+| `hades_bot/ai/fanservice.py` | Classifies social/fan-service cues and prompt guidance |
+| `hades_bot/core/` | Message scope, conversational signals, memory, shared helpers |
+| `hades_bot/knowledge/` | Selects local lore context and optional current-source URLs |
+| `hades_bot/media/` | Validates media URLs, selects media, tracks cooldown/history |
+| `data/aether_gazer/` | Source-controlled lore/gameplay data, separate from runtime logic |
+| `tests/smoke/` | Fast executable checks for key integration contracts |
+| `tests/unit/` | Focused pytest tests for classifiers, memory, prompts, and failover |
+
+Keep provider/network code in `ai/`, Discord framework code in `bot.py`, reusable message logic in `core/`, and facts in `data/`. Avoid duplicating knowledge facts inside prompts or command handlers.
 
 ## Request flow
 
 1. Discord receives a command, mention, DM, or reply to Hades.
-2. Commands are processed first. Prefix commands do not fall through to the AI message handler.
-3. Message scope is checked. Explicit specialist requests and configured hard-off-topic subjects are rejected early.
+2. Commands are processed before the regular AI message handler.
+3. Message scope is checked; unrelated specialist requests and hard-off-topic subjects are rejected early.
 4. Conversation memory is keyed by guild/channel/user or DM-channel/user and guarded by an async lock.
-5. Local Aether Gazer context is selected from the stored knowledge snapshot.
-6. Current/live questions can attach Gemini URL Context to a small set of relevant Mimir or official source URLs.
-7. Gemini generates the response using the Hades persona contract, recent dialogue, fan-service category, and conversation mode.
-8. The generated reply is sanitized and checked for forbidden-topic leakage before it is committed to memory.
-9. Discord output is split at the 2,000-character limit and optional GIF/image media is attached to the first message.
-10. Memory and cooldown/media state are pruned periodically.
+5. Local Aether Gazer context is retrieved from the versioned knowledge snapshot.
+6. Current/source-sensitive questions may use Gemini URL Context with a small set of selected source URLs.
+7. AI generation uses the Hades persona contract, recent dialogue, fan-service category, and conversation mode.
+8. The response is sanitized and checked before it is committed to memory.
+9. Discord output is split at the 2,000-character limit; eligible replies may include a single GIF or image.
+10. Memory, cooldown, and recent-media state are pruned periodically.
 
-## Scope design
+## AI provider order
 
-Scope is intentionally deterministic before AI generation.
+The configured chain is **Gemini 3.5 Flash Lite → Gemini 3.1 Flash Lite → Groq**. Groq is required and is attempted when the Gemini model hierarchy cannot produce a response. The API keys belong in local `.env` or Render secret environment settings, never in source files.
 
-The bot distinguishes:
-- stable Aether Gazer terms
-- contextual Aether Gazer references
-- ordinary social conversation
-- personal-choice/advice conversation
-- short follow-ups that require history
-- specialist requests
-- hard unrelated subjects
+## Knowledge and media
 
-Context bridges prevent legitimate Aether Gazer statements such as a character's preference for a racing-related activity from being mistaken for an unrelated sports request.
+The knowledge layer separates stable character identity from dated gameplay/event/meta snapshots. `game_knowledge.json` stores broad structured references; `hades_reference.json` stores Hades-specific identity and gameplay snapshots. The bot treats this local data as a snapshot, not live truth.
 
-## Knowledge design
+Automatic media sends at most one GIF or one image per eligible trigger, uses shared cooldown/history state, and records state only after Discord accepts the response. Manual `h!gif` and `h!image` commands use their own configured cooldowns.
 
-The local knowledge layer separates stable character identity from dated gameplay/event/meta snapshots.
+## Runtime health
 
-`game_knowledge.json` stores larger structured references. `hades_reference.json` stores Hades-specific identity and gameplay snapshots. `live_sources.py` selects fresh source pages only when the message appears to require current/verified information.
+`main.py` validates settings, starts the HTTP health server on Render's `PORT`, and starts Discord.
 
-The bot never claims that the local snapshot is live.
+- `/health` — process liveness
+- `/ready` — Discord readiness
+- `/status` — bot diagnostics for authorized managers
 
-## Media design
+The health server runs independently of Discord's event loop so Render can reach its endpoint while Discord is reconnecting.
 
-Automatic media:
-- chooses either one GIF or one image per automatic trigger
-- attaches the selected media to the same response embed
-- uses a per-user/per-channel cooldown
-- selects GIF vs image type evenly when both are configured
-- keeps recent-media history to reduce repetition
-- periodically prunes stale state
+## Testing layout
 
-Manual `h!gif` and `h!image` remain independent.
+- `tests/smoke/` contains standalone Python checks executed directly by CI.
+- `tests/unit/` contains `test_*.py` files executed by pytest.
+- GitHub Actions compiles Python, runs the smoke scripts, then runs the pytest suite.
+- CI supplies placeholder API keys; it does not make live AI calls.
 
-## Render runtime
-
-`main.py` starts the HTTP health server on Render's `PORT`, validates required secrets, and starts Discord.
-
-- `/health` = liveness
-- `/ready` = Discord readiness
-- `/status` = bot status command for authorized guild managers
-
-The health server is deliberately kept independent from Discord's event loop so Render can reach the HTTP endpoint while Discord is reconnecting.
-
-## Testing
-
-GitHub Actions runs:
-- compilation
-- all executable smoke checks
-- the full `tests/smoke/test_*.py` pytest suite
-- Render startup/config checks
-- persona/fan-service regression checks
-- memory and scope regression checks
-
-The workflow uses a short timeout and cancels stale runs for the same branch so rapid commits do not create an unnecessary CI backlog.
+Keep new regression tests in `tests/unit/` and keep fast, script-style deployment checks in `tests/smoke/`.
