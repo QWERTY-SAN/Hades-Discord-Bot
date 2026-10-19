@@ -4,16 +4,19 @@ An in-character Discord chatbot for **Hades from Aether Gazer**, powered by the 
 
 **Current release: 2.7.3**
 
-## Gemini models and Free Tier setup
+## AI provider fallback order
 
-The default model hierarchy is deliberately restricted to two Lite models:
+Hades uses this exact provider order:
 
-| Priority | Model ID | Use |
+| Priority | Provider/model | When it is used |
 |---|---|---|
-| Primary | `gemini-3.5-flash-lite` | Normal responses |
-| Fallback | `gemini-3.1-flash-lite` | Used after a retryable error or timeout on the primary |
+| 1 — Primary | `gemini-3.5-flash-lite` | Normal responses |
+| 2 — Fallback | `gemini-3.1-flash-lite` | If the primary Gemini model fails with a retryable error, timeout, rate limit, or unavailable-model error |
+| 3 — Final fallback | Groq `llama-3.3-70b-versatile` | If both Gemini model attempts fail, or Gemini credentials are rejected |
 
-Google lists both models with **Free Tier** token pricing in its [Gemini API pricing table](https://ai.google.dev/gemini-api/docs/pricing). The bot's configuration allowlist rejects other primary model IDs and filters fallback entries that are not approved.
+Groq is optional. Set `GROQ_API_KEY` to enable the final fallback; without it, the bot still starts and uses the two Gemini models only. Groq is attempted after the Gemini model hierarchy, not before Gemini 3.1.
+
+Google lists both Gemini Lite models with **Free Tier** token pricing in its [Gemini API pricing table](https://ai.google.dev/gemini-api/docs/pricing). The bot's configuration allowlist rejects other primary model IDs and filters fallback entries that are not approved. Groq has its own separate model and account limits.
 
 **Model choice does not set the Google project's billing tier.** To keep Gemini API usage at $0, use an API key belonging to a project on Gemini API Free Tier and remain within the project's free quotas. The same model IDs are billed at Paid Tier rates when used through a paid-tier project. Review the current [pricing and free-tier terms](https://ai.google.dev/gemini-api/docs/pricing) in Google AI Studio before using the bot.
 
@@ -28,6 +31,9 @@ GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_FALLBACK_MODELS=gemini-3.1-flash-lite
 GEMINI_MODEL_TIMEOUT_SECONDS=20
 GEMINI_THINKING_LEVEL=minimal
+GROQ_MODEL=llama-3.3-70b-versatile
+# Optional final fallback; set your own secret in .env / Render, never commit a real key.
+GROQ_API_KEY=your_groq_api_key
 ```
 
 Do not put `DISCORD_TOKEN` or `GEMINI_API_KEY` in source control. Render should store both as secret environment variables. The approved model names are enforced at startup/configuration; they do not override the billing plan or quota attached to the Google project.
@@ -218,9 +224,9 @@ MEMORY_PRUNE_INTERVAL=900
 COOLDOWN_PRUNE_INTERVAL=3600
 ```
 
-### Automatic Gemini model failover
+### AI provider failover
 
-Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list when a model times out, is temporarily unavailable, is rate-limited, or returns an unavailable-model error. The only approved IDs are `gemini-3.5-flash-lite` (primary) and `gemini-3.1-flash-lite` (fallback). Both are listed with Free Tier token pricing in [Google's official pricing table](https://ai.google.dev/gemini-api/docs/pricing). The allowlist restricts model selection, but it does **not** set the Google project's billing tier; to keep API usage at $0, use a project on Gemini API Free Tier and stay within its quotas. Google's URL Context tool is currently listed as free of charge, but always check the current pricing and tool availability documentation.
+Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list. With the defaults, that is Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite → optional Groq (`GROQ_MODEL`, default `llama-3.3-70b-versatile`). Groq is attempted only after the Gemini model attempts fail, and only works when `GROQ_API_KEY` is configured. Gemini failover handles timeouts, temporary server errors, rate limits, and unavailable-model errors; rejected Gemini credentials also allow the separate Groq provider to be tried. The only approved Gemini IDs are `gemini-3.5-flash-lite` (primary) and `gemini-3.1-flash-lite` (fallback). Both are listed with Free Tier token pricing in [Google's official pricing table](https://ai.google.dev/gemini-api/docs/pricing). The allowlist restricts model selection, but it does **not** set the Google project's billing tier; to keep API usage at $0, use a project on Gemini API Free Tier and stay within its quotas. Google's URL Context tool is currently listed as free of charge, but always check the current pricing and tool availability documentation.
 
 `GEMINI_MODEL_TIMEOUT_SECONDS=20` bounds each model attempt, and SDK retries are capped at one retry before the bot moves to the next model. Invalid credentials or permissions fail fast rather than wasting time on every model. The fallback count and last successful model appear in staff diagnostics.
 
