@@ -192,10 +192,11 @@ class GeminiService:
         )
 
 
-        self.groq_client = (
-            AsyncGroq(api_key=SETTINGS.groq_api_key, timeout=SETTINGS.request_timeout, max_retries=1)
-            if SETTINGS.groq_api_key
-            else None
+        # Groq is required by configuration and is always available as the final provider.
+        self.groq_client = AsyncGroq(
+            api_key=SETTINGS.groq_api_key,
+            timeout=SETTINGS.request_timeout,
+            max_retries=1,
         )
         self.last_successful_model: str | None = None
         self.fallback_count = 0
@@ -287,31 +288,35 @@ class GeminiService:
                 )
             except Exception as exc:
                 status = self._status_code(exc)
-                if status in {401, 403}:
-                    # A broken Gemini credential should not prevent the separately
-                    # configured Groq provider from serving the request.
-                    failures.append(exc)
-                    failure_statuses.append(status)
-                    break
-                if not self._can_fail_over(exc):
-                    if status == 400:
-                        raise AIServiceError(
-                            "Gemini rejected the request. Try again shortly.",
-                            status,
-                        ) from exc
-                    logger.exception("Unexpected Gemini request failure on %s", model)
-                    raise AIServiceError(
-                        "Something went wrong with the AI service."
-                    ) from exc
-
                 failures.append(exc)
                 failure_statuses.append(status)
+
+                # The same Gemini credential is shared by both models, so an
+                # authentication failure goes straight to the separate Groq provider.
+                if status in {401, 403}:
+                    logger.warning(
+                        "Gemini credentials were rejected (%s); switching to required Groq fallback.",
+                        status,
+                    )
+                    break
+
+                error_kind = (
+                    status or type(exc).__name__
+                    if self._can_fail_over(exc)
+                    else f"non-retryable {status or type(exc).__name__}"
+                )
                 if index + 1 < len(models):
                     logger.warning(
                         "Gemini model %s failed (%s); trying fallback model %s.",
                         model,
-                        status or type(exc).__name__,
+                        error_kind,
                         models[index + 1],
+                    )
+                else:
+                    logger.warning(
+                        "Gemini model %s failed (%s); proceeding to required Groq fallback.",
+                        model,
+                        error_kind,
                     )
             else:
                 if model != SETTINGS.gemini_model:
@@ -338,47 +343,46 @@ class GeminiService:
                 "Gemini is temporarily unavailable across the configured models. "
                 "Try again shortly."
             )
-        # Gemini is always the primary provider. Only after every configured
-        # Gemini model fails do we try Groq, using the same Hades system prompt
-        # and conversation context. Groq is optional and never required at startup.
-        if self.groq_client is not None:
-            try:
-                groq_messages = [
-                    {"role": "system", "content": config.system_instruction or ""},
-                ]
-                for item in contents:
-                    role = "assistant" if getattr(item, "role", "user") == "model" else "user"
-                    body = "\n".join(
-                        part.text for part in (getattr(item, "parts", None) or [])
-                        if getattr(part, "text", None)
-                    ).strip()
-                    if body:
-                        groq_messages.append({"role": role, "content": body})
-                groq_response = await asyncio.wait_for(
-                    self.groq_client.chat.completions.create(
-                        model=SETTINGS.groq_model,
-                        messages=groq_messages,
-                        max_tokens=SETTINGS.max_output_tokens,
-                        temperature=0.8,
-                    ),
-                    timeout=SETTINGS.gemini_model_timeout_seconds,
+        # Gemini remains primary. If its model hierarchy cannot answer, use Groq
+        # with the same Hades system prompt and conversation context.
+        # Groq is mandatory as the final fallback after Gemini cannot answer.
+        try:
+            groq_messages = [
+                {"role": "system", "content": config.system_instruction or ""},
+            ]
+            for item in contents:
+                role = "assistant" if getattr(item, "role", "user") == "model" else "user"
+                body = "\n".join(
+                    part.text for part in (getattr(item, "parts", None) or [])
+                    if getattr(part, "text", None)
+                ).strip()
+                if body:
+                    groq_messages.append({"role": role, "content": body})
+            groq_response = await asyncio.wait_for(
+                self.groq_client.chat.completions.create(
+                    model=SETTINGS.groq_model,
+                    messages=groq_messages,
+                    max_tokens=SETTINGS.max_output_tokens,
+                    temperature=0.8,
+                ),
+                timeout=SETTINGS.gemini_model_timeout_seconds,
+            )
+            groq_text = (
+                groq_response.choices[0].message.content
+                if groq_response.choices
+                else None
+            )
+            if groq_text and groq_text.strip():
+                self.groq_fallback_count += 1
+                self.last_successful_model = f"groq:{SETTINGS.groq_model}"
+                logger.warning(
+                    "Groq fallback succeeded after Gemini failure: model=%s",
+                    SETTINGS.groq_model,
                 )
-                groq_text = (
-                    groq_response.choices[0].message.content
-                    if groq_response.choices
-                    else None
-                )
-                if groq_text and groq_text.strip():
-                    self.groq_fallback_count += 1
-                    self.last_successful_model = f"groq:{SETTINGS.groq_model}"
-                    logger.warning(
-                        "Groq fallback succeeded after Gemini failure: model=%s",
-                        SETTINGS.groq_model,
-                    )
-                    return SimpleNamespace(text=groq_text)
-                logger.warning("Groq fallback returned an empty response.")
-            except Exception as exc:
-                logger.warning("Groq fallback failed: %s", type(exc).__name__)
+                return SimpleNamespace(text=groq_text)
+            logger.warning("Groq fallback returned an empty response.")
+        except Exception as exc:
+            logger.warning("Groq fallback failed: %s", type(exc).__name__)
         raise AIServiceError(message, last_status) from last_error
 
     @staticmethod
