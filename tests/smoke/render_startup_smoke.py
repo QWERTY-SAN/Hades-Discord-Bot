@@ -35,6 +35,11 @@ dashboard_css = (ROOT / "hades_bot" / "static" / "dashboard.css").read_text(enco
 dashboard_js = (ROOT / "hades_bot" / "static" / "dashboard.js").read_text(encoding="utf-8")
 assert 'app.router.add_get("/", _index)' in web_source
 assert 'app.router.add_get("/api/status", _api_status)' in web_source
+assert 'app.router.add_get("/api/events", _api_events)' in web_source
+assert 'app.router.add_get("/api/logs", _api_logs)' in web_source
+assert 'Content-Type": "text/event-stream; charset=utf-8"' in web_source
+assert "record_dashboard_log" in web_source
+assert "LOG_BUFFER_SIZE = 300" in web_source
 assert 'app.router.add_static(' in web_source and '"/static/"' in web_source
 assert 'Content-Security-Policy' in web_source
 assert "Command Center" in dashboard
@@ -42,6 +47,13 @@ assert 'data-panel="overview"' in dashboard
 assert 'data-panel="diagnostics"' in dashboard
 assert 'data-panel="commands"' in dashboard
 assert "/api/status" in dashboard_js
+assert 'new EventSource("/api/events")' in dashboard_js
+assert "setInterval" not in dashboard_js
+assert 'id="logs-list"' in dashboard
+assert 'id="logs-search"' in dashboard
+assert 'id="logs-level"' in dashboard
+assert 'id="logs-export"' in dashboard_js
+assert "Last-Event-ID" in web_source
 assert "h!hades" in dashboard
 assert "h!diagnose" in dashboard
 assert "@import url(" not in dashboard_css  # Keep assets self-hosted and CSP-compatible.
