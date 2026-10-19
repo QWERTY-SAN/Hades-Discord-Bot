@@ -241,6 +241,18 @@ If the request includes Gemini URL Context instructions, the router sends Groq t
 
 A Gemini outage and a Discord gateway disconnect are separate failure domains. Model failover helps responses survive Gemini errors; it cannot fix a Discord/network outage. discord.py reconnects the gateway, while repeated heartbeat failures should prompt a check for blocked synchronous work, CPU saturation, or unstable network connectivity.
 
+### Web dashboard
+
+The built-in read-only web dashboard is served by the same process as the Discord bot—no extra web framework, frontend build step, or separate hosting service is required.
+
+- Local: open `http://127.0.0.1:10000/` after running `python main.py`.
+- Render: open your service's root URL.
+- Overview: Discord connection, guild count, runtime uptime, message/AI metrics, and configured Gemini → Groq provider order.
+- Diagnostics: runtime metadata, recent reported error, and links to the `/health`, `/ready`, and `/api/status` endpoints.
+- Commands: copy common `h!` commands to your clipboard.
+
+The dashboard refreshes runtime data every 15 seconds. It is deliberately read-only; it does not change bot settings or send Discord messages. API keys and Discord tokens are never rendered in the UI. The existing `/health` endpoint remains the Render health check, and `/ready` remains the Discord readiness check.
+
 ### Render
 
 The Blueprint uses Render's After CI Checks Pass deployment mode (`checksPass`), so a commit is deployed only after the GitHub Actions checks succeed. Render retains an existing service's auto-deploy setting until the Blueprint is synced, so sync the Blueprint once after changing `render.yaml`.
