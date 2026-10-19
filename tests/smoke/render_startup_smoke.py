@@ -52,7 +52,7 @@ assert "setInterval" not in dashboard_js
 assert 'id="logs-list"' in dashboard
 assert 'id="logs-search"' in dashboard
 assert 'id="logs-level"' in dashboard
-assert 'id="logs-export"' in dashboard_js
+assert 'id="logs-export"' in dashboard
 assert "Last-Event-ID" in web_source
 assert "h!hades" in dashboard
 assert "h!diagnose" in dashboard
