@@ -111,7 +111,6 @@ Blocked:
 
 Scope decisions are deterministic, but refusal wording is generated dynamically in Hades' persona and the blocked subject is not discussed in the refusal.
 
-
 ### Fan-service behavior
 
 The bot includes a narrow, dynamic fan-service layer for playful admiration and affectionate banter. Examples include compliments, exaggerated requests such as "step on me," light romance, hugs/kisses/headpats, and requests for attention. Responses are generated in Hades' persona rather than selected from fixed replies. The behavior is intentionally non-explicit and does not turn unrelated conversation into flirting.
@@ -126,7 +125,6 @@ Hades' strict topic scope now recognizes more Hades-directed social cues without
 ### Expanded fan-service
 
 Fan-service now covers more than direct compliments or "step on me" prompts. Detection includes captivated/mesmerized language, theatrical devotion, playful jealousy, additional affection cues, voice/presence compliments, and attention-focused flirting. These are classification cues for Gemini—not a fixed response bank—and Hades is instructed to vary between teasing, graceful acceptance, mock authority, warmth, challenge, and restrained flirtation.
-
 
 ### Hades images
 
@@ -276,12 +274,13 @@ The bot has a dated Aether Gazer service-lifecycle snapshot. It distinguishes Eo
 
 As of 2026-10-04, CN has already ended new content after V5.2 (2026-07-23) and entered its Companion Server phase. Global is still scheduled to receive content through V5.2 on 2026-12-01, after which it is planned to continue through a Companion Server with a planned horizon of 2031-09 and a reassessment around 2031-03.
 
-
 ## Aether Gazer knowledge layer
 
 The bot includes structured reference data covering Hades, world/lore, regions and organizations, named historical events, combat resources and systems, endgame modes, version events, Shifted Star routines, Support Modules, M.E.O.W., Opponent Intel, Achievements, scans/economy, side content, and the service lifecycle.
 
 The knowledge layer distinguishes stable lore from dated gameplay data. It does not claim live access to banners, rotations, rewards, or current meta.
+
+The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
 
 ## Additional improvements
 
@@ -293,14 +292,11 @@ The knowledge layer distinguishes stable lore from dated gameplay data. It does 
 - Hades' current profile snapshot includes her named outfits, Heart Link reference, Access Key synergy and current chips.
 - Ancient Shadow and Crisis Analysis are represented as version-sensitive event/challenge content.
 
-
 ## Code organization
 
 The runtime is split by responsibility rather than kept in one large script: Discord routing lives in `hades_bot/bot.py`; AI and persona logic in `hades_bot/ai/`; memory, scope, and conversation utilities in `hades_bot/core/`; lore retrieval in `hades_bot/knowledge/`; and media handling in `hades_bot/media/`. Structured game facts stay under `data/aether_gazer/`. See the [architecture guide](docs/architecture.md) for the full layout.
 
-The Scan/Gacha material is knowledge-only. It explains Aether Gazer's acquisition systems, vouchers, pity/guarantee concepts, and version-sensitive rules; it does not add a gacha command.
-
-
+## Automatic media
 
 When Hades is mentioned **or** the Administrator uses `h!hades <message>` / `h!ask <message>`, the bot may randomly attach **one** automatic media type: a GIF **or** an image. It never sends both from the same automatic trigger. Plain replies to Hades stay media-free, keeping short follow-ups less noisy. The GIF and image libraries remain separate, and automatic media uses a shared per-user/channel cooldown. The selected media is placed inside the same embed as Hades' response, so no second media message is sent. The manual `h!gif` and `h!image` commands use their own configured cooldowns. Recent-media history, metrics, and automatic cooldowns are recorded only after a successful Discord send.
 
