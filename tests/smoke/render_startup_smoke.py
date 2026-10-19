@@ -4,6 +4,7 @@ from pathlib import Path
 
 os.environ.setdefault("DISCORD_TOKEN", "ci-test-token")
 os.environ.setdefault("GEMINI_API_KEY", "ci-test-key")
+os.environ.setdefault("GROQ_API_KEY", "ci-test-groq-key")
 
 import main  # noqa: E402
 from hades_bot.config import SETTINGS, validate_settings  # noqa: E402
@@ -22,6 +23,9 @@ assert list(inspect.signature(start_web_server).parameters) == ["host", "port"]
 assert "buildCommand: pip install -r requirements.txt" in render
 assert "startCommand: python main.py" in render
 assert "healthCheckPath: /health" in render
+assert "key: GROQ_API_KEY" in render
+assert SETTINGS.groq_api_key
+validate_settings()
 assert "autoDeployTrigger: checksPass" in render
 
 print("Render startup smoke checks passed")
