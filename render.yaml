@@ -21,6 +21,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      # Required secret: the final provider if both Gemini models fail.
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL
