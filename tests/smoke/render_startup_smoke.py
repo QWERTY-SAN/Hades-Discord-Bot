@@ -28,4 +28,22 @@ assert SETTINGS.groq_api_key
 validate_settings()
 assert "autoDeployTrigger: checksPass" in render
 
-print("Render startup smoke checks passed")
+# The web root serves the dashboard while operational probes stay JSON endpoints.
+web_source = (ROOT / "hades_bot" / "web.py").read_text(encoding="utf-8")
+dashboard = (ROOT / "hades_bot" / "static" / "index.html").read_text(encoding="utf-8")
+dashboard_css = (ROOT / "hades_bot" / "static" / "dashboard.css").read_text(encoding="utf-8")
+dashboard_js = (ROOT / "hades_bot" / "static" / "dashboard.js").read_text(encoding="utf-8")
+assert 'app.router.add_get("/", _index)' in web_source
+assert 'app.router.add_get("/api/status", _api_status)' in web_source
+assert 'app.router.add_static(' in web_source and '"/static/"' in web_source
+assert 'Content-Security-Policy' in web_source
+assert "Command Center" in dashboard
+assert 'data-panel="overview"' in dashboard
+assert 'data-panel="diagnostics"' in dashboard
+assert 'data-panel="commands"' in dashboard
+assert "/api/status" in dashboard_js
+assert "h!hades" in dashboard
+assert "h!diagnose" in dashboard
+assert "@import url(" not in dashboard_css  # Keep assets self-hosted and CSP-compatible.
+
+print("Render startup and dashboard smoke checks passed")
