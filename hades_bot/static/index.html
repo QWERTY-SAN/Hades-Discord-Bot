@@ -25,6 +25,7 @@
         <button class="nav-item active" data-view="overview" type="button"><span class="nav-icon">◈</span>Overview</button>
         <button class="nav-item" data-view="diagnostics" type="button"><span class="nav-icon">⌘</span>Diagnostics</button>
         <button class="nav-item" data-view="commands" type="button"><span class="nav-icon">✳</span>Commands</button>
+        <button class="nav-item" data-view="logs" type="button"><span class="nav-icon">≋</span>Live logs</button>
       </nav>
 
       <div class="side-bottom">
@@ -39,7 +40,7 @@
       <header class="topbar">
         <div class="breadcrumbs"><span>HADES</span><span class="crumb-slash">/</span><span id="current-section">Overview</span></div>
         <div class="topbar-right">
-          <span class="read-only"><span class="lock-dot"></span> READ-ONLY DASHBOARD</span>
+          <span class="read-only stream-state" id="stream-state" data-state="connecting"><span class="lock-dot" id="stream-dot"></span><span id="stream-label">CONNECTING LIVE FEED</span></span>
           <button class="icon-button" id="refresh-button" type="button" aria-label="Refresh dashboard" title="Refresh dashboard">↻</button>
         </div>
       </header>
@@ -65,13 +66,7 @@
               <span class="hero-meta-icon">⌁</span><span>Guilds</span><strong id="hero-guilds">—</strong>
             </div>
           </div>
-          <div class="hero-art" aria-hidden="true">
-            <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-            <div class="art-diamond"></div><div class="art-star star-a">✦</div><div class="art-star star-b">✧</div>
-            <div class="art-monogram">H</div>
-            <div class="art-ring-label">PUPPET MASTER · HADES · PUPPET MASTER ·</div>
-          </div>
-          <div class="hero-glow"></div>
+          <div class="hero-runtime" aria-hidden="true"><span class="runtime-rule"></span><span>LIVE<br>RUNTIME</span><span class="runtime-mark">H</span></div>
         </section>
 
         <div class="section-title">
@@ -151,6 +146,38 @@
           <article class="panel diagnostic-card wide-card"><p class="eyebrow">HTTP ENDPOINTS</p><h2>Service checks</h2><p>Open an endpoint to inspect the response in JSON.</p><div class="endpoint-list"><a href="/health" target="_blank" rel="noreferrer"><span class="endpoint-method">GET</span><span><strong>/health</strong><small>Process liveness</small></span><span class="endpoint-arrow">↗</span></a><a href="/ready" target="_blank" rel="noreferrer"><span class="endpoint-method">GET</span><span><strong>/ready</strong><small>Discord readiness</small></span><span class="endpoint-arrow">↗</span></a><a href="/api/status" target="_blank" rel="noreferrer"><span class="endpoint-method">GET</span><span><strong>/api/status</strong><small>Dashboard status data</small></span><span class="endpoint-arrow">↗</span></a></div></article>
         </div>
         <footer class="footer-note"><span>✦</span> Readiness is separate from process liveness. A reconnecting Discord session can leave the process alive.</footer>
+      </section>
+
+      <section class="view-panel" data-panel="logs" hidden>
+        <div class="logs-heading">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> OPERATIONS</p><h1>Live <span>Logs</span></h1><p class="page-subtitle">A bounded stream of operational events from the current process.</p></div>
+          <div class="logs-heading-status"><span class="live-indicator" id="logs-stream-indicator"></span><span id="logs-stream-label">Waiting for live feed</span></div>
+        </div>
+        <div class="logs-summary">
+          <div><span class="summary-label">BUFFER</span><strong id="logs-buffer-count">0</strong><small>events loaded</small></div>
+          <div><span class="summary-label">SHOWING</span><strong id="logs-filter-count">0</strong><small>match current filter</small></div>
+          <div><span class="summary-label">RETENTION</span><strong>300</strong><small>in-memory events max</small></div>
+          <div class="logs-summary-note">Live operational events only. Message contents, conversation transcripts, and credentials are not streamed.</div>
+        </div>
+        <div class="logs-workspace">
+          <div class="logs-toolbar">
+            <div class="logs-filters">
+              <label class="search-control"><span aria-hidden="true">⌕</span><input id="logs-search" type="search" placeholder="Filter logs…" autocomplete="off" aria-label="Filter log messages"></label>
+              <label class="level-control"><span>Level</span><select id="logs-level" aria-label="Filter by log level"><option value="ALL">All levels</option><option value="ERROR">Error</option><option value="WARNING">Warning</option><option value="INFO">Info</option><option value="DEBUG">Debug</option></select></label>
+            </div>
+            <div class="logs-actions">
+              <button class="control-button" id="logs-pause" type="button">Pause stream</button>
+              <button class="control-button" id="logs-clear" type="button">Clear view</button>
+              <button class="control-button primary-control" id="logs-export" type="button">Export JSON</button>
+            </div>
+          </div>
+          <div class="logs-table-head"><span>TIME</span><span>LEVEL</span><span>SOURCE</span><span>EVENT</span></div>
+          <div class="logs-list" id="logs-list" role="log" aria-live="polite" aria-relevant="additions text">
+            <div class="logs-empty"><span class="empty-mark">≋</span><strong>Waiting for events</strong><p>Runtime and provider events will appear here as they happen.</p></div>
+          </div>
+          <div class="logs-footer"><span id="logs-tail-status">Live stream enabled</span><button class="text-button" type="button" id="logs-scroll-bottom">Scroll to latest ↓</button></div>
+        </div>
+        <footer class="footer-note"><span>ⓘ</span> The dashboard retains a small in-memory log buffer. Use your Render or local terminal logs for full tracebacks and historical logs.</footer>
       </section>
 
       <section class="view-panel" data-panel="commands" hidden>
