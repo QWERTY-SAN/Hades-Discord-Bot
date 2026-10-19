@@ -12,9 +12,10 @@ Hades-Discord-Bot/
 │   ├── core/                  # conversation modes, scope, memory, utilities
 │   ├── knowledge/             # lore retrieval and live-source selection
 │   ├── media/                 # GIF/image catalogs and sending logic
+│   ├── static/                # dashboard HTML, CSS, and browser JavaScript
 │   ├── bot.py                 # Discord commands and message event routing
 │   ├── config.py              # typed environment settings and validation
-│   ├── web.py                 # Render health/readiness endpoints
+│   ├── web.py                 # dashboard, status API, and health/readiness endpoints
 │   └── version.py             # runtime/build metadata
 ├── tests/
 │   ├── smoke/                 # executable contract and startup checks
@@ -72,15 +73,17 @@ The knowledge layer separates stable character identity from dated gameplay/even
 
 Automatic media sends at most one GIF or one image per eligible trigger, uses shared cooldown/history state, and records state only after Discord accepts the response. Manual `h!gif` and `h!image` commands use their own configured cooldowns.
 
-## Runtime health
+## Web dashboard and runtime health
 
-`main.py` validates settings, starts the HTTP health server on Render's `PORT`, and starts Discord.
+`main.py` validates settings, starts the HTTP dashboard/health server on Render's `PORT`, and starts Discord.
 
-- `/health` — process liveness
-- `/ready` — Discord readiness
-- `/status` — bot diagnostics for authorized managers
+- `/` — responsive, read-only dashboard for runtime metrics, provider order, and command reference
+- `/api/status` — JSON payload consumed by the dashboard; refreshed in the browser every 15 seconds
+- `/health` — process liveness; remains the Render health check
+- `/ready` — Discord readiness; returns HTTP 503 while the Discord gateway is not ready
+- `/static/` — self-hosted dashboard assets
 
-The health server runs independently of Discord's event loop so Render can reach its endpoint while Discord is reconnecting.
+The dashboard does not perform live AI API probes or expose API keys. The web server runs independently of Discord's event loop so Render can serve the dashboard and health endpoints while Discord is reconnecting.
 
 ## Testing layout
 
