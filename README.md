@@ -36,7 +36,7 @@ GROQ_MODEL=llama-3.3-70b-versatile
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Do not put `DISCORD_TOKEN` or `GEMINI_API_KEY` in source control. Render should store both as secret environment variables. The approved model names are enforced at startup/configuration; they do not override the billing plan or quota attached to the Google project.
+Do not put `DISCORD_TOKEN`, `GEMINI_API_KEY`, or `GROQ_API_KEY` in source control. Render should store all three as secret environment variables. The approved model names are enforced at startup/configuration; they do not override the billing plan or quota attached to the Google project.
 
 ---
 
