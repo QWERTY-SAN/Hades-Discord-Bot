@@ -14,7 +14,7 @@ Hades uses this exact provider order:
 | 2 — Fallback | `gemini-3.1-flash-lite` | If the primary Gemini model fails with a retryable error, timeout, rate limit, or unavailable-model error |
 | 3 — Final fallback | Groq `llama-3.3-70b-versatile` | If both Gemini model attempts fail, or Gemini credentials are rejected |
 
-Groq is optional. Set `GROQ_API_KEY` to enable the final fallback; without it, the bot still starts and uses the two Gemini models only. Groq is attempted after the Gemini model hierarchy, not before Gemini 3.1.
+Groq is required as the final fallback. `GROQ_API_KEY` must be set locally and in Render; startup validation fails clearly if it is missing. Groq is attempted after the Gemini model hierarchy, not before Gemini 3.1. If the Gemini credential itself is rejected, the bot skips repeating the same credential failure and proceeds directly to Groq.
 
 Google lists both Gemini Lite models with **Free Tier** token pricing in its [Gemini API pricing table](https://ai.google.dev/gemini-api/docs/pricing). The bot's configuration allowlist rejects other primary model IDs and filters fallback entries that are not approved. Groq has its own separate model and account limits.
 
@@ -32,7 +32,7 @@ GEMINI_FALLBACK_MODELS=gemini-3.1-flash-lite
 GEMINI_MODEL_TIMEOUT_SECONDS=20
 GEMINI_THINKING_LEVEL=minimal
 GROQ_MODEL=llama-3.3-70b-versatile
-# Optional final fallback; set your own secret in .env / Render, never commit a real key.
+# Required final fallback; set your secret in .env / Render, never commit a real key.
 GROQ_API_KEY=your_groq_api_key
 ```
 
@@ -226,7 +226,7 @@ COOLDOWN_PRUNE_INTERVAL=3600
 
 ### AI provider failover
 
-Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list. With the defaults, that is Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite → optional Groq (`GROQ_MODEL`, default `llama-3.3-70b-versatile`). Groq is attempted only after the Gemini model attempts fail, and only works when `GROQ_API_KEY` is configured. Gemini failover handles timeouts, temporary server errors, rate limits, and unavailable-model errors; rejected Gemini credentials also allow the separate Groq provider to be tried. The only approved Gemini IDs are `gemini-3.5-flash-lite` (primary) and `gemini-3.1-flash-lite` (fallback). Both are listed with Free Tier token pricing in [Google's official pricing table](https://ai.google.dev/gemini-api/docs/pricing). The allowlist restricts model selection, but it does **not** set the Google project's billing tier; to keep API usage at $0, use a project on Gemini API Free Tier and stay within its quotas. Google's URL Context tool is currently listed as free of charge, but always check the current pricing and tool availability documentation.
+Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list. With the defaults, that is Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite → required Groq (`GROQ_MODEL`, default `llama-3.3-70b-versatile`). `GROQ_API_KEY` is required and validated at startup. Groq is attempted after Gemini model failures; if Gemini credentials are rejected, the bot proceeds directly to Groq rather than retrying with the same invalid credentials. Gemini failover handles timeouts, temporary server errors, rate limits, and unavailable-model errors; rejected Gemini credentials also allow the separate Groq provider to be tried. The only approved Gemini IDs are `gemini-3.5-flash-lite` (primary) and `gemini-3.1-flash-lite` (fallback). Both are listed with Free Tier token pricing in [Google's official pricing table](https://ai.google.dev/gemini-api/docs/pricing). The allowlist restricts model selection, but it does **not** set the Google project's billing tier; to keep API usage at $0, use a project on Gemini API Free Tier and stay within its quotas. Google's URL Context tool is currently listed as free of charge, but always check the current pricing and tool availability documentation.
 
 `GEMINI_MODEL_TIMEOUT_SECONDS=20` bounds each model attempt, and SDK retries are capped at one retry before the bot moves to the next model. Invalid credentials or permissions fail fast rather than wasting time on every model. The fallback count and last successful model appear in staff diagnostics.
 
