@@ -4,7 +4,7 @@
 
 This project runs as a Render Web Service because it serves a read-only web dashboard and health endpoints while maintaining the Discord gateway connection.
 
-Open the service root URL (`/`) to view the dashboard. It shows runtime metrics, Discord readiness, the configured Gemini → Groq fallback chain, diagnostics, and common command references. The dashboard refreshes status through `/api/status` every 15 seconds and requires no additional packages or frontend build step. It has no control actions and never displays API keys.
+Open the service root URL (`/`) to view the dashboard. It shows runtime metrics, Discord readiness, the configured Gemini → Groq fallback chain, diagnostics, and common command references. The dashboard uses a Server-Sent Events connection at `/api/events` for live runtime snapshots and new log entries. `/api/status` remains available for manual refresh and `/api/logs` returns the bounded log buffer. No extra packages or frontend build step are required. It has no control actions and never displays API keys. The in-memory log panel keeps up to 300 curated operational events, filters by level/text, can pause the display, and exports the visible entries as JSON. For complete tracebacks and durable history, use Render Logs or the local terminal; the dashboard log buffer resets on restart.
 
 | Setting | Value |
 |---|---|
