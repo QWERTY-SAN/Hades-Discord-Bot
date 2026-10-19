@@ -4,7 +4,10 @@ import asyncio
 import logging
 import random
 import re
+from types import SimpleNamespace
 from typing import Iterable
+
+from groq import AsyncGroq
 
 from google import genai
 from google.genai import errors, types
@@ -189,8 +192,14 @@ class GeminiService:
         )
 
 
+        self.groq_client = (
+            AsyncGroq(api_key=SETTINGS.groq_api_key, timeout=SETTINGS.request_timeout, max_retries=1)
+            if SETTINGS.groq_api_key
+            else None
+        )
         self.last_successful_model: str | None = None
         self.fallback_count = 0
+        self.groq_fallback_count = 0
 
     def model_hierarchy(self) -> tuple[str, ...]:
         """Return the configured primary followed by unique fallback models."""
@@ -328,6 +337,47 @@ class GeminiService:
                 "Gemini is temporarily unavailable across the configured models. "
                 "Try again shortly."
             )
+        # Gemini is always the primary provider. Only after every configured
+        # Gemini model fails do we try Groq, using the same Hades system prompt
+        # and conversation context. Groq is optional and never required at startup.
+        if self.groq_client is not None:
+            try:
+                groq_messages = [
+                    {"role": "system", "content": config.system_instruction or ""},
+                ]
+                for item in contents:
+                    role = "assistant" if getattr(item, "role", "user") == "model" else "user"
+                    body = "\n".join(
+                        part.text for part in (getattr(item, "parts", None) or [])
+                        if getattr(part, "text", None)
+                    ).strip()
+                    if body:
+                        groq_messages.append({"role": role, "content": body})
+                groq_response = await asyncio.wait_for(
+                    self.groq_client.chat.completions.create(
+                        model=SETTINGS.groq_model,
+                        messages=groq_messages,
+                        max_tokens=SETTINGS.max_output_tokens,
+                        temperature=0.8,
+                    ),
+                    timeout=SETTINGS.gemini_model_timeout_seconds,
+                )
+                groq_text = (
+                    groq_response.choices[0].message.content
+                    if groq_response.choices
+                    else None
+                )
+                if groq_text and groq_text.strip():
+                    self.groq_fallback_count += 1
+                    self.last_successful_model = f"groq:{SETTINGS.groq_model}"
+                    logger.warning(
+                        "Groq fallback succeeded after Gemini failure: model=%s",
+                        SETTINGS.groq_model,
+                    )
+                    return SimpleNamespace(text=groq_text)
+                logger.warning("Groq fallback returned an empty response.")
+            except Exception as exc:
+                logger.warning("Groq fallback failed: %s", type(exc).__name__)
         raise AIServiceError(message, last_status) from last_error
 
     @staticmethod
