@@ -420,7 +420,7 @@ async def version_command(ctx: commands.Context) -> None:
 
 @bot.command(name="privacy")
 async def privacy_command(ctx: commands.Context) -> None:
-    await ctx.reply(embed=info_embed("🔒 Privacy", f"• Conversation memory is kept in the bot process and is not written to a local database.\n• Memory expires after `{SETTINGS.memory_ttl_seconds // 3600}` hour(s), or use `{SETTINGS.bot_prefix}reset`.\n• Messages used for AI replies are sent to the configured Gemini API.\n• Do not send passwords, API keys, payment details, or other secrets."), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
+    await ctx.reply(embed=info_embed("🔒 Privacy", f"• Conversation memory is kept in the bot process and is not written to a local database.\n• Memory expires after `{SETTINGS.memory_ttl_seconds // 3600}` hour(s), or use `{SETTINGS.bot_prefix}reset`.\n• Messages used for AI replies are sent to Google Gemini or Groq, depending on which configured provider handles the request.\n• Do not send passwords, API keys, payment details, or other secrets."), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
 
 @bot.command(name="diagnose")
@@ -433,21 +433,25 @@ async def diagnose_command(ctx: commands.Context) -> None:
     latency_ms = f"{round(bot.latency * 1000)}ms" if bot.latency < float("inf") else "unavailable"
     discord_state = "OK" if ready else "NOT READY"
     gemini_state = "configured" if SETTINGS.gemini_api_key else "MISSING"
+    groq_state = "configured" if SETTINGS.groq_api_key else "MISSING"
     token_state = "configured" if SETTINGS.discord_token else "MISSING"
     description = "\n".join([
         f"Discord connection: `{discord_state}`",
         f"Gemini API key: `{gemini_state}`",
+        f"Groq API key: `{groq_state}`",
         f"Discord token: `{token_state}`",
         f"Gemini model: `{SETTINGS.gemini_model}`",
         f"Gemini model hierarchy: `{' → '.join(bot.hades_chat.gemini.model_hierarchy())}`",
+        f"Full provider chain: `{" → ".join(bot.hades_chat.gemini.provider_chain())}`",
         f"Last successful model: `{bot.hades_chat.gemini.last_successful_model or 'not yet used'}`",
-        f"Successful model fallbacks: `{bot.hades_chat.gemini.fallback_count}`",
+        f"Successful Gemini model fallbacks: `{bot.hades_chat.gemini.fallback_count}`",
+        f"Successful Groq fallbacks: `{bot.hades_chat.gemini.groq_fallback_count}`",
         "Hades scope: `enforced`",
         f"Memory: `{memory_count}` active conversations",
         f"AI requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active",
         f"Latency: `{latency_ms}`",
         f"Version: `{__version__}`",
-        "No Gemini test request was sent.",
+        "No live AI provider test request was sent.",
     ])
     await ctx.reply(embed=info_embed("🩺 Hades Diagnostics", description), mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
 
@@ -458,13 +462,14 @@ async def status_command(ctx: commands.Context) -> None:
         await ctx.reply("That information is for those managing the stage. 🎭", mention_author=False, allowed_mentions=ALLOWED_MENTIONS)
         return
     count = await bot.hades_chat.memory.conversation_count()
-    hierarchy = " → ".join(bot.hades_chat.gemini.model_hierarchy())
+    hierarchy = " → ".join(bot.hades_chat.gemini.provider_chain())
     last_model = bot.hades_chat.gemini.last_successful_model or "not yet used"
     status_text = (
         f"Model: `{SETTINGS.gemini_model}`\n"
-        f"Hierarchy: `{hierarchy}`\n"
+        f"Provider chain: `{hierarchy}`\n"
         f"Last successful model: `{last_model}`\n"
-        f"Fallbacks used: `{bot.hades_chat.gemini.fallback_count}`\n"
+        f"Gemini fallback successes: `{bot.hades_chat.gemini.fallback_count}`\n"
+        f"Groq fallback successes: `{bot.hades_chat.gemini.groq_fallback_count}`\n"
         f"Guilds: `{len(bot.guilds)}`\n"
         f"Memory: `{count}` active conversations\n"
         f"Requests: `{bot.hades_chat.active_requests}/{SETTINGS.max_concurrent_requests}` active\n"
