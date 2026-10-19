@@ -222,11 +222,22 @@ MEMORY_PRUNE_INTERVAL=900
 COOLDOWN_PRUNE_INTERVAL=3600
 ```
 
-### AI provider failover
+### Separate AI provider modules
 
-Hades tries `GEMINI_MODEL` first, then the comma-separated `GEMINI_FALLBACK_MODELS` list. With the defaults, that is Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite → required Groq (`GROQ_MODEL`, default `llama-3.3-70b-versatile`). `GROQ_API_KEY` is required and validated at startup. Groq is attempted after Gemini model failures; if Gemini credentials are rejected, the bot proceeds directly to Groq rather than retrying with the same invalid credentials. If a Gemini request fails, the bot moves to Gemini 3.1 where useful and then to Groq; authentication failures skip another attempt with the same rejected Gemini credential and go directly to Groq. The only approved Gemini IDs are `gemini-3.5-flash-lite` (primary) and `gemini-3.1-flash-lite` (fallback). Both are listed with Free Tier token pricing in [Google's official pricing table](https://ai.google.dev/gemini-api/docs/pricing). The allowlist restricts model selection, but it does **not** set the Google project's billing tier; to keep API usage at $0, use a project on Gemini API Free Tier and stay within its quotas. Google's URL Context tool is currently listed as free of charge, but always check the current pricing and tool availability documentation.
+Provider-specific code is separated under `hades_bot/ai/providers/`:
 
-`GEMINI_MODEL_TIMEOUT_SECONDS=20` bounds each model attempt, and SDK retries are capped at one retry before the bot moves to the next model. Invalid credentials or permissions fail fast rather than wasting time on every model. The fallback count and last successful model appear in staff diagnostics.
+- `gemini.py` owns the Google SDK client, Gemini request timeouts, and the retry without URL Context when that optional tool is rejected.
+- `groq.py` owns the Groq SDK client and converts the conversation into Groq's chat-message format.
+- `router.py` owns the ordered fallback chain, empty-response handling, failover counters, and orderly shutdown of both clients.
+- `gemini_client.py` builds Hades's shared prompt/context and delegates the request to the router. Its historical filename is retained to avoid breaking imports.
+
+The default order is **Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite → Groq**. Both Gemini attempts share the Google client because they use the same SDK and API key; model selection is still attempted separately. Groq has its own client and error path. All providers receive the same Hades persona and conversation history, so fallback does not switch to a generic assistant persona.
+
+If the request includes Gemini URL Context instructions, the router sends Groq the alternate prompt that omits that tool-specific instruction. Groq is not told that it fetched URLs it cannot access. Gemini authentication errors skip a redundant second Gemini attempt and route directly to Groq. Empty responses are treated as failed attempts rather than being returned to the user.
+
+`h!diagnose` and `h!status` report the configured chain, last successful model, and provider-specific fallback counts without making a live test request. The counts show prior successes, not a guarantee that a provider is currently reachable.
+
+`GEMINI_MODEL_TIMEOUT_SECONDS=20` bounds each Gemini and Groq model attempt, and Gemini SDK retries are capped so transient failures can move to the next attempt.
 
 A Gemini outage and a Discord gateway disconnect are separate failure domains. Model failover helps responses survive Gemini errors; it cannot fix a Discord/network outage. discord.py reconnects the gateway, while repeated heartbeat failures should prompt a check for blocked synchronous work, CPU saturation, or unstable network connectivity.
 
