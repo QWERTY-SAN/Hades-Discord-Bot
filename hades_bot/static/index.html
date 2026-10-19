@@ -102,20 +102,25 @@
             <div class="provider-list">
               <div class="provider-row">
                 <span class="provider-step">01</span><span class="provider-symbol gemini-symbol">✦</span>
-                <div class="provider-details"><strong id="gemini-primary-model">Gemini 3.5 Flash-Lite</strong><small>Primary model</small></div><span class="provider-tag primary">PRIMARY</span>
+                <div class="provider-details"><strong id="gemini-primary-model">Gemini 3.5 Flash-Lite</strong><small>Primary model</small></div><span class="provider-tag primary">PRIMARY</span><span class="provider-last-used" id="primary-last-used" hidden>LAST USED</span>
               </div>
               <div class="provider-connector"></div>
               <div class="provider-row">
                 <span class="provider-step">02</span><span class="provider-symbol gemini-symbol">✧</span>
-                <div class="provider-details"><strong id="gemini-fallback-model">Gemini 3.1 Flash-Lite</strong><small>Gemini fallback</small></div><span class="provider-tag fallback">FALLBACK</span>
+                <div class="provider-details"><strong id="gemini-fallback-model">Gemini 3.1 Flash-Lite</strong><small>Gemini fallback</small></div><span class="provider-tag fallback">FALLBACK</span><span class="provider-last-used" id="gemini-fallback-last-used" hidden>LAST USED</span>
               </div>
               <div class="provider-connector"></div>
               <div class="provider-row">
                 <span class="provider-step">03</span><span class="provider-symbol groq-symbol">ϟ</span>
-                <div class="provider-details"><strong>Groq</strong><small id="groq-model">llama-3.3-70b-versatile</small></div><span class="provider-tag final">FINAL</span>
+                <div class="provider-details"><strong>Groq</strong><small id="groq-model">llama-3.3-70b-versatile</small></div><span class="provider-tag final">FINAL</span><span class="provider-last-used" id="groq-last-used" hidden>LAST USED</span>
               </div>
             </div>
-            <div class="provider-note"><span aria-hidden="true">ⓘ</span><span>Fallback routing does not guarantee a model is reachable; check server logs for provider errors.</span></div>
+            <div class="provider-live-summary">
+              <div><span>LAST SUCCESSFUL MODEL</span><strong id="last-success-model">Awaiting first response</strong></div>
+              <div><span>GEMINI FALLBACKS</span><strong id="gemini-fallback-count">0</strong></div>
+              <div><span>GROQ FALLBACKS</span><strong id="groq-fallback-count">0</strong></div>
+            </div>
+            <div class="provider-note"><span aria-hidden="true">ⓘ</span><span>Provider state reflects completed bot requests, not a separate live API probe.</span></div>
           </section>
 
           <section class="panel activity-panel">
