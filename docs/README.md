@@ -13,7 +13,7 @@ Start with the [root README](../README.md) for installation, commands, configura
 
 ## Where changes belong
 
-- Read-only dashboard UI and browser behavior: `hades_bot/static/`
+- Read-only dashboard UI, real-time feed, and logs: `hades_bot/static/`
 - Dashboard/status/health HTTP routes: `hades_bot/web.py`
 - Discord commands and message routing: `hades_bot/bot.py`
 - AI orchestration and provider fallback: `hades_bot/ai/`
