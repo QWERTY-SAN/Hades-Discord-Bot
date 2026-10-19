@@ -50,6 +50,9 @@ _state: dict[str, Any] = {
     "ai_failures": 0,
     "scope_blocks": 0,
     "media_sent": 0,
+    "last_successful_model": None,
+    "gemini_fallback_count": 0,
+    "groq_fallback_count": 0,
 }
 
 
@@ -137,6 +140,13 @@ def set_runtime_error(error: str | None) -> None:
             changed = True
     if message and changed:
         record_dashboard_log("ERROR", message, source="runtime")
+
+
+def update_provider_state(**values: Any) -> None:
+    with _state_lock:
+        for key in ("last_successful_model", "gemini_fallback_count", "groq_fallback_count"):
+            if key in values:
+                _state[key] = values[key]
 
 
 def update_discord_state(**values: Any) -> None:
