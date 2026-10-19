@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — Separate AI provider modules
+
+- Split Gemini SDK calls, Groq SDK calls, and fallback routing into separate modules under `hades_bot/ai/providers/`.
+- Kept the fallback sequence as Gemini 3.5 Flash-Lite → Gemini 3.1 Flash-Lite → Groq.
+- Treat empty Gemini responses as failures and continue to the next provider rather than returning an empty reply.
+- Keep Gemini URL Context-only instructions out of the Groq prompt when the Google tool cannot be used.
+- Close both AI SDK clients during shutdown and expose per-provider fallback counters in `h!diagnose` and `h!status`.
+- Add regression tests for fallback order, Gemini recovery, credential rejection, and total provider failure.
+
+
 ## 2.7.3 — 2026-10-14
 
 ### In-character vocal requests and contextual game follow-ups
