@@ -19,14 +19,14 @@ def test_dashboard_logs_redact_credentials_and_normalize_messages(monkeypatch):
         "warning",
         "Trying fallback with discord-secret-sample-value gemini-secret-sample-value "
         "groq-secret-sample-value api_key=extra-secret-value\nnext line",
-        source="ai/router",
+        source="ai.router",
     )
 
     entries = web.get_dashboard_logs(since_id=before, limit=5)
     assert len(entries) == 1
     entry = entries[0]
     assert entry["level"] == "WARNING"
-    assert entry["source"] == "ai/router"
+    assert entry["source"] == "ai.router"
     assert "[REDACTED]" in entry["message"]
     assert "discord-secret-sample-value" not in entry["message"]
     assert "gemini-secret-sample-value" not in entry["message"]
