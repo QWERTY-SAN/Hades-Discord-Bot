@@ -25,10 +25,29 @@ def test_validator_rejects_unapproved_primary_model(monkeypatch):
         SimpleNamespace(
             discord_token="test-token",
             gemini_api_key="test-api-key",
+            groq_api_key="test-groq-key",
             gemini_model="gemini-3.8-flash",
             gemini_thinking_level="minimal",
         ),
     )
 
     with pytest.raises(RuntimeError, match="approved Free Tier Lite models"):
+        config.validate_settings()
+
+
+
+def test_validator_requires_groq_as_final_fallback(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "SETTINGS",
+        SimpleNamespace(
+            discord_token="test-token",
+            gemini_api_key="test-api-key",
+            groq_api_key="",
+            gemini_model="gemini-3.5-flash-lite",
+            gemini_thinking_level="minimal",
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="Missing GROQ_API_KEY"):
         config.validate_settings()
