@@ -7,6 +7,7 @@ from typing import Any
 from ...config import SETTINGS
 from .gemini import GeminiProvider
 from .groq import GroqProvider
+from ...web import update_provider_state
 
 
 logger = logging.getLogger("hades-bot.ai.router")
@@ -118,6 +119,11 @@ class AIProviderRouter:
                         model,
                     )
                 self.last_successful_model = model
+                update_provider_state(
+                    last_successful_model=self.last_successful_model,
+                    gemini_fallback_count=self.fallback_count,
+                    groq_fallback_count=self.groq_fallback_count,
+                )
                 return response
 
         last_error = failures[-1] if failures else None
@@ -140,6 +146,11 @@ class AIProviderRouter:
             )
             self.groq_fallback_count += 1
             self.last_successful_model = f"groq:{SETTINGS.groq_model}"
+            update_provider_state(
+                last_successful_model=self.last_successful_model,
+                gemini_fallback_count=self.fallback_count,
+                groq_fallback_count=self.groq_fallback_count,
+            )
             logger.warning(
                 "Groq fallback succeeded after Gemini failure: model=%s",
                 SETTINGS.groq_model,
