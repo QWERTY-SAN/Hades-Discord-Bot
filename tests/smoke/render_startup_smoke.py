@@ -53,6 +53,10 @@ assert 'id="logs-list"' in dashboard
 assert 'id="logs-search"' in dashboard
 assert 'id="logs-level"' in dashboard
 assert 'id="logs-export"' in dashboard
+assert 'id="last-success-model"' in dashboard
+assert 'id="gemini-fallback-count"' in dashboard
+assert 'id="groq-fallback-count"' in dashboard
+assert 'update_provider_state' in web_source
 assert "Last-Event-ID" in web_source
 assert "h!hades" in dashboard
 assert "h!diagnose" in dashboard
