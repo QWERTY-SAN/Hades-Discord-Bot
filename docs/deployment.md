@@ -2,7 +2,9 @@
 
 ## Render deployment
 
-This project runs as a Render Web Service because it exposes lightweight health endpoints in addition to maintaining the Discord gateway connection.
+This project runs as a Render Web Service because it serves a read-only web dashboard and health endpoints while maintaining the Discord gateway connection.
+
+Open the service root URL (`/`) to view the dashboard. It shows runtime metrics, Discord readiness, the configured Gemini → Groq fallback chain, diagnostics, and common command references. The dashboard refreshes status through `/api/status` every 15 seconds and requires no additional packages or frontend build step. It has no control actions and never displays API keys.
 
 | Setting | Value |
 |---|---|
