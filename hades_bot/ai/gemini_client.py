@@ -312,7 +312,11 @@ class GeminiService:
     ) -> str:
         live_source_instruction = (
             build_live_source_instruction(user_message)
-            if allow_live_sources and not acknowledgement_reaction
+            if (
+                allow_live_sources
+                and SETTINGS.live_source_refresh
+                and not acknowledgement_reaction
+            )
             else None
         )
         prompt_context = self._build_prompt_context(
