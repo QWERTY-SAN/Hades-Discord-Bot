@@ -34,7 +34,10 @@ Hades-Discord-Bot/
 | `hades_bot/bot.py` | Discord lifecycle, command dispatch, message/mention routing, output delivery |
 | `hades_bot/config.py` | Reads environment values once and validates required secrets/settings |
 | `hades_bot/ai/chat.py` | Coordinates conversation context and response generation |
-| `hades_bot/ai/gemini_client.py` | Calls AI providers and handles provider failover |
+| `hades_bot/ai/gemini_client.py` | Builds Hades prompts; delegates calls to the provider router (legacy module name retained) |
+| `hades_bot/ai/providers/gemini.py` | Google SDK setup, Gemini requests, per-model timeout and URL Context retry |
+| `hades_bot/ai/providers/groq.py` | Groq SDK setup, conversation-message conversion, Groq requests |
+| `hades_bot/ai/providers/router.py` | Provider order, empty-response checks, failover metrics, coordinated shutdown |
 | `hades_bot/ai/persona.py` | Hades system prompt and character contract |
 | `hades_bot/ai/fanservice.py` | Classifies social/fan-service cues and prompt guidance |
 | `hades_bot/core/` | Message scope, conversational signals, memory, shared helpers |
@@ -61,7 +64,7 @@ Keep provider/network code in `ai/`, Discord framework code in `bot.py`, reusabl
 
 ## AI provider order
 
-The configured chain is **Gemini 3.5 Flash Lite → Gemini 3.1 Flash Lite → Groq**. Groq is required and is attempted when the Gemini model hierarchy cannot produce a response. The API keys belong in local `.env` or Render secret environment settings, never in source files.
+The configured chain is **Gemini 3.5 Flash Lite → Gemini 3.1 Flash Lite → Groq**. Provider SDKs are isolated into separate adapters; the router handles order, empty responses, failover metrics, and shutdown. Gemini URL Context instructions are omitted from the Groq prompt when that Google-only tool could not run. Groq is required and is attempted when the Gemini model hierarchy cannot produce a response. The API keys belong in local `.env` or Render secret environment settings, never in source files.
 
 ## Knowledge and media
 
