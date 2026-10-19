@@ -37,7 +37,6 @@ JSON_HEADERS = {
 _started_at = time.monotonic()
 _state_lock = threading.Lock()
 _log_lock = threading.Lock()
-_state_version = 0
 _log_sequence = 0
 _log_entries: deque[dict[str, Any]] = deque(maxlen=LOG_BUFFER_SIZE)
 _state: dict[str, Any] = {
@@ -120,32 +119,27 @@ if not any(isinstance(handler, _RouterDashboardLogHandler) for handler in _route
 
 
 def record_runtime_metric(name: str, amount: int = 1) -> None:
-    global _state_version
     with _state_lock:
         if name not in _state:
             return
         try:
             _state[name] = max(0, int(_state[name]) + amount)
-            _state_version += 1
         except (TypeError, ValueError):
             logger.warning("Unable to update runtime metric %s", name)
 
 
 def set_runtime_error(error: str | None) -> None:
-    global _state_version
     message = _redact(error) if error else None
     changed = False
     with _state_lock:
         if _state["last_error"] != message:
             _state["last_error"] = message
-            _state_version += 1
             changed = True
     if message and changed:
         record_dashboard_log("ERROR", message, source="runtime")
 
 
 def update_discord_state(**values: Any) -> None:
-    global _state_version
     changed = False
     with _state_lock:
         before = dict(_state)
@@ -154,7 +148,6 @@ def update_discord_state(**values: Any) -> None:
             _state["last_error"] = None
         changed = before != _state
         if changed:
-            _state_version += 1
     if changed and "ready" in values:
         if values["ready"]:
             record_dashboard_log("INFO", "Discord gateway connected", source="discord")
@@ -273,7 +266,9 @@ async def _api_events(request: web.Request) -> web.StreamResponse:
             if time.monotonic() - last_keepalive >= 15:
                 await response.write(b": keepalive\n\n")
                 last_keepalive = time.monotonic()
-    except (ConnectionResetError, BrokenPipeError, asyncio.CancelledError):
+    except (ConnectionResetError, BrokenPipeError):
+        return response
+    except asyncio.CancelledError:
         raise
     except Exception:
         logger.debug("Dashboard event stream closed", exc_info=True)
