@@ -300,11 +300,10 @@ class GeminiService:
                     )
                     break
 
-                error_kind = (
-                    status or type(exc).__name__
-                    if self._can_fail_over(exc)
-                    else f"non-retryable {status or type(exc).__name__}"
-                )
+                if self._can_fail_over(exc):
+                    error_kind = status or type(exc).__name__
+                else:
+                    error_kind = f"non-retryable {status or type(exc).__name__}"
                 if index + 1 < len(models):
                     logger.warning(
                         "Gemini model %s failed (%s); trying fallback model %s.",
@@ -345,7 +344,6 @@ class GeminiService:
             )
         # Gemini remains primary. If its model hierarchy cannot answer, use Groq
         # with the same Hades system prompt and conversation context.
-        # Groq is mandatory as the final fallback after Gemini cannot answer.
         try:
             groq_messages = [
                 {"role": "system", "content": config.system_instruction or ""},
