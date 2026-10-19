@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#100d18">
+  <meta name="description" content="Hades Discord Bot runtime dashboard.">
+  <title>Hades — Command Center</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%BE%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <script src="/static/dashboard.js" defer></script>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"></div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Hades dashboard home">
+        <span class="brand-mark">H</span>
+        <span class="brand-copy"><strong>HADES</strong><small>THE PUPPET MASTER</small></span>
+      </a>
+
+      <div class="side-label">COMMAND CENTER</div>
+      <nav class="main-nav" aria-label="Dashboard navigation">
+        <button class="nav-item active" data-view="overview" type="button"><span class="nav-icon">◈</span>Overview</button>
+        <button class="nav-item" data-view="diagnostics" type="button"><span class="nav-icon">⌘</span>Diagnostics</button>
+        <button class="nav-item" data-view="commands" type="button"><span class="nav-icon">✳</span>Commands</button>
+      </nav>
+
+      <div class="side-bottom">
+        <div class="mini-orb" aria-hidden="true"><span></span></div>
+        <p class="side-quote">“Every stage needs a little mystery.”</p>
+        <span class="side-caption">HADES // AETHER GAZER</span>
+        <a class="repo-link" href="https://github.com/QWERTY-SAN/Hades-Discord-Bot" target="_blank" rel="noreferrer">GitHub repository <span aria-hidden="true">↗</span></a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>HADES</span><span class="crumb-slash">/</span><span id="current-section">Overview</span></div>
+        <div class="topbar-right">
+          <span class="read-only"><span class="lock-dot"></span> READ-ONLY DASHBOARD</span>
+          <button class="icon-button" id="refresh-button" type="button" aria-label="Refresh dashboard" title="Refresh dashboard">↻</button>
+        </div>
+      </header>
+
+      <section class="view-panel" data-panel="overview">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> THE STAGE IS SET</p>
+            <h1>Command <span>Center</span></h1>
+            <p class="page-subtitle">A quiet look behind the curtain, Administrator.</p>
+          </div>
+          <div class="status-pill" id="connection-status" data-state="loading"><span class="status-pulse"></span><span id="connection-label">Checking connection</span></div>
+        </div>
+
+        <section class="hero-card" aria-label="Hades runtime status">
+          <div class="hero-copy">
+            <div class="hero-overline"><span class="tiny-star">✦</span> HADES DISCORD BOT <span class="hero-version" id="hero-version">VERSION —</span></div>
+            <h2 id="hero-title">The curtain is rising.</h2>
+            <p id="hero-description">Checking the stage, its lights, and the Discord connection.</p>
+            <div class="hero-meta">
+              <span class="hero-meta-icon">◷</span><span>Uptime</span><strong id="hero-uptime">—</strong>
+              <span class="meta-divider"></span>
+              <span class="hero-meta-icon">⌁</span><span>Guilds</span><strong id="hero-guilds">—</strong>
+            </div>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+            <div class="art-diamond"></div><div class="art-star star-a">✦</div><div class="art-star star-b">✧</div>
+            <div class="art-monogram">H</div>
+            <div class="art-ring-label">PUPPET MASTER · HADES · PUPPET MASTER ·</div>
+          </div>
+          <div class="hero-glow"></div>
+        </section>
+
+        <div class="section-title">
+          <div><p class="eyebrow">RUNTIME TELEMETRY</p><h2>At a glance</h2></div>
+          <span class="last-updated">Updated <time id="last-updated">—</time></span>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-icon icon-violet">⌁</span><span class="stat-label">Discord guilds</span></div>
+            <div class="stat-value" id="stat-guilds">—</div><div class="stat-foot"><span class="tiny-status"></span> Connected servers</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-icon icon-gold">✦</span><span class="stat-label">Messages seen</span></div>
+            <div class="stat-value" id="stat-messages">—</div><div class="stat-foot">Since this process started</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-icon icon-rose">✧</span><span class="stat-label">AI requests</span></div>
+            <div class="stat-value" id="stat-requests">—</div><div class="stat-foot">Requests sent to the AI layer</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-icon icon-green">✓</span><span class="stat-label">Success rate</span></div>
+            <div class="stat-value" id="stat-success-rate">—</div><div class="stat-foot"><span id="stat-success-count">— successes</span> · <span id="stat-failure-count">— failures</span></div>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <section class="panel provider-panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">AI ROUTING</p><h2>Provider sequence</h2></div>
+              <span class="config-tag">CONFIGURED</span>
+            </div>
+            <p class="panel-description">Requests follow this order when a provider fails. This shows configuration, not a live API test.</p>
+            <div class="provider-list">
+              <div class="provider-row">
+                <span class="provider-step">01</span><span class="provider-symbol gemini-symbol">✦</span>
+                <div class="provider-details"><strong>Gemini 3.5 Flash-Lite</strong><small>Primary model</small></div><span class="provider-tag primary">PRIMARY</span>
+              </div>
+              <div class="provider-connector"></div>
+              <div class="provider-row">
+                <span class="provider-step">02</span><span class="provider-symbol gemini-symbol">✧</span>
+                <div class="provider-details"><strong>Gemini 3.1 Flash-Lite</strong><small>Gemini fallback</small></div><span class="provider-tag fallback">FALLBACK</span>
+              </div>
+              <div class="provider-connector"></div>
+              <div class="provider-row">
+                <span class="provider-step">03</span><span class="provider-symbol groq-symbol">ϟ</span>
+                <div class="provider-details"><strong>Groq</strong><small id="groq-model">llama-3.3-70b-versatile</small></div><span class="provider-tag final">FINAL</span>
+              </div>
+            </div>
+            <div class="provider-note"><span aria-hidden="true">ⓘ</span><span>Fallback routing does not guarantee a model is reachable; check server logs for provider errors.</span></div>
+          </section>
+
+          <section class="panel activity-panel">
+            <div class="panel-heading"><div><p class="eyebrow">PROCESS DETAILS</p><h2>Runtime snapshot</h2></div><span class="panel-corner">⌘</span></div>
+            <div class="detail-list">
+              <div class="detail-row"><span>Discord identity</span><strong id="discord-user">Waiting for Discord…</strong></div>
+              <div class="detail-row"><span>Runtime</span><strong id="runtime-name">—</strong></div>
+              <div class="detail-row"><span>Branch</span><strong id="runtime-branch">—</strong></div>
+              <div class="detail-row"><span>Commit</span><strong class="mono" id="runtime-commit">—</strong></div>
+              <div class="detail-row"><span>Scope blocks</span><strong id="stat-scope-blocks">—</strong></div>
+              <div class="detail-row"><span>Media sent</span><strong id="stat-media-sent">—</strong></div>
+            </div>
+            <button class="text-button" type="button" data-open-view="diagnostics">View diagnostics <span aria-hidden="true">→</span></button>
+          </section>
+        </div>
+        <footer class="footer-note"><span>✦</span> A measured glance at the machinery. Your secrets stay in environment variables.</footer>
+      </section>
+
+      <section class="view-panel" data-panel="diagnostics" hidden>
+        <div class="page-heading compact-heading">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> BEHIND THE CURTAIN</p><h1>System <span>Diagnostics</span></h1><p class="page-subtitle">Runtime information and service endpoints. No credentials are displayed here.</p></div>
+          <div class="status-pill" id="diagnostics-status" data-state="loading"><span class="status-pulse"></span><span id="diagnostics-label">Checking</span></div>
+        </div>
+        <div class="diagnostics-grid">
+          <article class="panel diagnostic-card"><p class="eyebrow">DISCORD GATEWAY</p><h2 id="diag-discord-title">Checking connection</h2><p id="diag-discord-copy">Waiting for runtime state.</p><div class="diag-row"><span>Connected identity</span><strong id="diag-user">—</strong></div><div class="diag-row"><span>Known guilds</span><strong id="diag-guilds">—</strong></div></article>
+          <article class="panel diagnostic-card"><p class="eyebrow">PROCESS</p><h2 id="diag-process-title">Process metadata</h2><p>Information reported by the running process.</p><div class="diag-row"><span>Application</span><strong id="diag-app-name">—</strong></div><div class="diag-row"><span>Version</span><strong id="diag-version">—</strong></div><div class="diag-row"><span>Uptime</span><strong id="diag-uptime">—</strong></div><div class="diag-row"><span>Runtime</span><strong id="diag-runtime">—</strong></div></article>
+          <article class="panel diagnostic-card wide-card"><p class="eyebrow">RECENT ERROR</p><h2 id="error-title">No reported error</h2><p id="error-description">The process has not reported an error since the last successful state update.</p><div class="warning-box" id="error-box" hidden><span aria-hidden="true">!</span><span id="error-message"></span></div></article>
+          <article class="panel diagnostic-card wide-card"><p class="eyebrow">HTTP ENDPOINTS</p><h2>Service checks</h2><p>Open an endpoint to inspect the response in JSON.</p><div class="endpoint-list"><a href="/health" target="_blank" rel="noreferrer"><span class="endpoint-method">GET</span><span><strong>/health</strong><small>Process liveness</small></span><span class="endpoint-arrow">↗</span></a><a href="/ready" target="_blank" rel="noreferrer"><span class="endpoint-method">GET</span><span><strong>/ready</strong><small>Discord readiness</small></span><span class="endpoint-arrow">↗</span></a><a href="/api/status" target="_blank" rel="noreferrer"><span class="endpoint-method">GET</span><span><strong>/api/status</strong><small>Dashboard status data</small></span><span class="endpoint-arrow">↗</span></a></div></article>
+        </div>
+        <footer class="footer-note"><span>✦</span> Readiness is separate from process liveness. A reconnecting Discord session can leave the process alive.</footer>
+      </section>
+
+      <section class="view-panel" data-panel="commands" hidden>
+        <div class="page-heading compact-heading">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> YOUR NEXT CUE</p><h1>Command <span>Reference</span></h1><p class="page-subtitle">The essentials for speaking with Hades in Discord.</p></div>
+        </div>
+        <div class="command-toolbar"><div><p class="eyebrow">PREFIX</p><div class="prefix-chip">h!</div></div><p>Use these commands in a channel where Hades can read and reply. Click a command to copy it.</p></div>
+        <div class="command-grid">
+          <button class="command-card" data-command="h!hades " type="button"><span class="command-icon">✦</span><span class="command-copy"><strong>h!hades <em>&lt;message&gt;</em></strong><small>Talk to Hades directly</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!ask " type="button"><span class="command-icon">✧</span><span class="command-copy"><strong>h!ask <em>&lt;message&gt;</em></strong><small>Alias for the Hades command</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!reset" type="button"><span class="command-icon">↺</span><span class="command-copy"><strong>h!reset</strong><small>Reset this conversation's memory</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!memory" type="button"><span class="command-icon">◉</span><span class="command-copy"><strong>h!memory</strong><small>Inspect memory status</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!gif" type="button"><span class="command-icon">▧</span><span class="command-copy"><strong>h!gif</strong><small>Request a Hades GIF</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!ping" type="button"><span class="command-icon">⌁</span><span class="command-copy"><strong>h!ping</strong><small>Check bot latency</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!status" type="button"><span class="command-icon">◈</span><span class="command-copy"><strong>h!status</strong><small>View status information in Discord</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!diagnose" type="button"><span class="command-icon">⌘</span><span class="command-copy"><strong>h!diagnose</strong><small>Show provider diagnostics in Discord</small></span><span class="copy-mark">⧉</span></button>
+          <button class="command-card" data-command="h!hadeshelp" type="button"><span class="command-icon">?</span><span class="command-copy"><strong>h!hadeshelp</strong><small>Show bot help in Discord</small></span><span class="copy-mark">⧉</span></button>
+        </div>
+        <div class="command-tip"><span>ⓘ</span><p><strong>Also works:</strong> mention Hades, DM her, or reply directly to one of her messages. The web dashboard itself is read-only; it does not send Discord messages or change bot settings.</p></div>
+        <footer class="footer-note"><span>✦</span> The most interesting conversations rarely need a command. Simply speak to her.</footer>
+      </section>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+  </div>
+</body>
+</html>
