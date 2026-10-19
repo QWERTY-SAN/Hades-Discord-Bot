@@ -84,6 +84,9 @@
     setText("runtime-commit", payload.commit || "Unknown");
     setText("last-updated", dateNow());
     setText("groq-model", payload.groq_model || "llama-3.3-70b-versatile");
+    setText("gemini-primary-model", payload.gemini_model || "gemini-3.5-flash-lite");
+    const fallbackModels = Array.isArray(payload.gemini_fallback_models) ? payload.gemini_fallback_models : ["gemini-3.1-flash-lite"];
+    setText("gemini-fallback-model", fallbackModels.join(", ") || "No Gemini fallback configured");
 
     setText("diag-discord-title", ready ? "Gateway connected" : "Gateway not ready");
     setText("diag-discord-copy", ready ? "The bot reports an active Discord session." : "The web server is responding, but Discord has not reported readiness.");
