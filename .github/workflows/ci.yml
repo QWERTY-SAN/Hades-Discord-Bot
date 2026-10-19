@@ -30,6 +30,9 @@ jobs:
       - name: Compile Python
         run: python -m compileall -q .
 
+      - name: Check dashboard JavaScript
+        run: node --check hades_bot/static/dashboard.js
+
       - name: Run smoke and unit tests
         env:
           PYTHONPATH: .
