@@ -442,7 +442,7 @@ async def diagnose_command(ctx: commands.Context) -> None:
         f"Discord token: `{token_state}`",
         f"Gemini model: `{SETTINGS.gemini_model}`",
         f"Gemini model hierarchy: `{' → '.join(bot.hades_chat.gemini.model_hierarchy())}`",
-        f"Full provider chain: `{" → ".join(bot.hades_chat.gemini.provider_chain())}`",
+        f"Full provider chain: `{' → '.join(bot.hades_chat.gemini.provider_chain())}`",
         f"Last successful model: `{bot.hades_chat.gemini.last_successful_model or 'not yet used'}`",
         f"Successful Gemini model fallbacks: `{bot.hades_chat.gemini.fallback_count}`",
         f"Successful Groq fallbacks: `{bot.hades_chat.gemini.groq_fallback_count}`",
