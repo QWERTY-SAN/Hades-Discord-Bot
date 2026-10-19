@@ -2,6 +2,12 @@
 
 ## Unreleased — Hades web dashboard
 
+- Replaced browser-side timed polling with a Server-Sent Events feed for near-real-time runtime snapshots.
+- Added a live operational-log view with severity/text filtering, pause/resume display, clear-view, and JSON export.
+- Captured curated provider-routing and runtime events in a capped in-memory ring buffer; known credentials are redacted and message content is not logged to the dashboard.
+- Reworked dashboard spacing, typography, panels, and responsive layout toward a restrained operations-console visual system.
+- Preserved the existing liveness/readiness routes and documented that detailed tracebacks remain in host logs.
+
 - Added a Hades-themed responsive dashboard at the service root with connection status, uptime, guild count, runtime metrics, and process metadata.
 - Added a diagnostics view with health/readiness links and recent runtime error state, plus a command reference with copy-to-clipboard interactions.
 - Added `/api/status` for the dashboard while preserving `/health` and `/ready` JSON endpoints for operations and Render.
