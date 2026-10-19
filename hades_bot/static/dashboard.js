@@ -106,6 +106,13 @@
     setText("gemini-primary-model", payload.gemini_model || "gemini-3.5-flash-lite");
     const fallbackModels = Array.isArray(payload.gemini_fallback_models) ? payload.gemini_fallback_models : ["gemini-3.1-flash-lite"];
     setText("gemini-fallback-model", fallbackModels.join(", ") || "No Gemini fallback configured");
+    const lastModel = payload.last_successful_model || "";
+    setText("last-success-model", lastModel || "Awaiting first response");
+    setText("gemini-fallback-count", formatNumber(payload.gemini_fallback_count || 0));
+    setText("groq-fallback-count", formatNumber(payload.groq_fallback_count || 0));
+    if ($("primary-last-used")) $("primary-last-used").hidden = lastModel !== (payload.gemini_model || "gemini-3.5-flash-lite");
+    if ($("gemini-fallback-last-used")) $("gemini-fallback-last-used").hidden = !fallbackModels.includes(lastModel);
+    if ($("groq-last-used")) $("groq-last-used").hidden = !lastModel.startsWith("groq:");
 
     setText("diag-discord-title", ready ? "Gateway connected" : "Gateway not ready");
     setText("diag-discord-copy", ready ? "The bot reports an active Discord session." : "The web server is responding, but Discord has not reported readiness.");
