@@ -16,7 +16,7 @@ from .core.scope import is_hades_scope_allowed, scope_block_reason
 from .core.support_trigger import is_mental_breakdown_trigger
 from .core.utils import CooldownManager, sanitize_model_output, split_message, strip_bot_mentions
 from .media.media import HadesMedia
-from .web import record_runtime_metric, set_runtime_error, update_discord_state
+from .web import record_dashboard_log, record_runtime_metric, set_runtime_error, update_discord_state
 
 logger = logging.getLogger("hades-bot")
 ALLOWED_MENTIONS = discord.AllowedMentions.none()
@@ -145,6 +145,7 @@ class HadesBot(commands.Bot):
             content, has_history=has_history, direct_reply=direct_reply
         ):
             record_runtime_metric("scope_blocks")
+            record_dashboard_log("INFO", "Message handled by the scope guard", source="discord")
             try:
                 refusal = await self.hades_chat.scope_refusal(scope_block_reason(content))
             except Exception:
@@ -162,6 +163,7 @@ class HadesBot(commands.Bot):
             return
 
         record_runtime_metric("ai_requests")
+        record_dashboard_log("INFO", "AI request accepted", source="discord")
         try:
             async with message.channel.typing():
                 if acknowledgement_trigger:
@@ -179,6 +181,7 @@ class HadesBot(commands.Bot):
                 return
             await self.send_chunks(message, reply, attach_auto_media=(trigger in {"mention", "command"}), trigger=trigger)
             record_runtime_metric("ai_successes")
+            record_dashboard_log("INFO", "AI response delivered", source="discord")
             set_runtime_error(None)
         except UnsafeModelOutputError:
             record_runtime_metric("ai_failures")
