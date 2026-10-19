@@ -288,10 +288,11 @@ class GeminiService:
             except Exception as exc:
                 status = self._status_code(exc)
                 if status in {401, 403}:
-                    raise AIServiceError(
-                        "The Gemini API key or model permissions are not valid.",
-                        status,
-                    ) from exc
+                    # A broken Gemini credential should not prevent the separately
+                    # configured Groq provider from serving the request.
+                    failures.append(exc)
+                    failure_statuses.append(status)
+                    break
                 if not self._can_fail_over(exc):
                     if status == 400:
                         raise AIServiceError(
