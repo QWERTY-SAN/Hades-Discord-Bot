@@ -20,7 +20,7 @@ FREE_TIER_ELIGIBLE_GEMINI_MODELS = frozenset({
 class Settings:
     discord_token: str
     gemini_api_key: str
-    groq_api_key: str = ""
+    groq_api_key: str
     groq_model: str = "llama-3.3-70b-versatile"
     gemini_model: str = "gemini-3.5-flash-lite"
     gemini_fallback_models: tuple[str, ...] = ("gemini-3.1-flash-lite",)
@@ -135,6 +135,10 @@ def validate_settings() -> None:
         raise RuntimeError("Missing DISCORD_TOKEN environment variable.")
     if not SETTINGS.gemini_api_key:
         raise RuntimeError("Missing GEMINI_API_KEY environment variable.")
+    if not SETTINGS.groq_api_key:
+        raise RuntimeError(
+            "Missing GROQ_API_KEY environment variable; Groq is required as the final AI fallback."
+        )
     if SETTINGS.gemini_model not in FREE_TIER_ELIGIBLE_GEMINI_MODELS:
         allowed = ", ".join(sorted(FREE_TIER_ELIGIBLE_GEMINI_MODELS))
         raise RuntimeError(f"GEMINI_MODEL must be one of the approved Free Tier Lite models: {allowed}.")
