@@ -123,3 +123,28 @@ def test_all_providers_failing_raises_a_chain_error():
                 config=SimpleNamespace(system_instruction="Respond as Hades."),
             )
         )
+
+def test_empty_primary_response_moves_to_the_next_gemini_model():
+    attempted_models = []
+
+    async def gemini_generate(*, model, **kwargs):
+        attempted_models.append(model)
+        if model == "gemini-3.5-flash-lite":
+            return SimpleNamespace(text="")
+        return SimpleNamespace(text="Gemini 3.1 returned a usable reply.")
+
+    async def groq_generate(**kwargs):
+        raise AssertionError("Groq should not be called when Gemini 3.1 returns text.")
+
+    router = make_router(gemini_generate, groq_generate)
+    response = asyncio.run(
+        router.generate(
+            contents=[],
+            config=SimpleNamespace(system_instruction="Respond as Hades."),
+        )
+    )
+
+    assert attempted_models == ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"]
+    assert response.text == "Gemini 3.1 returned a usable reply."
+    assert router.last_successful_model == "gemini-3.1-flash-lite"
+
