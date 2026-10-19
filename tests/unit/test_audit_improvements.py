@@ -77,55 +77,67 @@ def test_nested_knowledge_lookup_surfaces_named_catalog_entries():
 
 def test_gemini_model_hierarchy_deduplicates_primary_and_fallbacks(monkeypatch):
     from types import SimpleNamespace
-    from hades_bot.ai import gemini_client
+    from hades_bot.ai.providers import router as provider_router
 
     monkeypatch.setattr(
-        gemini_client,
+        provider_router,
         "SETTINGS",
         SimpleNamespace(
             gemini_model="primary",
             gemini_fallback_models=("backup", "primary", "backup"),
+            groq_model="llama-test",
         ),
     )
-    service = gemini_client.GeminiService.__new__(gemini_client.GeminiService)
-    assert service.model_hierarchy() == ("primary", "backup")
+    router = provider_router.AIProviderRouter.__new__(provider_router.AIProviderRouter)
+    assert router.model_hierarchy() == ("primary", "backup")
 
 
 def test_gemini_temporarily_fails_over_to_next_model(monkeypatch):
     from types import SimpleNamespace
-    from hades_bot.ai import gemini_client
+    from hades_bot.ai.providers import router as provider_router
 
-    class FakeModels:
+    class FakeGemini:
         def __init__(self):
             self.calls = []
 
-        async def generate_content(self, *, model, contents, config):
+        async def generate(self, *, model, **kwargs):
             self.calls.append(model)
             if model == "primary":
                 raise asyncio.TimeoutError("simulated model timeout")
             return SimpleNamespace(text="Hades is back.")
 
-    fake_models = FakeModels()
+    class FakeGroq:
+        async def generate(self, **kwargs):
+            raise AssertionError("Groq should not be called when Gemini 3.1 succeeds")
+
+    fake_gemini = FakeGemini()
     monkeypatch.setattr(
-        gemini_client,
+        provider_router,
         "SETTINGS",
         SimpleNamespace(
             gemini_model="primary",
             gemini_fallback_models=("backup",),
+            groq_model="llama-test",
             request_timeout=10.0,
             gemini_model_timeout_seconds=5.0,
+            max_output_tokens=128,
         ),
     )
-    service = gemini_client.GeminiService.__new__(gemini_client.GeminiService)
-    service.client = SimpleNamespace(aio=SimpleNamespace(models=fake_models))
-    service.last_successful_model = None
-    service.fallback_count = 0
+    router = provider_router.AIProviderRouter.__new__(provider_router.AIProviderRouter)
+    router.gemini_provider = fake_gemini
+    router.groq_provider = FakeGroq()
+    router.last_successful_model = None
+    router.fallback_count = 0
+    router.groq_fallback_count = 0
 
     response = asyncio.run(
-        service._generate_with_model_hierarchy(contents=[], config=object())
+        router.generate(
+            contents=[],
+            config=SimpleNamespace(system_instruction="Hades persona"),
+        )
     )
 
     assert response.text == "Hades is back."
-    assert fake_models.calls == ["primary", "backup"]
-    assert service.last_successful_model == "backup"
-    assert service.fallback_count == 1
+    assert fake_gemini.calls == ["primary", "backup"]
+    assert router.last_successful_model == "backup"
+    assert router.fallback_count == 1
