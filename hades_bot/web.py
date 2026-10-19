@@ -147,7 +147,6 @@ def update_discord_state(**values: Any) -> None:
         if values.get("ready") is True:
             _state["last_error"] = None
         changed = before != _state
-        if changed:
     if changed and "ready" in values:
         if values["ready"]:
             record_dashboard_log("INFO", "Discord gateway connected", source="discord")
@@ -157,8 +156,10 @@ def update_discord_state(**values: Any) -> None:
 
 def update_web_error(error: str) -> None:
     # Keep raw exception text in the host logs only; never expose it in the dashboard.
-    set_runtime_error("Web server failed; inspect host logs for details")
-    record_dashboard_log("ERROR", "Web server failed; inspect host logs for details", source="web")
+    message = "Web server failed; inspect host logs for details"
+    with _state_lock:
+        _state["last_error"] = message
+    record_dashboard_log("ERROR", message, source="web")
     logger.error("Web/runtime state error: %s", _redact(error))
 
 
