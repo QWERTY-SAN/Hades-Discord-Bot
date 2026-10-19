@@ -20,6 +20,8 @@ FREE_TIER_ELIGIBLE_GEMINI_MODELS = frozenset({
 class Settings:
     discord_token: str
     gemini_api_key: str
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
     gemini_model: str = "gemini-3.5-flash-lite"
     gemini_fallback_models: tuple[str, ...] = ("gemini-3.1-flash-lite",)
     gemini_thinking_level: str = "minimal"
@@ -74,6 +76,7 @@ def _float(name: str, default: float) -> float:
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 
 _configured_fallback_models = tuple(
     dict.fromkeys(
@@ -93,6 +96,8 @@ if _configured_history % 2:
 SETTINGS = Settings(
     discord_token=DISCORD_TOKEN,
     gemini_api_key=GEMINI_API_KEY,
+    groq_api_key=GROQ_API_KEY,
+    groq_model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").strip() or "llama-3.3-70b-versatile",
     gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip() or "gemini-3.5-flash-lite",
     gemini_fallback_models=_configured_fallback_models,
     gemini_thinking_level=os.getenv("GEMINI_THINKING_LEVEL", "minimal").strip().casefold() or "minimal",
