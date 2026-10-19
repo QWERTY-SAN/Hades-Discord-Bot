@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — Hades web dashboard
+
+- Added a Hades-themed responsive dashboard at the service root with connection status, uptime, guild count, runtime metrics, and process metadata.
+- Added a diagnostics view with health/readiness links and recent runtime error state, plus a command reference with copy-to-clipboard interactions.
+- Added `/api/status` for the dashboard while preserving `/health` and `/ready` JSON endpoints for operations and Render.
+- Kept the dashboard read-only and self-hosted its frontend assets; no new runtime dependency or API-key exposure was added.
+- Added startup smoke checks for dashboard assets and route contracts.
+
 ## Unreleased — Separate AI provider modules
 
 - Split Gemini SDK calls, Groq SDK calls, and fallback routing into separate modules under `hades_bot/ai/providers/`.
